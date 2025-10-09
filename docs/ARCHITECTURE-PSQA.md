@@ -33,6 +33,7 @@ Scope: Documents the design, components, data flow, contracts, and known gaps fo
   - `Import-Modules.ps1`: Helper script to import all modules.
   - `alias-map.json`: Alias→cmdlet map (used by tooling).
 - `tests/`
+  - `Invoke-PSQAEngine.Tests.ps1`: Integration tests for the main engine entry point.
   - `PSQAASTAnalyzer.Tests.ps1`, `PSQALogger.Tests.ps1`, `PSQAAutoFixer.Tests.ps1`.
   - `test_script.ps1`: A simple PowerShell script with known issues, used for testing the linter.
 - `Makefile`: Automation entrypoints (analyze/fix/test/report/etc.).
@@ -70,7 +71,7 @@ Scope: Documents the design, components, data flow, contracts, and known gaps fo
   - Computes size/lines/comments; attempts AST to count functions/vars.
 
 4) AST Analyzer (`qa/modules/Analyzers/PSQAASTAnalyzer.psm1`)
-- `Invoke-PSQAASTAnalysis -FilePath <path> -TraceId <guid>`
+- `Invoke-PSQAASTAnalysis -Path <string[]> -TraceId <guid>`
   - Rules: unbound vars, shadowing, unsafe pipeline binding, high cognitive complexity, dead code, `Invoke-Expression`, global vars, missing parameter validation, empty catch blocks.
 
 5) Fixing (rules → content) (`qa/modules/Fixing/Fixing.psm1`)
@@ -143,50 +144,15 @@ Scope: Documents the design, components, data flow, contracts, and known gaps fo
 - Uses .NET AST APIs available in both. Avoids OS-specific cmdlets in core logic.
 
 ## Tests (Pester v5)
+- `Invoke-PSQAEngine.Tests.ps1`: Integration tests for the main engine entry point.
 - `PSQALogger.Tests.ps1`: Exports, init, log writing, log dir creation.
 - `PSQAASTAnalyzer.Tests.ps1`: Unbound vars; complexity; unsafe patterns; parse-error surfaced.
 - `PSQAAutoFixer.Tests.ps1`: Whitespace, alias expansion (including string literal protection), diffs, backups, dry-run, simple security fix.
-- `test_script.ps1`: A simple PowerShell script with known issues, used for testing the linter.
+- `temp_script.ps1`: A simple PowerShell script with known issues, used for testing the linter.
 
 Coverage Gaps (observed):
 - No tests for `Fixing/Fixing.psm1` pipeline (rule-to-fix mapping correctness).
-- No integration tests for `Invoke-PSQAEngine.ps1` end-to-end.
 - Logger file/JSONL content validation minimal; redaction patterns not unit-tested.
-
-## Noted Issues & Risks (to triage)
-
-1) **[FIXED]** Configuration scope leakage across modules
-- Symptom: `FileSystem` and `Analysis` modules reference `$script:Config`, but `Initialize-Configuration` sets `$script:Config` in its own module scope, not globally.
-- Risk: Null references; PSSA settings path and excludes not applied.
-- Direction: Introduce a shared accessor (`Get-PSQAConfig`), or promote to `$global:PSQAConfig` in Configuration module; ref modules to consume via imported function or `$script:PSQAConfig` set at import time.
-
-2) **[FIXED]** Reporting depends on undeclared module variables
-- `qa/modules/Reporting/Reporting.psm1:42` uses `$script:StartTime`; not initialized in module; may be `$null`.
-- JSON metadata references `$TraceId` and `$script:EngineVersion` that are not set in this module.
-- Direction: Pass `-StartTime`, `-TraceId`, `-EngineVersion` as parameters to `New-QAReport` or set once via an Initialize function.
-
-3) **[FIXED]** Engine `-Mode Test` not implemented
-- `qa/tools/Invoke-PSQAEngine.ps1` accepts `Test` but does not run Pester or any test harness.
-- Direction: Either implement a Test mode (Invoke-Pester with config) or remove option.
-
-4) **[FIXED]** `Analysis.psm1` references `$script:Results` (errors bucket)
-- `qa/modules/Analysis/Analysis.psm1:69` pushes to `$script:Results.Errors` which is never declared in that module.
-- Direction: Return errors as part of `PSQAResult` or log via Logger; remove cross-module script vars.
-
-5) **[FIXED]** `PSQALogger` color/console usage
-- Uses `Write-Host` for console; no `--no-ansi` fallback toggle exposed via public API beyond `ColorOutput`.
-- Direction: Respect a `NoAnsi` flag and avoid color sequences entirely when set; add tests.
-
-6) **[FIXED]** Standalone `Apply-AutoFix.ps1` alias expansion pattern
-- Regex quoting is brittle; risk of false positives/negatives.
-- Direction: Prefer AST-based alias detection or token scanning to ensure literals/keys/strings are not altered; add comprehensive tests.
-
-7) **[FIXED]** Make BOM policy configurable and default to UTF-8 (no BOM) unless required.
-
-8) **[FIXED]** Expand security fixes for trivial unsafe patterns (param validation scaffolding; `-ErrorAction Stop` additions) guarded by config.
-
-) **[FIXED]** Tests minor defect
-- `qa/tests/PSQAAutoFixer.Tests.ps1:~70` uses `$alias_results` (underscore) vs `$aliasResults` causing a potential test failure.
 
 ## Quality & Safety Characteristics
 - Idempotence: Fixers avoid repeated changes; backups use timestamped copies; atomic writes via temp→move in `Apply-AutoFix.ps1`.
@@ -215,7 +181,7 @@ Coverage Gaps (observed):
 - Keep rules safe-by-default; promote manual review for risky transforms.
 
 ## Backlog (Prioritized)
-1) Add module-level integration tests for `Invoke-PSQAEngine.ps1` (dry-run) against `qa/temp_script.ps1`.
+- No items at this time.
 
 
 ## File Pointers (for quick nav)

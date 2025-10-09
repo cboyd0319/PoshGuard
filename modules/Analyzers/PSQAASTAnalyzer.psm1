@@ -35,14 +35,15 @@ class ASTAnalysisIssue {
     [hashtable]$Metadata
 
     ASTAnalysisIssue([string]$rule, [string]$severity, [string]$message, [int]$line, [int]$column, [string]$extent) {
-        $this.RuleName = $rule
+    $this.RuleName = $rule
         $this.Severity = $severity
         $this.Message = $message
         $this.Line = $line
         $this.Column = $column
         $this.Extent = $extent
         $this.Suggestion = ''
-        $this.Metadata = @{}
+        $this.Metadata = @{
+    }
     }
 }
 
@@ -74,60 +75,67 @@ function Invoke-PSQAASTAnalysis {
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([ASTAnalysisIssue[]])]
     param(
-        [Parameter(Mandatory)]
-        [ValidateScript({ Test-Path -Path $_ -PathType Leaf })]
-        [string]$FilePath,
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string[]]$Path,
 
         [Parameter()]
         [string]$TraceId = (New-Guid).ToString()
     )
 
-    Write-Verbose "[$TraceId] Starting AST analysis: $FilePath"
-
+    begin {
     $issues = @()
-
-    try {
-        # Parse file into AST
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
-            $FilePath,
-            [ref]$tokens,
-            [ref]$errors
-        )
-
-        if ($errors) {
-            foreach ($error in $errors) {
-                $issue = [ASTAnalysisIssue]::new(
-                    'ParseError',
-                    'Error',
-                    $error.Message,
-                    $error.Extent.StartLineNumber,
-                    $error.Extent.StartColumnNumber,
-                    $error.Extent.Text
-                )
-                $issues += $issue
-            }
-            return $issues
-        }
-
-        # Run analysis rules
-        $issues += Test-UnboundVariable -AST $ast
-        $issues += Test-VariableShadowing -AST $ast
-        $issues += Test-UnsafePipelineBinding -AST $ast
-        $issues += Test-CognitiveComplexity -AST $ast
-        $issues += Test-DeadCode -AST $ast
-        $issues += Test-UnsafePatterns -AST $ast
-        $issues += Test-ParameterValidation -AST $ast
-        $issues += Test-ErrorHandling -AST $ast
-
-        Write-Verbose "[$TraceId] AST analysis complete: $($issues.Count) issues found"
-
-    } catch {
-        Write-Error "AST analysis failed for $FilePath : $_"
     }
 
+    process {
+    foreach ($item in $Path) {
+    Write-Verbose "[$TraceId] Starting AST analysis: $item"
+
+            try {
+    # Parse file into AST
+                $tokens = $null
+                $errors = $null
+                $ast = if (Test-Path -Path $item -PathType Leaf) {
+    [System.Management.Automation.Language.Parser]::ParseFile($item, [ref]$tokens, [ref]$errors)
+                } else {
+    [System.Management.Automation.Language.Parser]::ParseInput($item, [ref]$tokens, [ref]$errors)
+                }
+
+                if ($errors) {
+    foreach ($error in $errors) {
+    $issue = [ASTAnalysisIssue]::new(
+                            'ParseError',
+                            'Error',
+                            $error.Message,
+                            $error.Extent.StartLineNumber,
+                            $error.Extent.StartColumnNumber,
+                            $error.Extent.Text
+                        )
+                        $issues += $issue
+                    }
+                    continue
+                }
+
+                # Run analysis rules
+                $issues += Test-UnboundVariable -AST $ast
+                $issues += Test-VariableShadowing -AST $ast
+                $issues += Test-UnsafePipelineBinding -AST $ast
+                $issues += Test-CognitiveComplexity -AST $ast
+                $issues += Test-DeadCode -AST $ast
+                $issues += Test-UnsafePatterns -AST $ast
+                $issues += Test-ParameterValidation -AST $ast
+                $issues += Test-ErrorHandling -AST $ast
+
+                Write-Verbose "[$TraceId] AST analysis complete: $($issues.Count) issues found"
+
+            } catch {
+    Write-Error "AST analysis failed for $item : $_"
+            }
+        }
+    }
+
+    end {
     return $issues
+    }
 }
 
 #endregion
@@ -159,27 +167,36 @@ function Test-UnboundVariable {
 
     # Get all variable expressions (reads)
     $variableReads = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.VariableExpressionAst]
     }, $true)
 
     # Get all variable assignments (writes)
     $variableWrites = $AST.FindAll({
-        param($node)
-        $node -is [System.Management.Automation.Language.AssignmentStatementAst]
+    param($node)
+        $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+        $node.Left -is [System.Management.Automation.Language.VariableExpressionAst]
     }, $true) | ForEach-Object {
-        $_.Left.VariablePath.UserPath
+    $_.Left.VariablePath.UserPath
+    }
+
+    # Get foreach loop variables
+    $foreachVars = $AST.FindAll({
+    param($node)
+        $node -is [System.Management.Automation.Language.ForEachStatementAst]
+    }, $true) | ForEach-Object {
+    $_.Variable.VariablePath.UserPath
     }
 
     # Get parameters (these are also valid assignments)
     $parameters = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.ParameterAst]
     }, $true) | ForEach-Object {
-        $_.Name.VariablePath.UserPath
+    $_.Name.VariablePath.UserPath
     }
 
-    $validVars = @($variableWrites) + @($parameters) | Select-Object -Unique
+    $validVars = @($variableWrites) + @($foreachVars) + @($parameters) | Select-Object -Unique
 
     # Common automatic variables that don't need assignment
     $automaticVars = @('_', 'PSItem', 'args', 'this', 'input', 'PSCmdlet', 'MyInvocation',
@@ -188,13 +205,19 @@ function Test-UnboundVariable {
                        'ProgressPreference', 'WhatIfPreference', 'ConfirmPreference',
                        'PSScriptRoot', 'PSCommandPath', 'Error', 'Host', 'HOME', 'true', 'false', 'null')
 
+    Write-Verbose "Variable Reads: $($variableReads | ForEach-Object {
+    $_.VariablePath.UserPath } | ConvertTo-Json -Compress)"
+    Write-Verbose "Variable Writes: $($variableWrites | ConvertTo-Json -Compress)"
+    Write-Verbose "Valid Variables: $($validVars | ConvertTo-Json -Compress)"
+
     foreach ($varRead in $variableReads) {
-        $varName = $varRead.VariablePath.UserPath
+    $varName = $varRead.VariablePath.UserPath
 
         if ($varName -and
             $varName -notin $automaticVars -and
             $varName -notin $validVars -and
-            $varName -notmatch '^\d+$') {  # Exclude $1, $2, etc (regex captures)
+            $varName -notmatch '^\d+$') {
+    # Exclude $1, $2, etc (regex captures)
 
             $issue = [ASTAnalysisIssue]::new(
                 'UnboundVariable',
@@ -237,35 +260,35 @@ function Test-VariableShadowing {
 
     # Get all script blocks (different scopes)
     $scriptBlocks = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.ScriptBlockAst]
     }, $true)
 
     foreach ($block in $scriptBlocks) {
-        $outerVars = @()
+    $outerVars = @()
         $innerVars = @()
 
         # Get variables in current block
         $assignments = $block.FindAll({
-            param($node)
+    param($node)
             $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
             $node.Left -is [System.Management.Automation.Language.VariableExpressionAst]
         }, $false)  # Shallow search - only this level
 
         foreach ($assignment in $assignments) {
-            $varName = $assignment.Left.VariablePath.UserPath
+    $varName = $assignment.Left.VariablePath.UserPath
 
             # Check if variable exists in parent scope
             if ($block.Parent) {
-                $parentAssignments = $block.Parent.FindAll({
-                    param($node)
+    $parentAssignments = $block.Parent.FindAll({
+    param($node)
                     $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
                     $node.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
                     $node.Left.VariablePath.UserPath -eq $varName
                 }, $true)
 
                 if ($parentAssignments.Count -gt 0) {
-                    $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
                         'VariableShadowing',
                         'Information',
                         "Variable '`$$varName' shadows a variable from outer scope",
@@ -308,28 +331,27 @@ function Test-UnsafePipelineBinding {
 
     # Find all pipelines
     $pipelines = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.PipelineAst]
     }, $true)
 
     foreach ($pipeline in $pipelines) {
-        if ($pipeline.PipelineElements.Count -gt 1) {
-            # Check for ForEach-Object with positional script block (can be confusing)
+    if ($pipeline.PipelineElements.Count -gt 1) {
+    # Check for ForEach-Object with positional script block (can be confusing)
             foreach ($element in $pipeline.PipelineElements) {
-                if ($element.CommandElements -and $element.CommandElements[0].Value -eq 'ForEach-Object') {
-                    if ($element.CommandElements.Count -eq 2 -and
+    if ($element.CommandElements -and $element.CommandElements[0].Value -eq 'ForEach-Object') {
+    if ($element.CommandElements.Count -eq 2 -and
                         $element.CommandElements[1] -is [System.Management.Automation.Language.ScriptBlockExpressionAst]) {
-
-                        # Check if script block uses $_ (good) or creates new variables (potentially confusing)
+    # Check if script block uses $_ (good) or creates new variables (potentially confusing)
                         $scriptBlock = $element.CommandElements[1].ScriptBlock
                         $usesUnderscore = $scriptBlock.Find({
-                            param($node)
+    param($node)
                             $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
                             $node.VariablePath.UserPath -eq '_'
                         }, $true)
 
                         if (-not $usesUnderscore) {
-                            $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
                                 'PipelineParameterBinding',
                                 'Information',
                                 'ForEach-Object script block does not use $_ (pipeline input)',
@@ -375,18 +397,20 @@ function Test-CognitiveComplexity {
 
     # Find all function definitions
     $functions = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
     }, $true)
 
     foreach ($func in $functions) {
-        $complexity = 0
+    $complexity = 0
 
         # Count decision points
-        $ifStatements = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.IfStatementAst] }, $true)
+        $ifStatements = $func.FindAll({
+    param($n) $n -is [System.Management.Automation.Language.IfStatementAst] }, $true)
         $complexity += $ifStatements.Count
 
-        $loops = $func.FindAll({ param($n)
+        $loops = $func.FindAll({
+    param($n)
             $n -is [System.Management.Automation.Language.ForStatementAst] -or
             $n -is [System.Management.Automation.Language.ForEachStatementAst] -or
             $n -is [System.Management.Automation.Language.WhileStatementAst] -or
@@ -394,14 +418,18 @@ function Test-CognitiveComplexity {
         }, $true)
         $complexity += $loops.Count
 
-        $catches = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.CatchClauseAst] }, $true)
+        $catches = $func.FindAll({
+    param($n) $n -is [System.Management.Automation.Language.CatchClauseAst] }, $true)
         $complexity += $catches.Count
 
-        $switches = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.SwitchStatementAst] }, $true)
-        $complexity += $switches.Count
+        $switches = $func.FindAll({
+    param($n) $n -is [System.Management.Automation.Language.SwitchStatementAst] }, $true)
+        foreach ($switch in $switches) {
+    $complexity += $switch.Clauses.Count
+        }
 
         if ($complexity -gt $maxComplexity) {
-            $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
                 'HighCognitiveComplexity',
                 'Warning',
                 "Function '$($func.Name)' has cognitive complexity of $complexity (max: $maxComplexity)",
@@ -410,7 +438,8 @@ function Test-CognitiveComplexity {
                 $func.Name
             )
             $issue.Suggestion = 'Consider refactoring into smaller, more focused functions'
-            $issue.Metadata = @{ Complexity = $complexity }
+            $issue.Metadata = @{
+    Complexity = $complexity }
             $issues += $issue
         }
     }
@@ -443,14 +472,15 @@ function Test-DeadCode {
 
     # Find all named blocks (begin, process, end) and script blocks
     $blocks = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.ScriptBlockAst] -or
         $node -is [System.Management.Automation.Language.NamedBlockAst]
     }, $true)
 
-    if ($block.Statements) {
-            for ($i = 0; $i -lt $block.Statements.Count - 1; $i++) {
-                $stmt = $block.Statements[$i]
+    foreach ($block in $blocks) {
+    if ($block.PSobject.Properties.Name -contains 'Statements') {
+    for ($i = 0; $i -lt $block.Statements.Count - 1; $i++) {
+    $stmt = $block.Statements[$i]
 
                 # Check if statement is a terminating statement
                 $isTerminating = (
@@ -460,7 +490,7 @@ function Test-DeadCode {
                 )
 
                 if ($isTerminating -and ($i -lt $block.Statements.Count - 1)) {
-                    $nextStmt = $block.Statements[$i + 1]
+    $nextStmt = $block.Statements[$i + 1]
                     $issue = [ASTAnalysisIssue]::new(
                         'UnreachableCode',
                         'Warning',
@@ -504,13 +534,13 @@ function Test-UnsafePatterns {
 
     # Detect Invoke-Expression
     $iexCalls = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.CommandAst] -and
         ($node.GetCommandName() -eq 'Invoke-Expression' -or $node.GetCommandName() -eq 'iex')
     }, $true)
 
     foreach ($call in $iexCalls) {
-        $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
             'UnsafeInvokeExpression',
             'Error',
             'Invoke-Expression is a security risk and should be avoided',
@@ -524,13 +554,13 @@ function Test-UnsafePatterns {
 
     # Detect global variables
     $globalVars = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
         $node.VariablePath.IsGlobal
     }, $true)
 
     foreach ($var in $globalVars) {
-        $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
             'GlobalVariableUsage',
             'Warning',
             "Global variable '`$$($var.VariablePath.UserPath)' detected - consider script or local scope",
@@ -570,14 +600,14 @@ function Test-ParameterValidation {
 
     # Find all parameters
     $parameters = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.ParameterAst]
     }, $true)
 
     foreach ($param in $parameters) {
-        # Check for validation attributes
+    # Check for validation attributes
         $hasValidation = $param.Attributes | Where-Object {
-            $_.TypeName.Name -match '^Validate'
+    $_.TypeName.Name -match '^Validate'
         }
 
         # Check if parameter is string or array without validation
@@ -585,8 +615,7 @@ function Test-ParameterValidation {
 
         if ((-not $hasValidation) -and
             ($paramType -eq [string] -or $paramType -eq [object[]])) {
-
-            $issue = [ASTAnalysisIssue]::new(
+    $issue = [ASTAnalysisIssue]::new(
                 'MissingParameterValidation',
                 'Information',
                 "Parameter '`$$($param.Name.VariablePath.UserPath)' lacks validation attributes",
@@ -627,15 +656,15 @@ function Test-ErrorHandling {
 
     # Find all try statements
     $tryStatements = $AST.FindAll({
-        param($node)
+    param($node)
         $node -is [System.Management.Automation.Language.TryStatementAst]
     }, $true)
 
     foreach ($try in $tryStatements) {
-        # Check for empty catch blocks
+    # Check for empty catch blocks
         foreach ($catch in $try.CatchClauses) {
-            if (-not $catch.Body.Statements -or $catch.Body.Statements.Count -eq 0) {
-                $issue = [ASTAnalysisIssue]::new(
+    if (-not $catch.Body.Statements -or $catch.Body.Statements.Count -eq 0) {
+    $issue = [ASTAnalysisIssue]::new(
                     'EmptyCatchBlock',
                     'Warning',
                     'Empty catch block detected - errors are silently swallowed',
@@ -659,3 +688,5 @@ function Test-ErrorHandling {
 Export-ModuleMember -Function 'Invoke-PSQAASTAnalysis'
 
 #endregion
+
+

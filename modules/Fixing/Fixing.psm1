@@ -54,7 +54,7 @@ function Invoke-AutoFix {
                     Write-Verbose "Applied fix for: $($issue.RuleName)"
                 }
             } catch {
-                Write-Warning "Could not apply fix for $($issue.RuleName): $_"
+                Write-Warning "Could not apply fix for $($issue.RuleName): $_ "
             }
 
             $fixResults += $fixResult
@@ -217,8 +217,7 @@ $paramBlocks.EXAMPLE
 
 .NOTES
     Provides additional information about the function.
-#>
-"@
+#"@
                     # Add help block before the function definition
                     $Content = $Content -replace "(function\s+$([regex]::Escape($functionName)))", "$helpBlock`n`$1"
                 }
@@ -273,22 +272,31 @@ $paramBlocks.EXAMPLE
             'PSReviewUnusedParameter' {
                 # Comment out unused parameters for manual review.
                 if ($Issue.Message -match "parameter '([^']+)' has been declared but not used") {
-                    $paramName = [regex]::Escape($Matches[1])
+                    $paramName = $Matches[1]
                     $lines = $Content -split "`n"
                     $fixedLines = @()
                     $inParamBlock = $false
+                    # Construct a regex pattern that looks for the parameter variable, e.g., $ParameterName
+                    # The pattern needs to match a literal '$' followed by the parameter name.
+                    # Word boundaries (\b) are used to avoid matching substrings.
+                    $regexPattern = "\`$$($paramName)\b"
+
                     foreach ($line in $lines) {
                         if ($line -match '^\s*param\s*\(') { $inParamBlock = $true }
                         if ($inParamBlock -and $line -match '^\s*\)') { $inParamBlock = $false }
 
-                        if ($inParamBlock -and $line -match "\$$paramName") {
-                            $fixedLines += "# FIXME: Unused parameter commented out by PSQA."
-                            $fixedLines += "# $line"
-                            # Also comment out the preceding [Parameter()] attribute if it exists
-                            $previousLineIndex = $fixedLines.Count - 2
+                        if ($inParamBlock -and $line -match $regexPattern) {
+                            # Found the unused parameter, now comment it out.
+                            $commentedLine = "# $line"
+
+                            # Check if the previous line was a [Parameter(...)] attribute and comment it out too.
+                            $previousLineIndex = $fixedLines.Count - 1
                             if ($previousLineIndex -ge 0 -and $fixedLines[$previousLineIndex] -match '^\s*\[Parameter') {
                                 $fixedLines[$previousLineIndex] = "# $($fixedLines[$previousLineIndex])"
                             }
+
+                            $fixedLines += "# FIXME: Unused parameter commented out by PSQA."
+                            $fixedLines += $commentedLine
                         } else {
                             $fixedLines += $line
                         }

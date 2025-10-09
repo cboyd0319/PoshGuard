@@ -1,1 +1,43 @@
-<# .SYNOPSIS Installs Windows Subsystem for Linux (needs admin rights) .DESCRIPTION This PowerShell script installs Windows Subsystem for Linux. It needs admin rights. .EXAMPLE PS> ./install-wsl.ps1 .LINK https://github.com/fleschutz/PowerShell .NOTES Author: Markus Fleschutz | License: CC0 #> #requires -version 5.1 -RunAsAdministrator try { $StopWatch = [system.diagnostics.stopwatch]::startNew() if ($false) { & wsl --install } else { "👉 Step 1/3: Enable WSL..." & dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart "👉 Step 2/3: Enable virtual machine platform..." & dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart "👉 Step 3/3: Enable WSL version 2..." & wsl --set-default-version 2 } [int]$Elapsed = $StopWatch.Elapsed.TotalSeconds "✅ installed Windows Subsystem for Linux (WSL) in $Elapsed sec" " NOTE: reboot now, then visit the Microsoft Store and install a Linux distribution (e.g. Ubuntu, openSUSE, SUSE Linux, Kali Linux, Debian, Fedora, Pengwin, or Alpine)" gci # alias exit 0 # success } catch { "⚠️ ERROR: $($Error[0]) (script line $($_.InvocationInfo.ScriptLineNumber))" Write-Host "This is a test" if ($foo -eq $null) { Write-Host "foo is null" } exit 1 }
+#!/usr/bin/env pwsh
+#requires -Version 5.1
+
+$ErrorActionPreference = 'Stop'
+
+$engineRoot = "/Users/chadboyd/Documents/GitHub/PoshGuard/tools"
+
+try {
+    Import-Module "$engineRoot/../modules/Core/Core.psm1" -Force
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "Core module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/Configuration/Configuration.psm1"
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "Configuration module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/FileSystem/FileSystem.psm1"
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "FileSystem module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/Analysis/Analysis.psm1"
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "Analysis module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/Fixing/Fixing.psm1"
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "Fixing module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/Reporting/Reporting.psm1"
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "Reporting module loaded successfully"
+
+    Import-Module "$engineRoot/../modules/Analyzers/PSQAASTAnalyzer.psm1" -Force
+    Get-Command Get-Command -ErrorAction Stop | Out-Null
+    Write-Host "PSQAASTAnalyzer module loaded successfully"
+
+    Write-Host "All modules loaded successfully"
+}
+catch {
+    Write-Host "A module failed to load or broke Get-Command:"
+    Write-Host $_.Exception.Message
+    exit 1
+}

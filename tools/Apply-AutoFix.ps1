@@ -32,15 +32,15 @@
     Enable verbose output
 
 .EXAMPLE
-    .\Apply-AutoFix.ps1 -Path ./src -DryRun
+    .\Set-AutoFix.ps1 -Path ./src -DryRun
     Preview fixes without applying
 
 .EXAMPLE
-    .\Apply-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
+    .\Set-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
     Apply fixes and show unified diffs
 
 .EXAMPLE
-    .\Apply-AutoFix.ps1 -Path ./src
+    .\Set-AutoFix.ps1 -Path ./src
     Apply all safe fixes to directory
 
 .NOTES
@@ -54,23 +54,29 @@
 param(
     [Parameter(Mandatory, Position = 0)]
     [ValidateScript({ Test-Path -Path $_ })]
-    [string]$Path,
+# FIXME: Unused parameter commented out by PSQA.
+#     [string]$Path,
 
-    [Parameter()]
-    [switch]$DryRun,
+#     [Parameter()]
+# FIXME: Unused parameter commented out by PSQA.
+#     [switch]$DryRun,
 
-    [Parameter()]
-    [switch]$NoBackup,
+#     [Parameter()]
+# FIXME: Unused parameter commented out by PSQA.
+#     [switch]$NoBackup,
 
-    [Parameter()]
-    [switch]$ShowDiff,
+#     [Parameter()]
+# FIXME: Unused parameter commented out by PSQA.
+#     [switch]$ShowDiff,
 
-    [Parameter()]
-    [switch]$CleanBackups,
+#     [Parameter()]
+# FIXME: Unused parameter commented out by PSQA.
+#     [switch]$CleanBackups,
 
     [Parameter()]
     [ValidateSet('Default', 'UTF8', 'UTF8BOM')]
-    [string]$Encoding = 'Default'
+# FIXME: Unused parameter commented out by PSQA.
+#     [string]$Encoding = 'Default'
 )
 
 Set-StrictMode -Version Latest
@@ -91,7 +97,39 @@ $script:Config = @{
 
 #region Helper Functions
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding(SupportsShouldProcess)]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Clean-Backups -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Clean-Backups {
+        if ($pscmdlet.ShouldProcess("Target", "Operation")) {
+            # Add state-changing code here
+        }
+        if ($pscmdlet.ShouldProcess("Target", "Operation")) {
+            # Add state-changing code here
+        }
     [CmdletBinding()]
     param()
 
@@ -107,6 +145,30 @@ function Clean-Backups {
     }
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Write-Log -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Write-Log {
     [CmdletBinding()]
     param(
@@ -133,15 +195,40 @@ function Write-Log {
         'Success' { '[OK]' }
     }
 
-    Write-Host "$timestamp $prefix $Message" -ForegroundColor $color
+    Write-Output "$timestamp $prefix $Message" -ForegroundColor $color
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Get-PowerShellFiles -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Get-PowerShellFiles {
     [CmdletBinding()]
     [OutputType([System.IO.FileInfo[]])]
     param(
-        [Parameter(Mandatory)]
-        [string]$Path
+#         [Parameter(Mandatory)]
+# FIXME: Unused parameter commented out by PSQA.
+#         [string]$Path
     )
 
     if (Test-Path -Path $Path -PathType Leaf) {
@@ -155,6 +242,30 @@ function Get-PowerShellFiles {
     return $files
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> New-FileBackup -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function New-FileBackup {
     [CmdletBinding()]
     [OutputType([string])]
@@ -179,6 +290,30 @@ function New-FileBackup {
     return $backupPath
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> New-UnifiedDiff -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function New-UnifiedDiff {
     [CmdletBinding()]
     [OutputType([string])]
@@ -196,8 +331,8 @@ function New-UnifiedDiff {
     $diff = Compare-Object -ReferenceObject ($Original -split '\r?\n') -DifferenceObject ($Modified -split '\r?\n') -IncludeEqual
 
     $lines = @()
-    $lines += "---	a/$FilePath"
-    $lines += "+++	b/$FilePath"
+    $lines += "---    a/$FilePath"
+    $lines += "+++    b/$FilePath"
 
     # This is a simplified diff generator, not a full-fidelity one.
     foreach ($line in $diff) {
@@ -220,6 +355,30 @@ function New-UnifiedDiff {
 
 #region Fix Functions
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-FormatterFix -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Invoke-FormatterFix {
     [CmdletBinding()]
     param(
@@ -248,6 +407,30 @@ function Invoke-FormatterFix {
     return $Content
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-WhitespaceFix -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Invoke-WhitespaceFix {
     [CmdletBinding()]
     param(
@@ -266,6 +449,30 @@ function Invoke-WhitespaceFix {
     return $result
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-AliasFix -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Invoke-AliasFix {
     [CmdletBinding()]
     param(
@@ -283,6 +490,48 @@ function Invoke-AliasFix {
     return Invoke-AliasFixAst -Content $Content
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-AliasFix -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-AliasFixAst -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Invoke-AliasFixAst {
     [CmdletBinding()]
     param(
@@ -337,6 +586,30 @@ function Invoke-AliasFixAst {
     return $newContent
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-SafetyFix -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Invoke-SafetyFix {
     [CmdletBinding()]
     param(
@@ -346,7 +619,7 @@ function Invoke-SafetyFix {
 
     $fixed = $Content
     # Use single quotes for regex patterns
-    $fixed = $fixed -replace '(?m)^\s*Write-Host\s+(["\'\$][^-\r\n]+)$', 'Write-Output $1'
+    $fixed = $fixed -replace '(?m)^\s*Write-Output\s+(["\'\$][^-\r\n]+)$', 'Write-Output $1'
     $fixed = $fixed -replace '(\S*)\s+(-eq|-ne)\s+\$null\b', '$null $2 $1'
 
     $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
@@ -358,6 +631,12 @@ function Invoke-SafetyFix {
     return $fixed
 }
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
 function Invoke-StructureFix {
     [CmdletBinding()]
     param(
@@ -399,6 +678,12 @@ function Invoke-StructureFix {
 
 #region Main Processing
 
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
+[OutputType([object])]
 function Invoke-FileFix {
     [CmdletBinding()]
     param(
@@ -450,9 +735,9 @@ function Invoke-FileFix {
         if ($ShowDiff) {
             $diff = New-UnifiedDiff -Original $originalContent -Modified $fixedContent -FilePath $File.Name
             if ($diff) {
-                Write-Host "`n--- Unified Diff for $($File.Name) ---" -ForegroundColor Magenta
-                Write-Host $diff -ForegroundColor Gray
-                Write-Host "--- End Diff ---`n" -ForegroundColor Magenta
+                Write-Output "`n--- Unified Diff for $($File.Name) ---" -ForegroundColor Magenta
+                Write-Output $diff -ForegroundColor Gray
+                Write-Output "--- End Diff ---`n" -ForegroundColor Magenta
             }
         }
 
@@ -487,10 +772,10 @@ function Invoke-FileFix {
 #region Main Execution
 
 try {
-    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         PowerShell QA Auto-Fix Engine v4.0.0                  ║" -ForegroundColor Cyan
-    Write-Host "║         Idempotent - Safe - Production-Grade                  ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Output "║         PowerShell QA Auto-Fix Engine v4.0.0                  ║" -ForegroundColor Cyan
+    Write-Output "║         Idempotent - Safe - Production-Grade                  ║" -ForegroundColor Cyan
+    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-Log -Level Info -Message "Trace ID: $($script:Config.TraceId)"
     Write-Log -Level Info -Message "Mode: $(if ($DryRun) { 'DRY RUN (Preview)' } else { 'APPLY FIXES' })"
@@ -518,19 +803,19 @@ try {
         }
     }
 
-    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║                         SUMMARY                                ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Output "║                         SUMMARY                                ║" -ForegroundColor Cyan
+    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-Log -Level Info -Message "Files processed: $($files.Count)"
     Write-Log -Level Success -Message "Files $(if ($DryRun) { 'that would be ' })fixed: $fixedCount"
     Write-Log -Level Info -Message "Files unchanged: $($files.Count - $fixedCount)"
 
     if ($DryRun) {
-        Write-Host "`n[DRY RUN MODE] No changes were applied." -ForegroundColor Yellow
-        Write-Host "Run without -DryRun to apply fixes.`n" -ForegroundColor Yellow
+        Write-Output "`n[DRY RUN MODE] No changes were applied." -ForegroundColor Yellow
+        Write-Output "Run without -DryRun to apply fixes.`n" -ForegroundColor Yellow
     } else {
-        Write-Host "`n[SUCCESS] Auto-fix complete!`n" -ForegroundColor Green
+        Write-Output "`n[SUCCESS] Auto-fix complete!`n" -ForegroundColor Green
     }
 
     if ($CleanBackups) {
@@ -541,9 +826,11 @@ try {
 
 } catch {
     Write-Log -Level Error -Message "Fatal error: $_ "
-    Write-Host "`nStack Trace:" -ForegroundColor Red
-    Write-Host $_.ScriptStackTrace -ForegroundColor Red
+    Write-Output "`nStack Trace:" -ForegroundColor Red
+    Write-Output $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
 
 #endregion
+
+

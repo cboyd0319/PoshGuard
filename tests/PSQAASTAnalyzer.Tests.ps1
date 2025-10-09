@@ -1,15 +1,7 @@
 #requires -Version 5.1
 
 using module '../modules/Core/Core.psm1'
-
-BeforeAll {
-    # Import module under test
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../modules/Analyzers/PSQAASTAnalyzer.psm1'
-    Import-Module $modulePath -Force
-
-    # Create test file
-    $script:testFile = Join-Path -Path $TestDrive -ChildPath 'test.ps1'
-}
+using module '../modules/Analyzers/PSQAASTAnalyzer.psm1'
 
 Describe 'PSQAASTAnalyzer Module' -Tags 'Unit' {
 
@@ -27,9 +19,9 @@ function Test-Function {
     Write-Output $unboundVariable
 }
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $unboundIssues = $issues | Where-Object { $_.RuleName -eq 'UnboundVariable' }
 
             $unboundIssues | Should -Not -BeNullOrEmpty
@@ -42,9 +34,9 @@ function Test-Function {
     Write-Output $PSCommandPath
 }
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $unboundIssues = $issues | Where-Object { $_.RuleName -eq 'UnboundVariable' }
 
             $unboundIssues | Should -BeNullOrEmpty
@@ -64,6 +56,20 @@ function Test-ComplexFunction {
                             switch ($i) {
                                 1 { break }
                                 2 { break }
+                                3 { break }
+                                4 { break }
+                                5 { break }
+                                6 { break }
+                                7 { break }
+                                8 { break }
+                                9 { break }
+                                10 { break }
+                                11 { break }
+                                12 { break }
+                                13 { break }
+                                14 { break }
+                                15 { break }
+                                16 { break }
                             }
                         }
                     }
@@ -73,9 +79,9 @@ function Test-ComplexFunction {
     }
 }
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $complexityIssues = $issues | Where-Object { $_.RuleName -eq 'HighCognitiveComplexity' }
 
             $complexityIssues | Should -Not -BeNullOrEmpty
@@ -88,9 +94,9 @@ function Test-ComplexFunction {
 $command = "Get-Process"
 Invoke-Expression $command
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $iexIssues = $issues | Where-Object { $_.RuleName -eq 'UnsafeInvokeExpression' }
 
             $iexIssues | Should -Not -BeNullOrEmpty
@@ -101,9 +107,9 @@ Invoke-Expression $command
             $content = @'
 $global:myVar = "test"
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $globalIssues = $issues | Where-Object { $_.RuleName -eq 'GlobalVariableUsage' }
 
             $globalIssues | Should -Not -BeNullOrEmpty
@@ -118,9 +124,9 @@ try {
 } catch {
 }
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $catchIssues = $issues | Where-Object { $_.RuleName -eq 'EmptyCatchBlock' }
 
             $catchIssues | Should -Not -BeNullOrEmpty
@@ -137,17 +143,13 @@ function Test-Function {
     }
 }
 '@
-            Set-Content -Path $script:testFile1 -Value $content
-
-            $issues = Invoke-PSQAASTAnalysis -FilePath $script:testFile1
+            $testFile = New-TemporaryFile
+            Set-Content -Path $testFile -Value $content
+            $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $parseErrors = $issues | Where-Object { $_.RuleName -eq 'ParseError' }
 
             $parseErrors | Should -Not -BeNullOrEmpty
             $parseErrors[0].Severity | Should -Be 'Error'
         }
     }
-}
-
-AfterAll {
-    Remove-Module PSQAASTAnalyzer -Force -ErrorAction SilentlyContinue
 }

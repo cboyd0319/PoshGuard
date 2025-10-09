@@ -1,107 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="37" errors="0" failures="14" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2025-10-08" time="23:54:35">
-  <environment clr-version="9.0.8" machine-name="clap.localdomain" nunit-version="2.5.8.0" cwd="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard" platform="Darwin" user-domain="" os-version="25.0.0" user="chadboyd" />
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="35" errors="0" failures="1" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2025-10-09" time="01:19:08">
+  <environment clr-version="9.0.8" platform="Darwin" user="chadboyd" user-domain="" machine-name="clap.localdomain" nunit-version="2.5.8.0" os-version="25.0.0" cwd="/Users/chadboyd/Documents/GitHub/PoshGuard" />
   <culture-info current-culture="en-US" current-uiculture="en-US" />
-  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="2.816" asserts="0" description="Pester">
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="3.5608" asserts="0" description="Pester">
     <results>
-      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1" executed="True" result="Success" success="True" time="1.4167" asserts="0" description="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1">
+      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1" executed="True" result="Failure" success="False" time="1.4287" asserts="0" description="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1">
         <results>
-          <test-suite type="TestFixture" name="Invoke-PSQAEngine Script" executed="True" result="Success" success="True" time="1.0195" asserts="0" description="Invoke-PSQAEngine Script">
+          <test-suite type="TestFixture" name="Invoke-PSQAEngine Integration Tests" executed="True" result="Failure" success="False" time="0.9494" asserts="0" description="Invoke-PSQAEngine Integration Tests">
             <results>
-              <test-suite type="TestFixture" name="Invoke-PSQAEngine Script.Analyze Mode" executed="True" result="Success" success="True" time="0.6354" asserts="0" description="Invoke-PSQAEngine Script.Analyze Mode">
+              <test-suite type="TestFixture" name="Invoke-PSQAEngine Integration Tests.Analyze Mode" executed="True" result="Failure" success="False" time="0.9329" asserts="0" description="Invoke-PSQAEngine Integration Tests.Analyze Mode">
                 <results>
-                  <test-case description="Should analyze a file and return results" name="Invoke-PSQAEngine Script.Analyze Mode.Should analyze a file and return results" time="0.4609" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should detect alias usage" name="Invoke-PSQAEngine Script.Analyze Mode.Should detect alias usage" time="0.0802" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should detect Write-Host usage" name="Invoke-PSQAEngine Script.Analyze Mode.Should detect Write-Host usage" time="0.0637" asserts="0" success="True" result="Success" executed="True" />
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="Invoke-PSQAEngine Script.Fix Mode (DryRun)" executed="True" result="Success" success="True" time="0.7383" asserts="0" description="Invoke-PSQAEngine Script.Fix Mode (DryRun)">
-                <results>
-                  <test-case description="Should show proposed fixes in dry run mode" name="Invoke-PSQAEngine Script.Fix Mode (DryRun).Should show proposed fixes in dry run mode" time="0.0964" asserts="0" success="True" result="Success" executed="True" />
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="Invoke-PSQAEngine Script.Fix Mode (Live)" executed="True" result="Success" success="True" time="1.0077" asserts="0" description="Invoke-PSQAEngine Script.Fix Mode (Live)">
-                <results>
-                  <test-case description="should fix the test script and reduce the number of issues" name="Invoke-PSQAEngine Script.Fix Mode (Live).should fix the test script and reduce the number of issues" time="0.2631" asserts="0" success="True" result="Success" executed="True" />
-                </results>
-              </test-suite>
-            </results>
-          </test-suite>
-        </results>
-      </test-suite>
-      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1" executed="True" result="Failure" success="False" time="0.4194" asserts="0" description="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1">
-        <results>
-          <test-suite type="TestFixture" name="PSQAASTAnalyzer Module" executed="True" result="Failure" success="False" time="0.243" asserts="0" description="PSQAASTAnalyzer Module">
-            <results>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Module Initialization" executed="True" result="Failure" success="False" time="0.1315" asserts="0" description="PSQAASTAnalyzer Module.Module Initialization">
-                <results>
-                  <test-case description="Should export Invoke-PSQAASTAnalysis function" name="PSQAASTAnalyzer Module.Module Initialization.Should export Invoke-PSQAASTAnalysis function" time="0.1265" asserts="0" success="False" result="Failure" executed="True">
+                  <test-case description="Should analyze a file and report issues" name="Invoke-PSQAEngine Integration Tests.Analyze Mode.Should analyze a file and report issues" time="0.8933" asserts="0" success="False" result="Failure" executed="True">
                     <failure>
-                      <message>Expected 'Invoke-PSQAASTAnalysis' to be found in collection @($null), but it was not found.</message>
-                      <stack-trace>at $commands.Name | Should -Contain 'Invoke-PSQAASTAnalysis', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:19
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:19</stack-trace>
-                    </failure>
-                  </test-case>
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Unbound Variable Detection" executed="True" result="Failure" success="False" time="0.1742" asserts="0" description="PSQAASTAnalyzer Module.Unbound Variable Detection">
-                <results>
-                  <test-case description="Should detect unbound variables" name="PSQAASTAnalyzer Module.Unbound Variable Detection.Should detect unbound variables" time="0.0202" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:30</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should not flag automatic variables as unbound" name="PSQAASTAnalyzer Module.Unbound Variable Detection.Should not flag automatic variables as unbound" time="0.0173" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:45</stack-trace>
-                    </failure>
-                  </test-case>
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Cognitive Complexity Detection" executed="True" result="Failure" success="False" time="0.1888" asserts="0" description="PSQAASTAnalyzer Module.Cognitive Complexity Detection">
-                <results>
-                  <test-case description="Should detect high cognitive complexity" name="PSQAASTAnalyzer Module.Cognitive Complexity Detection.Should detect high cognitive complexity" time="0.0096" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:76</stack-trace>
-                    </failure>
-                  </test-case>
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection" executed="True" result="Failure" success="False" time="0.2135" asserts="0" description="PSQAASTAnalyzer Module.Unsafe Pattern Detection">
-                <results>
-                  <test-case description="Should detect Invoke-Expression usage" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection.Should detect Invoke-Expression usage" time="0.0096" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:91</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should detect global variables" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection.Should detect global variables" time="0.0074" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:104</stack-trace>
-                    </failure>
-                  </test-case>
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Empty Catch Block Detection" executed="True" result="Failure" success="False" time="0.2261" asserts="0" description="PSQAASTAnalyzer Module.Empty Catch Block Detection">
-                <results>
-                  <test-case description="Should detect empty catch blocks" name="PSQAASTAnalyzer Module.Empty Catch Block Detection.Should detect empty catch blocks" time="0.0084" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:121</stack-trace>
-                    </failure>
-                  </test-case>
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Parse Error Handling" executed="True" result="Failure" success="False" time="0.2384" asserts="0" description="PSQAASTAnalyzer Module.Parse Error Handling">
-                <results>
-                  <test-case description="Should return parse errors for invalid syntax" name="PSQAASTAnalyzer Module.Parse Error Handling.Should return parse errors for invalid syntax" time="0.0082" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>ParameterBindingValidationException: Cannot bind argument to parameter 'Path' because it is null.</message>
-                      <stack-trace>at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1:140</stack-trace>
+                      <message>Expected a value, but got $null or empty.</message>
+                      <stack-trace>at $results | Should -Not -BeNullOrEmpty, /Users/chadboyd/Documents/GitHub/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1:11
+at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/PoshGuard/tests/Invoke-PSQAEngine.Tests.ps1:11</stack-trace>
                     </failure>
                   </test-case>
                 </results>
@@ -110,164 +23,126 @@ at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/P
           </test-suite>
         </results>
       </test-suite>
-      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1" executed="True" result="Failure" success="False" time="0.7142" asserts="0" description="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1">
+      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1" executed="True" result="Success" success="True" time="0.6818" asserts="0" description="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQAASTAnalyzer.Tests.ps1">
         <results>
-          <test-suite type="TestFixture" name="PSQAAutoFixer Module" executed="True" result="Failure" success="False" time="0.6606" asserts="0" description="PSQAAutoFixer Module">
+          <test-suite type="TestFixture" name="PSQAASTAnalyzer Module" executed="True" result="Success" success="True" time="0.5847" asserts="0" description="PSQAASTAnalyzer Module">
             <results>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Module Initialization" executed="True" result="Success" success="True" time="0.0178" asserts="0" description="PSQAAutoFixer Module.Module Initialization">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Module Initialization" executed="True" result="Success" success="True" time="0.031" asserts="0" description="PSQAASTAnalyzer Module.Module Initialization">
                 <results>
-                  <test-case description="Should export expected functions" name="PSQAAutoFixer Module.Module Initialization.Should export expected functions" time="0.0139" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should export Invoke-PSQAASTAnalysis function" name="PSQAASTAnalyzer Module.Module Initialization.Should export Invoke-PSQAASTAnalysis function" time="0.0234" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Whitespace Fixes" executed="True" result="Failure" success="False" time="0.1991" asserts="0" description="PSQAAutoFixer Module.Whitespace Fixes">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Unbound Variable Detection" executed="True" result="Success" success="True" time="0.2619" asserts="0" description="PSQAASTAnalyzer Module.Unbound Variable Detection">
                 <results>
-                  <test-case description="Should remove trailing whitespace" name="PSQAAutoFixer Module.Whitespace Fixes.Should remove trailing whitespace" time="0.1483" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected regular expression '\s+$' to not match 'function Test {
-    Write-Output 'test'
-}
-', but it did match.</message>
-                      <stack-trace>at $whitespaceResults[0].FixedContent | Should -Not -Match '\s+$', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:32
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:32</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should normalize line endings to LF" name="PSQAAutoFixer Module.Whitespace Fixes.Should normalize line endings to LF" time="0.0214" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect unbound variables" name="PSQAASTAnalyzer Module.Unbound Variable Detection.Should detect unbound variables" time="0.1748" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not flag automatic variables as unbound" name="PSQAASTAnalyzer Module.Unbound Variable Detection.Should not flag automatic variables as unbound" time="0.0398" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Alias Expansion" executed="True" result="Failure" success="False" time="0.3287" asserts="0" description="PSQAAutoFixer Module.Alias Expansion">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Cognitive Complexity Detection" executed="True" result="Success" success="True" time="0.3523" asserts="0" description="PSQAASTAnalyzer Module.Cognitive Complexity Detection">
                 <results>
-                  <test-case description="Should expand all common aliases" name="PSQAAutoFixer Module.Alias Expansion.Should expand all common aliases" time="0.0502" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected regular expression 'Get-Content' to match ''Get-ChildItem -Path .'
-'Select-Object -First 10'
-'Where-Object { $_.Name -like ''*.ps1'' }'
-'Get-Command'
-'Get-Member'
-'Invoke-WebRequest'
-'Invoke-RestMethod'
-'cat'
-'cp'
-'mv'
-'rm'
-'ls'
-'Get-Location'
-'Set-Location'
-'Clear-Host'
-'echo'
-'kill'
-'ps'
-'sleep'
-'Format-List'
-'Format-Table'
-'fw'
-'tee'
-'curl'
-'wget'
-'diff'
-', but it did not match.</message>
-                      <stack-trace>at $aliasResults[0].FixedContent | Should -Match 'Get-Content', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:91
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:91</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should not expand aliases in string literals" name="PSQAAutoFixer Module.Alias Expansion.Should not expand aliases in string literals" time="0.0264" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected regular expression 'Get-ChildItem' to not match ''"Get-ChildItem"
-''Get-ChildItem''
-', but it did match.</message>
-                      <stack-trace>at $aliasResults[0].FixedContent | Should -Not -Match 'Get-ChildItem', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:119
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:119</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should not expand aliases as hashtable keys" name="PSQAAutoFixer Module.Alias Expansion.Should not expand aliases as hashtable keys" time="0.0465" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected regular expression 'Get-ChildItem = "Get-ChildItem"' to not match '@{ Get-ChildItem = "Get-ChildItem" }
-', but it did match.</message>
-                      <stack-trace>at $aliasResults[0].FixedContent | Should -Not -Match 'Get-ChildItem = "Get-ChildItem"', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:129
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:129</stack-trace>
-                    </failure>
-                  </test-case>
+                  <test-case description="Should detect high cognitive complexity" name="PSQAASTAnalyzer Module.Cognitive Complexity Detection.Should detect high cognitive complexity" time="0.0831" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Unified Diff Generation" executed="True" result="Failure" success="False" time="0.3745" asserts="0" description="PSQAAutoFixer Module.Unified Diff Generation">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection" executed="True" result="Success" success="True" time="0.4891" asserts="0" description="PSQAASTAnalyzer Module.Unsafe Pattern Detection">
                 <results>
-                  <test-case description="Should generate unified diff for changes" name="PSQAAutoFixer Module.Unified Diff Generation.Should generate unified diff for changes" time="0.0265" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected regular expression '^-line 2' to match '--- a/test.ps1
-+++ b/test.ps1
-@@ -1,5 +1,5 @@
- line 1
--line 2
-+line 2 modified
- line 3', but it did not match.</message>
-                      <stack-trace>at $diff | Should -Match '^-line 2', /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:143
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:143</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should return empty string for no changes" name="PSQAAutoFixer Module.Unified Diff Generation.Should return empty string for no changes" time="0.0135" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect Invoke-Expression usage" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection.Should detect Invoke-Expression usage" time="0.0833" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect global variables" name="PSQAASTAnalyzer Module.Unsafe Pattern Detection.Should detect global variables" time="0.0433" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Backup Creation" executed="True" result="Failure" success="False" time="0.4918" asserts="0" description="PSQAAutoFixer Module.Backup Creation">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Empty Catch Block Detection" executed="True" result="Success" success="True" time="0.5374" asserts="0" description="PSQAASTAnalyzer Module.Empty Catch Block Detection">
                 <results>
-                  <test-case description="Should create backup file" name="PSQAAutoFixer Module.Backup Creation.Should create backup file" time="0.0932" asserts="0" success="False" result="Failure" executed="True">
-                    <failure>
-                      <message>Expected strings to be the same, but they were different.
-Expected length: 17
-Actual length:   18
-Strings differ at index 17.
-Expected: 'function Test { }'
-But was:  'function Test { }\n'
-           -----------------^</message>
-                      <stack-trace>at Get-Content -Path $backupPath -Raw | Should -Be $content, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:165
-at &lt;ScriptBlock&gt;, /Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQAAutoFixer.Tests.ps1:165</stack-trace>
-                    </failure>
-                  </test-case>
-                  <test-case description="Should create .psqa-backup directory" name="PSQAAutoFixer Module.Backup Creation.Should create .psqa-backup directory" time="0.0141" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect empty catch blocks" name="PSQAASTAnalyzer Module.Empty Catch Block Detection.Should detect empty catch blocks" time="0.0378" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Dry Run Mode" executed="True" result="Success" success="True" time="0.6287" asserts="0" description="PSQAAutoFixer Module.Dry Run Mode">
+              <test-suite type="TestFixture" name="PSQAASTAnalyzer Module.Parse Error Handling" executed="True" result="Success" success="True" time="0.5776" asserts="0" description="PSQAASTAnalyzer Module.Parse Error Handling">
                 <results>
-                  <test-case description="Should not modify files in dry run mode" name="PSQAAutoFixer Module.Dry Run Mode.Should not modify files in dry run mode" time="0.1063" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should show what would be fixed" name="PSQAAutoFixer Module.Dry Run Mode.Should show what would be fixed" time="0.0242" asserts="0" success="True" result="Success" executed="True" />
-                </results>
-              </test-suite>
-              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Safety Fixes" executed="True" result="Success" success="True" time="0.6564" asserts="0" description="PSQAAutoFixer Module.Safety Fixes">
-                <results>
-                  <test-case description="Should fix $null position in comparisons" name="PSQAAutoFixer Module.Safety Fixes.Should fix $null position in comparisons" time="0.0083" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should fix $null position in comparisons with parentheses" name="PSQAAutoFixer Module.Safety Fixes.Should fix $null position in comparisons with parentheses" time="0.008" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should return parse errors for invalid syntax" name="PSQAASTAnalyzer Module.Parse Error Handling.Should return parse errors for invalid syntax" time="0.0244" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
             </results>
           </test-suite>
         </results>
       </test-suite>
-      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQALogger.Tests.ps1" executed="True" result="Success" success="True" time="0.2656" asserts="0" description="/Users/chadboyd/Documents/GitHub/job-search-automation/PoshGuard/tests/PSQALogger.Tests.ps1">
+      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQAAutoFixer.Tests.ps1" executed="True" result="Success" success="True" time="1.0095" asserts="0" description="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQAAutoFixer.Tests.ps1">
         <results>
-          <test-suite type="TestFixture" name="PSQALogger Module" executed="True" result="Success" success="True" time="0.2246" asserts="0" description="PSQALogger Module">
+          <test-suite type="TestFixture" name="PSQAAutoFixer Module" executed="True" result="Success" success="True" time="0.95" asserts="0" description="PSQAAutoFixer Module">
             <results>
-              <test-suite type="TestFixture" name="PSQALogger Module.Module Initialization" executed="True" result="Success" success="True" time="0.0561" asserts="0" description="PSQALogger Module.Module Initialization">
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Module Initialization" executed="True" result="Success" success="True" time="0.025" asserts="0" description="PSQAAutoFixer Module.Module Initialization">
                 <results>
-                  <test-case description="Should export expected functions" name="PSQALogger Module.Module Initialization.Should export expected functions" time="0.0219" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should initialize with default configuration" name="PSQALogger Module.Module Initialization.Should initialize with default configuration" time="0.0205" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should accept custom configuration" name="PSQALogger Module.Module Initialization.Should accept custom configuration" time="0.0094" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should export expected functions" name="PSQAAutoFixer Module.Module Initialization.Should export expected functions" time="0.0177" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQALogger Module.Write-PSQALog" executed="True" result="Success" success="True" time="0.1552" asserts="0" description="PSQALogger Module.Write-PSQALog">
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Whitespace Fixes" executed="True" result="Success" success="True" time="0.4299" asserts="0" description="PSQAAutoFixer Module.Whitespace Fixes">
                 <results>
-                  <test-case description="Should write log entry without throwing" name="PSQALogger Module.Write-PSQALog.Should write log entry without throwing" time="0.0579" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should accept all valid log levels" name="PSQALogger Module.Write-PSQALog.Should accept all valid log levels" time="0.0238" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Should include optional parameters" name="PSQALogger Module.Write-PSQALog.Should include optional parameters" time="0.0131" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should remove trailing whitespace" name="PSQAAutoFixer Module.Whitespace Fixes.Should remove trailing whitespace" time="0.3623" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should normalize line endings to LF" name="PSQAAutoFixer Module.Whitespace Fixes.Should normalize line endings to LF" time="0.034" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQALogger Module.Convenience Functions" executed="True" result="Success" success="True" time="0.2" asserts="0" description="PSQALogger Module.Convenience Functions">
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Alias Expansion" executed="True" result="Success" success="True" time="0.5786" asserts="0" description="PSQAAutoFixer Module.Alias Expansion">
                 <results>
-                  <test-case description="Write-PSQAInfo should work" name="PSQALogger Module.Convenience Functions.Write-PSQAInfo should work" time="0.01" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Write-PSQAWarning should work" name="PSQALogger Module.Convenience Functions.Write-PSQAWarning should work" time="0.0212" asserts="0" success="True" result="Success" executed="True" />
-                  <test-case description="Write-PSQAError should work" name="PSQALogger Module.Convenience Functions.Write-PSQAError should work" time="0.0094" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should expand all common aliases" name="PSQAAutoFixer Module.Alias Expansion.Should expand all common aliases" time="0.0678" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not expand aliases in string literals" name="PSQAAutoFixer Module.Alias Expansion.Should not expand aliases in string literals" time="0.0342" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not expand aliases as hashtable keys" name="PSQAAutoFixer Module.Alias Expansion.Should not expand aliases as hashtable keys" time="0.0376" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
-              <test-suite type="TestFixture" name="PSQALogger Module.Log File Creation" executed="True" result="Success" success="True" time="0.2199" asserts="0" description="PSQALogger Module.Log File Creation">
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Unified Diff Generation" executed="True" result="Success" success="True" time="0.613" asserts="0" description="PSQAAutoFixer Module.Unified Diff Generation">
                 <results>
-                  <test-case description="Should create log directory if missing" name="PSQALogger Module.Log File Creation.Should create log directory if missing" time="0.0119" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should generate unified diff for changes" name="PSQAAutoFixer Module.Unified Diff Generation.Should generate unified diff for changes" time="0.0193" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should return empty string for no changes" name="PSQAAutoFixer Module.Unified Diff Generation.Should return empty string for no changes" time="0.0085" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Backup Creation" executed="True" result="Success" success="True" time="0.6943" asserts="0" description="PSQAAutoFixer Module.Backup Creation">
+                <results>
+                  <test-case description="Should create backup file" name="PSQAAutoFixer Module.Backup Creation.Should create backup file" time="0.0355" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should create .psqa-backup directory" name="PSQAAutoFixer Module.Backup Creation.Should create .psqa-backup directory" time="0.0228" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Dry Run Mode" executed="True" result="Success" success="True" time="0.8716" asserts="0" description="PSQAAutoFixer Module.Dry Run Mode">
+                <results>
+                  <test-case description="Should not modify files in dry run mode" name="PSQAAutoFixer Module.Dry Run Mode.Should not modify files in dry run mode" time="0.1297" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should show what would be fixed" name="PSQAAutoFixer Module.Dry Run Mode.Should show what would be fixed" time="0.0398" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQAAutoFixer Module.Safety Fixes" executed="True" result="Success" success="True" time="0.9434" asserts="0" description="PSQAAutoFixer Module.Safety Fixes">
+                <results>
+                  <test-case description="Should fix $null position in comparisons" name="PSQAAutoFixer Module.Safety Fixes.Should fix $null position in comparisons" time="0.015" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should fix $null position in comparisons with parentheses" name="PSQAAutoFixer Module.Safety Fixes.Should fix $null position in comparisons with parentheses" time="0.0122" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should replace Write-Host with Write-Output" name="PSQAAutoFixer Module.Safety Fixes.Should replace Write-Host with Write-Output" time="0.0156" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should add comment help to functions" name="PSQAAutoFixer Module.Safety Fixes.Should add comment help to functions" time="0.0212" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQALogger.Tests.ps1" executed="True" result="Success" success="True" time="0.4408" asserts="0" description="/Users/chadboyd/Documents/GitHub/PoshGuard/tests/PSQALogger.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="PSQALogger Module" executed="True" result="Success" success="True" time="0.3384" asserts="0" description="PSQALogger Module">
+            <results>
+              <test-suite type="TestFixture" name="PSQALogger Module.Module Initialization" executed="True" result="Success" success="True" time="0.0804" asserts="0" description="PSQALogger Module.Module Initialization">
+                <results>
+                  <test-case description="Should export expected functions" name="PSQALogger Module.Module Initialization.Should export expected functions" time="0.0181" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should initialize with default configuration" name="PSQALogger Module.Module Initialization.Should initialize with default configuration" time="0.0402" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should accept custom configuration" name="PSQALogger Module.Module Initialization.Should accept custom configuration" time="0.0152" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQALogger Module.Write-PSQALog" executed="True" result="Success" success="True" time="0.2175" asserts="0" description="PSQALogger Module.Write-PSQALog">
+                <results>
+                  <test-case description="Should write log entry without throwing" name="PSQALogger Module.Write-PSQALog.Should write log entry without throwing" time="0.0685" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should accept all valid log levels" name="PSQALogger Module.Write-PSQALog.Should accept all valid log levels" time="0.0481" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should include optional parameters" name="PSQALogger Module.Write-PSQALog.Should include optional parameters" time="0.0137" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQALogger Module.Convenience Functions" executed="True" result="Success" success="True" time="0.2772" asserts="0" description="PSQALogger Module.Convenience Functions">
+                <results>
+                  <test-case description="Write-PSQAInfo should work" name="PSQALogger Module.Convenience Functions.Write-PSQAInfo should work" time="0.0154" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Write-PSQAWarning should work" name="PSQALogger Module.Convenience Functions.Write-PSQAWarning should work" time="0.0231" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Write-PSQAError should work" name="PSQALogger Module.Convenience Functions.Write-PSQAError should work" time="0.014" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PSQALogger Module.Log File Creation" executed="True" result="Success" success="True" time="0.3316" asserts="0" description="PSQALogger Module.Log File Creation">
+                <results>
+                  <test-case description="Should create log directory if missing" name="PSQALogger Module.Log File Creation.Should create log directory if missing" time="0.039" asserts="0" success="True" result="Success" executed="True" />
                 </results>
               </test-suite>
             </results>

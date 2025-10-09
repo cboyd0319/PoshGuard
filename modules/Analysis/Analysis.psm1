@@ -189,3 +189,4 @@ function Get-FileMetric {
 }
 
 Export-ModuleMember -Function Invoke-FileAnalysis, Invoke-SecurityAnalysis, Get-FileMetric
+

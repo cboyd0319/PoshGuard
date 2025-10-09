@@ -421,7 +421,7 @@ function Write-ConsoleLog {
     }
 
     if ($script:LogConfig.ColorOutput) {
-        Write-Host $msg -ForegroundColor $color
+        Write-Output $msg -ForegroundColor $color
     } else {
         Write-Output $msg
     }
@@ -558,3 +558,4 @@ Export-ModuleMember -Function @(
 )
 
 #endregion
+

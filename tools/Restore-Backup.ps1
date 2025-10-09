@@ -73,6 +73,24 @@ $ErrorActionPreference = 'Stop'
 
 #region Helper Functions
 
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Write-ColorOutput -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Write-ColorOutput {
     param(
         [Parameter(Mandatory)]
@@ -97,9 +115,27 @@ function Write-ColorOutput {
         'Error' { '[ERROR]' }
     }
 
-    Write-Host "$prefix $Message" -ForegroundColor $color
+    Write-Output "$prefix $Message" -ForegroundColor $color
 }
 
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Get-BackupFiles -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Get-BackupFiles {
     [CmdletBinding()]
     [OutputType([PSCustomObject[]])]
@@ -140,6 +176,24 @@ function Get-BackupFiles {
     return $backups | Sort-Object -Property DateTime -Descending
 }
 
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Show-BackupList -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Show-BackupList {
     [CmdletBinding()]
     param(
@@ -148,7 +202,7 @@ function Show-BackupList {
     )
 
     Write-ColorOutput "`nAvailable Backups:" -Level Info
-    Write-Host ("=" * 100) -ForegroundColor Gray
+    Write-Output ("=" * 100) -ForegroundColor Gray
 
     $Backups | Format-Table -AutoSize -Property `
         @{Label='Timestamp'; Expression={$_.Timestamp}},
@@ -157,10 +211,28 @@ function Show-BackupList {
         @{Label='Size (KB)'; Expression={[Math]::Round($_.Size / 1KB, 2)}},
         @{Label='Current Exists'; Expression={if ($_.OriginalExists) { 'Yes' } else { 'No' }}}
 
-    Write-Host ("=" * 100) -ForegroundColor Gray
+    Write-Output ("=" * 100) -ForegroundColor Gray
     Write-ColorOutput "Total backups found: $($Backups.Count)" -Level Info
 }
 
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Restore-BackupFile -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
 function Restore-BackupFile {
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -175,9 +247,9 @@ function Restore-BackupFile {
     $backupFile = $Backup.BackupFile
 
     Write-ColorOutput "`nRestoring backup:" -Level Info
-    Write-Host "  From: $backupFile" -ForegroundColor Gray
-    Write-Host "  To:   $originalFile" -ForegroundColor Gray
-    Write-Host "  Date: $($Backup.DateTime)" -ForegroundColor Gray
+    Write-Output "  From: $backupFile" -ForegroundColor Gray
+    Write-Output "  To:   $originalFile" -ForegroundColor Gray
+    Write-Output "  Date: $($Backup.DateTime)" -ForegroundColor Gray
 
     # Confirm if not forced
     if (-not $Force -and -not $PSCmdlet.ShouldProcess($originalFile, 'Restore from backup')) {
@@ -213,10 +285,10 @@ function Restore-BackupFile {
 #region Main Execution
 
 try {
-    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║      PowerShell QA Rollback System v3.0.0                     ║" -ForegroundColor Cyan
-    Write-Host "║      Safe Restore from .psqa-backup                           ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Output "║      PowerShell QA Rollback System v3.0.0                     ║" -ForegroundColor Cyan
+    Write-Output "║      Safe Restore from .psqa-backup                           ║" -ForegroundColor Cyan
+    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     # Resolve path
     $resolvedPath = Resolve-Path -Path $Path
@@ -259,7 +331,7 @@ try {
 
     # Confirm batch restore
     if ($backupsToRestore.Count -gt 1 -and -not $Force) {
-        Write-Host ""
+        Write-Output ""
         $response = Read-Host "Restore $($backupsToRestore.Count) file(s)? (y/N)"
         if ($response -ne 'y' -and $response -ne 'Y') {
             Write-ColorOutput "Rollback cancelled by user" -Level Warning
@@ -280,9 +352,9 @@ try {
     }
 
     # Summary
-    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║                         SUMMARY                                ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Output "║                         SUMMARY                                ║" -ForegroundColor Cyan
+    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-ColorOutput "Backups found: $($backups.Count)" -Level Info
     Write-ColorOutput "Files restored: $restoredCount" -Level Success
@@ -291,15 +363,16 @@ try {
         Write-ColorOutput "Failed restores: $failedCount" -Level Error
     }
 
-    Write-Host "`n[SUCCESS] Rollback complete!`n" -ForegroundColor Green
+    Write-Output "`n[SUCCESS] Rollback complete!`n" -ForegroundColor Green
 
     exit 0
 
 } catch {
     Write-ColorOutput "Fatal error during rollback: $_" -Level Error
-    Write-Host "`nStack Trace:" -ForegroundColor Red
-    Write-Host $_.ScriptStackTrace -ForegroundColor Red
+    Write-Output "`nStack Trace:" -ForegroundColor Red
+    Write-Output $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
 
 #endregion
+

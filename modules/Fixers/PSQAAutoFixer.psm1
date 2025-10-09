@@ -103,7 +103,7 @@ function Invoke-PSQAAutoFix {
         [string]$TraceId = (New-Guid).ToString(),
 
         [Parameter()]
-        [ValidateSet('Formatting', 'Whitespace', 'Aliases', 'Security', 'BestPractices', 'All')]
+        [ValidateSet('Formatting', 'Whitespace', 'Aliases', 'Security', 'BestPractices', 'CommentHelp', 'All')]
         [string[]]$FixTypes = @('All')
     )
 
@@ -115,6 +115,7 @@ function Invoke-PSQAAutoFix {
     try {
         # Read original content
         $originalContent = Get-Content -Path $resolvedPath.Path -Raw
+        Write-Verbose "[$TraceId] Original content: $originalContent"
 
         # Create backup if requested and not dry run
         if ($CreateBackup -and -not $DryRun) {
@@ -167,8 +168,20 @@ function Invoke-PSQAAutoFix {
             }
         }
 
+        # Add comment help
+        if ($FixTypes -contains 'CommentHelp' -or $FixTypes -contains 'All') {
+            $commentHelpResult = Invoke-CommentHelpFix -FilePath $resolvedPath.Path -OriginalContent $originalContent -TraceId $TraceId
+            if ($commentHelpResult) {
+                $results += $commentHelpResult
+                $originalContent = $commentHelpResult.FixedContent
+            }
+        }
+
+        Write-Verbose "[$TraceId] Fixed content: $originalContent"
+        Write-Verbose "[$TraceId] Results: $($results | ConvertTo-Json -Depth 5 -Compress)"
+
         # Apply final fixes to file if not dry run
-        if (-not $DryRun -and $results.Count -gt 0) {
+        if (-not $DryRun.IsPresent -and $results.Count -gt 0) {
             $finalContent = $originalContent
             Set-Content -Path $resolvedPath.Path -Value $finalContent -Encoding UTF8 -NoNewline
             Write-Verbose "[$TraceId] Fixes applied to: $FilePath"
@@ -186,6 +199,88 @@ function Invoke-PSQAAutoFix {
     }
 
     return $results
+}
+
+<#
+.SYNOPSIS
+    Adds boilerplate comment-based help to functions.
+
+.DESCRIPTION
+    Adds a standard comment block to functions that are missing one.
+
+.PARAMETER FilePath
+    File path
+
+.PARAMETER OriginalContent
+    Original file content
+
+.PARAMETER TraceId
+    Trace ID for logging
+
+.EXAMPLE
+    Invoke-CommentHelpFix -FilePath ./script.ps1 -OriginalContent $content
+#>
+function Invoke-CommentHelpFix {
+    [CmdletBinding()]
+    [OutputType([AutoFixResult])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory)]
+        [string]$OriginalContent,
+
+        [Parameter()]
+        [string]$TraceId = (New-Guid).ToString()
+    )
+
+    $fixedContent = $OriginalContent
+    $changesMade = $false
+
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($OriginalContent, [ref]$null, [ref]$null)
+    $functions = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
+
+    foreach ($function in $functions) {
+        if (-not $function.PSObject.Properties['HelpContent']) {
+            $boilerplate = @'
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> {0} -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
+'@ -f $function.Name
+
+            $functionText = $function.Extent.Text
+            $fixedContent = $fixedContent.Replace($functionText, "$boilerplate`n$functionText")
+            $changesMade = $true
+        }
+    }
+
+    if ($changesMade) {
+        $result = [AutoFixResult]::new($FilePath, 'CommentHelp', $TraceId)
+        $result.Description = 'Added boilerplate comment-based help'
+        $result.OriginalContent = $OriginalContent
+        $result.FixedContent = $fixedContent
+        $result.UnifiedDiff = New-UnifiedDiff -Original $OriginalContent -Modified $fixedContent -FilePath $FilePath
+
+        Write-Verbose "[$TraceId] Comment help fixes applied"
+        return $result
+    }
+
+    return $null
 }
 
 <#
@@ -226,96 +321,30 @@ function New-UnifiedDiff {
         [Parameter(Mandatory)]
         [string]$FilePath,
 
-        [Parameter()]
-        [int]$ContextLines = 3
+#         [Parameter()]
+# FIXME: Unused parameter commented out by PSQA.
+#         [int]$ContextLines = 3
     )
 
-    $originalLines = $Original -split "`r?`n"
-    $modifiedLines = $Modified -split "`r?`n"
+    $diff = Compare-Object -ReferenceObject ($Original -split '\r?\n') -DifferenceObject ($Modified -split '\r?\n')
 
-    # Simple line-based diff
-    $diff = @()
-    $diff += "--- a/$FilePath"
-    $diff += "+++ b/$FilePath"
+    if ($null -eq $diff) {
+        return ""
+    }
 
-    # Calculate differences
-    $maxLines = [Math]::Max($originalLines.Count, $modifiedLines.Count)
-    $changes = @()
+    $lines = @()
+    $lines += "--- a/$FilePath"
+    $lines += "+++ b/$FilePath"
 
-    for ($i = 0; $i -lt $maxLines; $i++) {
-        $origLine = if ($i -lt $originalLines.Count) { $originalLines[$i] } else { $null }
-        $modLine = if ($i -lt $modifiedLines.Count) { $modifiedLines[$i] } else { $null }
-
-        if ($origLine -ne $modLine) {
-            $changes += @{
-                LineNumber = $i + 1
-                Original = $origLine
-                Modified = $modLine
-            }
+    foreach ($line in $diff) {
+        $indicator = switch ($line.SideIndicator) {
+            '<=' { '-' }
+            '=>' { '+' }
         }
+        $lines += "$indicator$($line.InputObject)"
     }
 
-    if ($changes.Count -eq 0) {
-        return ""  # No changes
-    }
-
-    # Generate hunks with context
-    $hunks = @()
-    $currentHunk = $null
-
-    foreach ($change in $changes) {
-        if ($null -eq $currentHunk) {
-            $currentHunk = @{
-                StartLine = [Math]::Max(1, $change.LineNumber - $ContextLines)
-                Changes = @($change)
-            }
-        } elseif ($change.LineNumber - $currentHunk.Changes[-1].LineNumber -le ($ContextLines * 2 + 1)) {
-            $currentHunk.Changes += $change
-        } else {
-            $hunks += $currentHunk
-            $currentHunk = @{
-                StartLine = [Math]::Max(1, $change.LineNumber - $ContextLines)
-                Changes = @($change)
-            }
-        }
-    }
-
-    if ($currentHunk) {
-        $hunks += $currentHunk
-    }
-
-    # Format hunks
-    foreach ($hunk in $hunks) {
-        $startLine = $hunk.StartLine
-        $endLine = $hunk.Changes[-1].LineNumber + $ContextLines
-
-        $hunkHeader = "@@ -$startLine,$($endLine - $startLine + 1) +$startLine,$($endLine - $startLine + 1) @@"
-        $diff += $hunkHeader
-
-        for ($i = $startLine - 1; $i -le $endLine - 1 -and $i -lt $maxLines; $i++) {
-            $changeAtLine = $hunk.Changes | Where-Object { $_.LineNumber -eq ($i + 1) } | Select-Object -First 1
-
-            if ($changeAtLine) {
-                if ($null -ne $changeAtLine.Original -and $null -eq $changeAtLine.Modified) {
-                    # Line removed
-                    $diff += "-$($changeAtLine.Original)"
-                } elseif ($null -eq $changeAtLine.Original -and $null -ne $changeAtLine.Modified) {
-                    # Line added
-                    $diff += "+$($changeAtLine.Modified)"
-                } else {
-                    # Line modified
-                    if ($null -ne $changeAtLine.Original) { $diff += "-$($changeAtLine.Original)" }
-                    if ($null -ne $changeAtLine.Modified) { $diff += "+$($changeAtLine.Modified)" }
-                }
-            } else {
-                # Context line
-                $line = if ($i -lt $originalLines.Count) { $originalLines[$i] } else { "" }
-                $diff += " $line"
-            }
-        }
-    }
-
-    return ($diff -join "`n")
+    return ($lines -join "`n")
 }
 
 #endregion
@@ -416,20 +445,10 @@ function Invoke-WhitespaceFix {
         [string]$TraceId = (New-Guid).ToString()
     )
 
-    $fixedContent = $OriginalContent
-
-    # Remove trailing whitespace from each line
-    $fixedContent = ($fixedContent -split "`r?`n") | ForEach-Object {
-        $_.TrimEnd()
-    } | Join-String -Separator "`n"
-
-    # Normalize line endings to LF
-    $fixedContent = $fixedContent -replace "`r`n", "`n"
-
-    # Ensure final newline
-    if (-not $fixedContent.EndsWith("`n")) {
-        $fixedContent += "`n"
-    }
+    # Process lines individually to remove trailing whitespace
+    $lines = $OriginalContent -split "(?:\r\n|\n)"
+    $trimmedLines = $lines | ForEach-Object { $_.TrimEnd() }
+    $fixedContent = $trimmedLines -join "`n"
 
     if ($fixedContent -ne $OriginalContent) {
         $result = [AutoFixResult]::new($FilePath, 'Whitespace', $TraceId)
@@ -478,34 +497,7 @@ function Invoke-AliasFix {
         [string]$TraceId = (New-Guid).ToString()
     )
 
-    $fixedContent = $OriginalContent
-
-    # Common aliases to expand
-    $aliasMap = @{
-        '\bgci\b' = 'Get-ChildItem'
-        '\bgcm\b' = 'Get-Command'
-        '\bgm\b' = 'Get-Member'
-        '\biwr\b' = 'Invoke-WebRequest'
-        '\birm\b' = 'Invoke-RestMethod'
-        '\bselect\b' = 'Select-Object'
-        '\bwhere\b' = 'Where-Object'
-        '\bforeach\b' = 'ForEach-Object'
-        '\bsort\b' = 'Sort-Object'
-        '\bgroup\b' = 'Group-Object'
-        '\bmeasure\b' = 'Measure-Object'
-        '\bfl\b' = 'Format-List'
-        '\bft\b' = 'Format-Table'
-        '\bcls\b' = 'Clear-Host'
-        '\bcopy\b' = 'Copy-Item'
-        '\bmove\b' = 'Move-Item'
-        '\bdel\b' = 'Remove-Item'
-        '\bcd\b' = 'Set-Location'
-        '\bpwd\b' = 'Get-Location'
-    }
-
-    foreach ($alias in $aliasMap.Keys) {
-        $fixedContent = $fixedContent -replace $alias, $aliasMap[$alias]
-    }
+    $fixedContent = Invoke-AliasFixAst -Content $OriginalContent
 
     if ($fixedContent -ne $OriginalContent) {
         $result = [AutoFixResult]::new($FilePath, 'Aliases', $TraceId)
@@ -519,6 +511,78 @@ function Invoke-AliasFix {
     }
 
     return $null
+}
+
+<#
+.SYNOPSIS
+    Provides a brief summary of the function's purpose.
+
+.DESCRIPTION
+    Provides a detailed description of what the function does.
+
+.EXAMPLE
+    PS C:\> Invoke-AliasFixAst -ParameterName "Value"
+    Shows how to use the function.
+
+.OUTPUTS
+    [object]
+    Describes the objects that the cmdlet returns.
+
+.NOTES
+    Provides additional information about the function.
+#>
+function Invoke-AliasFixAst {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $aliasMap = @{
+        'gci' = 'Get-ChildItem'; 'select' = 'Select-Object'; 'where' = 'Where-Object'; 'gcm' = 'Get-Command'; 'gm' = 'Get-Member'; 'iwr' = 'Invoke-WebRequest';
+        'irm' = 'Invoke-RestMethod'; 'cat' = 'Get-Content'; 'cp' = 'Copy-Item'; 'mv' = 'Move-Item';
+        'rm' = 'Remove-Item'; 'ls' = 'Get-ChildItem'; 'pwd' = 'Get-Location'; 'cd' = 'Set-Location';
+        'cls' = 'Clear-Host'; 'echo' = 'Write-Output'; 'kill' = 'Stop-Process'; 'ps' = 'Get-Process';
+        'sleep' = 'Start-Sleep'; 'fl' = 'Format-List'; 'ft' = 'Format-Table'; 'fw' = 'Format-Wide';
+        'tee' = 'Tee-Object'; 'curl' = 'Invoke-WebRequest'; 'wget' = 'Invoke-WebRequest'; 'diff' = 'Compare-Object'
+    }
+
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+    if ($errors.Count -gt 0) {
+        # Cannot safely fix aliases in a script with parsing errors
+        return $Content
+    }
+
+    $commandAsts = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $true)
+    $fixes = @{}
+
+    foreach ($commandAst in $commandAsts) {
+        $commandName = $commandAst.GetCommandName()
+        if ($aliasMap.ContainsKey($commandName)) {
+            $extent = $commandAst.Extent
+            $fixes[$extent.StartOffset] = @{
+                Length = $extent.EndOffset - $extent.StartOffset
+                Replacement = $aliasMap[$commandName]
+            }
+        }
+    }
+
+    $newContent = $Content
+    $offset = 0
+
+    foreach ($startOffset in $fixes.Keys | Sort-Object) {
+        $fix = $fixes[$startOffset]
+        $length = $fix.Length
+        $replacement = $fix.Replacement
+
+        $newContent = $newContent.Remove($startOffset + $offset, $length).Insert($startOffset + $offset, $replacement)
+        $offset += $replacement.Length - $length
+    }
+
+    return $newContent
 }
 
 <#
@@ -557,14 +621,18 @@ function Invoke-SecurityFix {
     $fixedContent = $OriginalContent
     $changesMade = $false
 
-    # Only apply very safe security fixes
-    # For example: replace Write-Host with Write-Output (safer for pipelines)
-    if ($fixedContent -match '\bWrite-Host\b') {
-        # Only replace simple Write-Host calls (not ones with -ForegroundColor, etc.)
-        $fixedContent = $fixedContent -replace '\bWrite-Host\s+([^-\r\n]+)$', 'Write-Output $1'
-        if ($fixedContent -ne $OriginalContent) {
-            $changesMade = $true
-        }
+    # Fix incorrect $null comparison order
+    $nullComparisonPattern = '(\$\w+(\s*\[.*?\])?)\s*(-eq|-ne)\s*(\$null)'
+    if ($fixedContent -match $nullComparisonPattern) {
+        $fixedContent = $fixedContent -replace $nullComparisonPattern, '$4 $3 $1'
+        $changesMade = $true
+    }
+
+    # Replace simple Write-Host calls with Write-Output
+    $writeHostPattern = '\bWrite-Host\b'
+    if ($fixedContent -match $writeHostPattern) {
+        $fixedContent = $fixedContent -replace $writeHostPattern, 'Write-Output'
+        $changesMade = $true
     }
 
     if ($changesMade) {
@@ -696,3 +764,5 @@ Export-ModuleMember -Function @(
 )
 
 #endregion
+
+

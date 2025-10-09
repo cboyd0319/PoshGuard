@@ -7,7 +7,7 @@ class PSQAResult {
     [string]$FilePath
     [string]$TraceId
     [datetime]$Timestamp
-    [PSQAAnalysisResult[]]$AnalysisResults
+    [System.Collections.ArrayList]$AnalysisResults
     [PSQAFixResult[]]$FixResults
     [hashtable]$Metrics
     [string[]]$Errors
@@ -16,7 +16,7 @@ class PSQAResult {
         $this.FilePath = $filePath
         $this.TraceId = $traceId
         $this.Timestamp = Get-Date
-        $this.AnalysisResults = @()
+        $this.AnalysisResults = [System.Collections.ArrayList]::new()
         $this.FixResults = @()
         $this.Metrics = @{}
         $this.Errors = @()
