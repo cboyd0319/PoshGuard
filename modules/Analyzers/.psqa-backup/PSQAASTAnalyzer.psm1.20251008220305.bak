@@ -1,0 +1,666 @@
+#requires -Version 5.1
+
+<#
+.SYNOPSIS
+    Advanced PowerShell AST analyzer for deep code pattern detection.
+
+.DESCRIPTION
+    Production-grade Abstract Syntax Tree analyzer that detects:
+    - Unbound variables and shadowing
+    - Unsafe parameter binding
+    - Pipeline issues and inefficiencies
+    - Complex control flow and cognitive complexity
+    - Security anti-patterns
+    - Performance bottlenecks
+
+.NOTES
+    Author: PowerShell QA Engine
+    Version: 3.0.0
+    Compatible: PowerShell 5.1+, PowerShell 7.x
+#>
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+#region Classes
+
+class ASTAnalysisIssue {
+    [string]$RuleName
+    [string]$Severity
+    [string]$Message
+    [int]$Line
+    [int]$Column
+    [string]$Extent
+    [string]$Suggestion
+    [hashtable]$Metadata
+
+    ASTAnalysisIssue([string]$rule, [string]$severity, [string]$message, [int]$line, [int]$column, [string]$extent) {
+        $this.RuleName = $rule
+        $this.Severity = $severity
+        $this.Message = $message
+        $this.Line = $line
+        $this.Column = $column
+        $this.Extent = $extent
+        $this.Suggestion = ''
+        $this.Metadata = @{}
+    }
+}
+
+#endregion
+
+#region Public Functions
+
+<#
+.SYNOPSIS
+    Performs comprehensive AST analysis on PowerShell script.
+
+.DESCRIPTION
+    Parses PowerShell script and performs deep pattern analysis using AST.
+    Returns collection of detected issues with severity and suggestions.
+
+.PARAMETER FilePath
+    Path to PowerShell script file
+
+.PARAMETER TraceId
+    Correlation trace ID for logging
+
+.EXAMPLE
+    Invoke-PSQAASTAnalysis -FilePath ./script.ps1 -TraceId $traceId
+
+.NOTES
+    Returns array of ASTAnalysisIssue objects
+#>
+function Invoke-PSQAASTAnalysis {
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateScript({ Test-Path -Path $_ -PathType Leaf })]
+        [string]$FilePath,
+
+        [Parameter()]
+        [string]$TraceId = (New-Guid).ToString()
+    )
+
+    Write-Verbose "[$TraceId] Starting AST analysis: $FilePath"
+
+    $issues = @()
+
+    try {
+        # Parse file into AST
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $FilePath,
+            [ref]$tokens,
+            [ref]$errors
+        )
+
+        if ($errors) {
+            ForEach-Object ($error in $errors) {
+                $issue = [ASTAnalysisIssue]::new(
+                    'ParseError',
+                    'Error',
+                    $error.Message,
+                    $error.Extent.StartLineNumber,
+                    $error.Extent.StartColumnNumber,
+                    $error.Extent.Text
+                )
+                $issues += $issue
+            }
+            return $issues
+        }
+
+        # Run analysis rules
+        $issues += Test-UnboundVariable -AST $ast
+        $issues += Test-VariableShadowing -AST $ast
+        $issues += Test-UnsafePipelineBinding -AST $ast
+        $issues += Test-CognitiveComplexity -AST $ast
+        $issues += Test-DeadCode -AST $ast
+        $issues += Test-UnsafePatterns -AST $ast
+        $issues += Test-ParameterValidation -AST $ast
+        $issues += Test-ErrorHandling -AST $ast
+
+        Write-Verbose "[$TraceId] AST analysis complete: $($issues.Count) issues found"
+
+    }
+    catch {
+        Write-Error "AST analysis failed for $FilePath : $_"
+    }
+
+    return $issues
+}
+
+#endregion
+
+#region Analysis Rules
+
+<#
+.SYNOPSIS
+    Detects unbound variables (variables used but not assigned).
+
+.DESCRIPTION
+    Scans AST for variable references that don't have corresponding assignments.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-UnboundVariable -AST $ast
+#>
+function Test-UnboundVariable {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Get all variable expressions (reads)
+    $variableReads = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.VariableExpressionAst]
+        }, $true)
+
+    # Get all variable assignments (writes)
+    $variableWrites = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst]
+        }, $true) | ForEach-Object {
+        $_.Left.VariablePath.UserPath
+    }
+
+    # Get parameters (these are also valid assignments)
+    $parameters = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.ParameterAst]
+        }, $true) | ForEach-Object {
+        $_.Name.VariablePath.UserPath
+    }
+
+    $validVars = @($variableWrites) + @($parameters) | Select-Object -Unique
+
+    # Common automatic variables that don't need assignment
+    $automaticVars = @('_', 'PSItem', 'args', 'this', 'input', 'PSCmdlet', 'MyInvocation',
+        'PSBoundParameters', 'ErrorActionPreference', 'WarningPreference',
+        'InformationPreference', 'VerbosePreference', 'DebugPreference',
+        'ProgressPreference', 'WhatIfPreference', 'ConfirmPreference',
+        'PSScriptRoot', 'PSCommandPath', 'Error', 'Host', 'HOME', 'true', 'false', 'null')
+
+    ForEach-Object ($varRead in $variableReads) {
+        $varName = $varRead.VariablePath.UserPath
+
+        if ($varName -and
+            $varName -notin $automaticVars -and
+            $varName -notin $validVars -and
+            $varName -notmatch '^\d+$') {
+            # Exclude $1, $2, etc (regex captures)
+
+            $issue = [ASTAnalysisIssue]::new(
+                'UnboundVariable',
+                'Warning',
+                "Variable '`$$varName' is used but may not be assigned before use",
+                $varRead.Extent.StartLineNumber,
+                $varRead.Extent.StartColumnNumber,
+                $varRead.Extent.Text
+            )
+            $issue.Suggestion = "Ensure '`$$varName' is assigned before use, or add to parameter block"
+            $issues += $issue
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Detects variable shadowing (local variables hiding outer scope variables).
+
+.DESCRIPTION
+    Identifies cases Where-Object variables in inner scopes shadow outer scope variables.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-VariableShadowing -AST $ast
+#>
+function Test-VariableShadowing {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Get all script blocks (different scopes)
+    $scriptBlocks = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.ScriptBlockAst]
+        }, $true)
+
+    ForEach-Object ($block in $scriptBlocks) {
+        $outerVars = @()
+        $innerVars = @()
+
+        # Get variables in current block
+        $assignments = $block.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left -is [System.Management.Automation.Language.VariableExpressionAst]
+            }, $false)  # Shallow search - only this level
+
+        ForEach-Object ($assignment in $assignments) {
+            $varName = $assignment.Left.VariablePath.UserPath
+
+            # Check if variable exists in parent scope
+            if ($block.Parent) {
+                $parentAssignments = $block.Parent.FindAll({
+                        param($node)
+                        $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                        $node.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                        $node.Left.VariablePath.UserPath -eq $varName
+                    }, $true)
+
+                if ($parentAssignments.Count -gt 0) {
+                    $issue = [ASTAnalysisIssue]::new(
+                        'VariableShadowing',
+                        'Information',
+                        "Variable '`$$varName' shadows a variable from outer scope",
+                        $assignment.Extent.StartLineNumber,
+                        $assignment.Extent.StartColumnNumber,
+                        $assignment.Extent.Text
+                    )
+                    $issue.Suggestion = "Consider using a different variable name or use script: scope modifier"
+                    $issues += $issue
+                }
+            }
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Detects unsafe pipeline parameter binding patterns.
+
+.DESCRIPTION
+    Identifies potential issues with pipeline parameter binding.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-UnsafePipelineBinding -AST $ast
+#>
+function Test-UnsafePipelineBinding {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Find all pipelines
+    $pipelines = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.PipelineAst]
+        }, $true)
+
+    foreach ($pipeline in $pipelines) {
+        if ($pipeline.PipelineElements.Count -gt 1) {
+            # Check for ForEach-Object with positional script block (can be confusing)
+            foreach ($element in $pipeline.PipelineElements) {
+                if ($element.CommandElements -and $element.CommandElements[0].Value -eq 'ForEach-Object') {
+                    if ($element.CommandElements.Count -eq 2 -and
+                        $element.CommandElements[1] -is [System.Management.Automation.Language.ScriptBlockExpressionAst]) {
+
+                        # Check if script block uses $_ (good) or creates new variables (potentially confusing)
+                        $scriptBlock = $element.CommandElements[1].ScriptBlock
+                        $usesUnderscore = $scriptBlock.Find({
+                                param($node)
+                                $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                                $node.VariablePath.UserPath -eq '_'
+                            }, $true)
+
+                        if (-not $usesUnderscore) {
+                            $issue = [ASTAnalysisIssue]::new(
+                                'PipelineParameterBinding',
+                                'Information',
+                                'ForEach-Object script block does not use $_ (pipeline input)',
+                                $element.Extent.StartLineNumber,
+                                $element.Extent.StartColumnNumber,
+                                $element.Extent.Text
+                            )
+                            $issue.Suggestion = 'Use $_ or $PSItem to reference pipeline input'
+                            $issues += $issue
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Calculates cognitive complexity of functions and scripts.
+
+.DESCRIPTION
+    Measures code complexity beyond cyclomatic complexity. Flags overly complex code.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-CognitiveComplexity -AST $ast
+#>
+function Test-CognitiveComplexity {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+    $maxComplexity = 15
+
+    # Find all function definitions
+    $functions = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true)
+
+    ForEach-Object ($func in $functions) {
+        $complexity = 0
+
+        # Count decision points
+        $ifStatements = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.IfStatementAst] }, $true)
+        $complexity += $ifStatements.Count
+
+        $loops = $func.FindAll({ param($n)
+                $n -is [System.Management.Automation.Language.ForStatementAst] -or
+                $n -is [System.Management.Automation.Language.ForEachStatementAst] -or
+                $n -is [System.Management.Automation.Language.WhileStatementAst] -or
+                $n -is [System.Management.Automation.Language.DoWhileStatementAst]
+            }, $true)
+        $complexity += $loops.Count
+
+        $catches = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.CatchClauseAst] }, $true)
+        $complexity += $catches.Count
+
+        $switches = $func.FindAll({ param($n) $n -is [System.Management.Automation.Language.SwitchStatementAst] }, $true)
+        $complexity += $switches.Count
+
+        if ($complexity -gt $maxComplexity) {
+            $issue = [ASTAnalysisIssue]::new(
+                'HighCognitiveComplexity',
+                'Warning',
+                "Function '$($func.Name)' has cognitive complexity of $complexity (max: $maxComplexity)",
+                $func.Extent.StartLineNumber,
+                $func.Extent.StartColumnNumber,
+                $func.Name
+            )
+            $issue.Suggestion = 'Consider refactoring into smaller, more focused functions'
+            $issue.Metadata = @{ Complexity = $complexity }
+            $issues += $issue
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Detects unreachable code (dead code).
+
+.DESCRIPTION
+    Identifies code that cannot be reached due to return/throw/break/continue.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-DeadCode -AST $ast
+#>
+function Test-DeadCode {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Find all named blocks (begin, process, end) and script blocks
+    $blocks = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.ScriptBlockAst] -or
+            $node -is [System.Management.Automation.Language.NamedBlockAst]
+        }, $true)
+
+    ForEach-Object ($block in $blocks) {
+        if ($block.Statements) {
+            for ($i = 0; $i -lt $block.Statements.Count - 1; $i++) {
+                $stmt = $block.Statements[$i]
+
+                # Check if statement is a terminating statement
+                $isTerminating = (
+                    $stmt -is [System.Management.Automation.Language.ReturnStatementAst] -or
+                    $stmt -is [System.Management.Automation.Language.ThrowStatementAst] -or
+                    $stmt -is [System.Management.Automation.Language.ExitStatementAst]
+                )
+
+                if ($isTerminating -and ($i -lt $block.Statements.Count - 1)) {
+                    $nextStmt = $block.Statements[$i + 1]
+                    $issue = [ASTAnalysisIssue]::new(
+                        'UnreachableCode',
+                        'Warning',
+                        'Unreachable code detected after terminating statement',
+                        $nextStmt.Extent.StartLineNumber,
+                        $nextStmt.Extent.StartColumnNumber,
+                        $nextStmt.Extent.Text
+                    )
+                    $issue.Suggestion = 'Remove unreachable code or restructure logic'
+                    $issues += $issue
+                }
+            }
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Detects unsafe coding patterns.
+
+.DESCRIPTION
+    Identifies anti-patterns like Invoke-Expression, global variables, etc.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-UnsafePatterns -AST $ast
+#>
+function Test-UnsafePatterns {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Detect Invoke-Expression
+    $iexCalls = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            ($node.GetCommandName() -eq 'Invoke-Expression' -or $node.GetCommandName() -eq 'iex')
+        }, $true)
+
+    ForEach-Object ($call in $iexCalls) {
+        $issue = [ASTAnalysisIssue]::new(
+            'UnsafeInvokeExpression',
+            'Error',
+            'Invoke-Expression is a security risk and should be avoided',
+            $call.Extent.StartLineNumber,
+            $call.Extent.StartColumnNumber,
+            $call.Extent.Text
+        )
+        $issue.Suggestion = 'Use switch statements, hashtables, or direct function calls instead'
+        $issues += $issue
+    }
+
+    # Detect global variables
+    $globalVars = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $node.VariablePath.IsGlobal
+        }, $true)
+
+    ForEach-Object ($var in $globalVars) {
+        $issue = [ASTAnalysisIssue]::new(
+            'GlobalVariableUsage',
+            'Warning',
+            "Global variable '`$$($var.VariablePath.UserPath)' detected - consider script or local scope",
+            $var.Extent.StartLineNumber,
+            $var.Extent.StartColumnNumber,
+            $var.Extent.Text
+        )
+        $issue.Suggestion = 'Use script: or local: scope, or pass via parameters'
+        $issues += $issue
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Checks parameter validation attributes.
+
+.DESCRIPTION
+    Ensures parameters have appropriate validation attributes.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-ParameterValidation -AST $ast
+#>
+function Test-ParameterValidation {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Find all parameters
+    $parameters = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.ParameterAst]
+        }, $true)
+
+    foreach ($param in $parameters) {
+        # Check for validation attributes
+        $hasValidation = $param.Attributes | Where-Object {
+            $_.TypeName.Name -match '^Validate'
+        }
+
+        # Check if parameter is string or array without validation
+        $paramType = $param.StaticType
+
+        if ((-not $hasValidation) -and
+            ($paramType -eq [string] -or $paramType -eq [object[]])) {
+
+            $issue = [ASTAnalysisIssue]::new(
+                'MissingParameterValidation',
+                'Information',
+                "Parameter '`$$($param.Name.VariablePath.UserPath)' lacks validation attributes",
+                $param.Extent.StartLineNumber,
+                $param.Extent.StartColumnNumber,
+                $param.Extent.Text
+            )
+            $issue.Suggestion = 'Add validation attributes like [ValidateNotNullOrEmpty()] or [ValidateSet()]'
+            $issues += $issue
+        }
+    }
+
+    return $issues
+}
+
+<#
+.SYNOPSIS
+    Validates error handling patterns.
+
+.DESCRIPTION
+    Checks for proper try-catch blocks and error handling.
+
+.PARAMETER AST
+    Parsed AST tree
+
+.EXAMPLE
+    Test-ErrorHandling -AST $ast
+#>
+function Test-ErrorHandling {
+    [CmdletBinding()]
+    [OutputType([ASTAnalysisIssue[]])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.Language.Ast]$AST
+    )
+
+    $issues = @()
+
+    # Find all try statements
+    $tryStatements = $AST.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.TryStatementAst]
+        }, $true)
+
+    ForEach-Object ($try in $tryStatements) {
+        # Check for empty catch blocks
+        ForEach-Object ($catch in $try.CatchClauses) {
+            if (-not $catch.Body.Statements -or $catch.Body.Statements.Count -eq 0) {
+                $issue = [ASTAnalysisIssue]::new(
+                    'EmptyCatchBlock',
+                    'Warning',
+                    'Empty catch block detected - errors are silently swallowed',
+                    $catch.Extent.StartLineNumber,
+                    $catch.Extent.StartColumnNumber,
+                    $catch.Extent.Text
+                )
+                $issue.Suggestion = 'Add error logging or rethrow: Write-Error or throw'
+                $issues += $issue
+            }
+        }
+    }
+
+    return $issues
+}
+
+#endregion
+
+#region Exports
+
+Export-ModuleMember -Function @(
+    'Invoke-PSQAASTAnalysis'
+)
+
+#endregion
