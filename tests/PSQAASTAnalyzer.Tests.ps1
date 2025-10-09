@@ -1,13 +1,14 @@
 #requires -Version 5.1
 
+using module '../modules/Core/Core.psm1'
+
 BeforeAll {
     # Import module under test
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../modules/Analyzers/PSQAASTAnalyzer.psm1'
     Import-Module $modulePath -Force
 
-    # Create test PowerShell files
-    $script:testFile1 = Join-Path -Path $TestDrive -ChildPath 'test1.ps1'
-    $script:testFile2 = Join-Path -Path $TestDrive -ChildPath 'test2.ps1'
+    # Create test file
+    $script:testFile = Join-Path -Path $TestDrive -ChildPath 'test.ps1'
 }
 
 Describe 'PSQAASTAnalyzer Module' -Tags 'Unit' {

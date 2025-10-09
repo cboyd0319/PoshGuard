@@ -449,7 +449,6 @@ function Test-DeadCode {
     }, $true)
 
     if ($block.Statements) {
-        if ($block.Statements) {
             for ($i = 0; $i -lt $block.Statements.Count - 1; $i++) {
                 $stmt = $block.Statements[$i]
 
@@ -657,8 +656,6 @@ function Test-ErrorHandling {
 
 #region Exports
 
-Export-ModuleMember -Function @(
-    'Invoke-PSQAASTAnalysis'
-)
+Export-ModuleMember -Function 'Invoke-PSQAASTAnalysis'
 
 #endregion
