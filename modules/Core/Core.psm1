@@ -3,6 +3,10 @@
 
 # Core Types for the PowerShell QA Engine
 
+[CmdletBinding()]
+param()
+
+
 class PSQAResult {
     [string]$FilePath
     [string]$TraceId

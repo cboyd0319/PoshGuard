@@ -21,8 +21,13 @@
 .NOTES
     Returns a PSQAResult object containing all analysis findings.
 #>
+[CmdletBinding()]
+param()
+
+
 function Invoke-FileAnalysis {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [System.IO.FileInfo]$File,
@@ -64,7 +69,8 @@ function Invoke-FileAnalysis {
 
             Write-Verbose "Analysis completed for: $($File.Name)"
 
-        } catch {
+        }
+        catch {
             $errorMessage = "Failed to analyze file $($File.FullName): $_"
             Write-Error $errorMessage
             $result.Errors += $errorMessage
@@ -93,6 +99,7 @@ function Invoke-FileAnalysis {
 #>
 function Invoke-SecurityAnalysis {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [System.IO.FileInfo]$File
@@ -101,7 +108,7 @@ function Invoke-SecurityAnalysis {
     if ($pscmdlet.ShouldProcess($File.FullName, "Perform security analysis")) {
         $config = Get-PSQAConfig
         $results = @()
-        $content = Get-Content -Path $File.FullName -Raw
+        $content = Get-Content -Path $File.FullName -Raw -ErrorAction Stop
 
         if ($config.SecurityRules -and $config.SecurityRules.Categories) {
             foreach ($category in $config.SecurityRules.Categories.Keys) {
@@ -153,6 +160,7 @@ function Invoke-SecurityAnalysis {
 #>
 function Get-FileMetric {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([object])]
     param(
         [Parameter(Mandatory)]
         [System.IO.FileInfo]$File
@@ -162,7 +170,7 @@ function Get-FileMetric {
         $metrics = @{}
 
         try {
-            $content = Get-Content -Path $File.FullName -Raw
+            $content = Get-Content -Path $File.FullName -Raw -ErrorAction Stop
             $lines = $content -split "`r?`n"
 
             $metrics.FileSize = $File.Length
@@ -176,11 +184,13 @@ function Get-FileMetric {
                 $ast = [System.Management.Automation.Language.Parser]::ParseFile($File.FullName, [ref]$null, [ref]$null)
                 $metrics.FunctionCount = ($ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)).Count
                 $metrics.VariableCount = ($ast.FindAll({ $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] }, $true)).Count
-            } catch {
+            }
+            catch {
                 Write-Verbose "Could not parse AST for $($File.Name) to gather metrics: $_"
             }
 
-        } catch {
+        }
+        catch {
             Write-Warning "Could not calculate metrics for $($File.Name): $_"
         }
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env pwsh
 #requires -Version 5.1
 
+[CmdletBinding()]
+param()
+
+
 $engineRoot = $PSScriptRoot
 
 Import-Module "$engineRoot/../modules/Core/Core.psm1" -Force

@@ -1,5 +1,9 @@
 #requires -Version 5.1
 
+[CmdletBinding()]
+param()
+
+
 using module '../modules/Core/Core.psm1'
 using module '../modules/Analyzers/PSQAASTAnalyzer.psm1'
 
@@ -16,11 +20,13 @@ Describe 'PSQAASTAnalyzer Module' -Tags 'Unit' {
         It 'Should detect unbound variables' {
             $content = @'
 function Test-Function {
+    [CmdletBinding()]
+    [OutputType([bool])]
     Write-Output $unboundVariable
 }
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $unboundIssues = $issues | Where-Object { $_.RuleName -eq 'UnboundVariable' }
 
@@ -30,12 +36,14 @@ function Test-Function {
         It 'Should not flag automatic variables as unbound' {
             $content = @'
 function Test-Function {
+    [CmdletBinding()]
+    [OutputType([bool])]
     Write-Output $PSScriptRoot
     Write-Output $PSCommandPath
 }
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $unboundIssues = $issues | Where-Object { $_.RuleName -eq 'UnboundVariable' }
 
@@ -47,6 +55,8 @@ function Test-Function {
         It 'Should detect high cognitive complexity' {
             $content = @'
 function Test-ComplexFunction {
+    [CmdletBinding()]
+    [OutputType([bool])]
     if ($true) {
         if ($true) {
             if ($true) {
@@ -80,7 +90,7 @@ function Test-ComplexFunction {
 }
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $complexityIssues = $issues | Where-Object { $_.RuleName -eq 'HighCognitiveComplexity' }
 
@@ -95,7 +105,7 @@ $command = "Get-Process"
 Invoke-Expression $command
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $iexIssues = $issues | Where-Object { $_.RuleName -eq 'UnsafeInvokeExpression' }
 
@@ -108,7 +118,7 @@ Invoke-Expression $command
 $global:myVar = "test"
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $globalIssues = $issues | Where-Object { $_.RuleName -eq 'GlobalVariableUsage' }
 
@@ -125,7 +135,7 @@ try {
 }
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $catchIssues = $issues | Where-Object { $_.RuleName -eq 'EmptyCatchBlock' }
 
@@ -138,13 +148,15 @@ try {
         It 'Should return parse errors for invalid syntax' {
             $content = @'
 function Test-Function {
+    [CmdletBinding()]
+    [OutputType([bool])]
     if ($true {
         Write-Output "Missing closing paren"
     }
 }
 '@
             $testFile = New-TemporaryFile
-            Set-Content -Path $testFile -Value $content
+            Set-Content -Path $testFile -Value $content -ErrorAction Stop
             $issues = Invoke-PSQAASTAnalysis -Path $testFile
             $parseErrors = $issues | Where-Object { $_.RuleName -eq 'ParseError' }
 

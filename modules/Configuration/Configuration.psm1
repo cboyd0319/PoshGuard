@@ -20,8 +20,13 @@
 .NOTES
     This function is critical for the engine's operation. If it fails, the script will terminate.
 #>
+[CmdletBinding()]
+param()
+
+
 function Initialize-Configuration {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [string]$ConfigPath
@@ -33,27 +38,29 @@ function Initialize-Configuration {
 
             # Load main QA settings
             $qaSettingsPath = Join-Path -Path $ConfigPath -ChildPath 'QASettings.psd1'
-            if (Test-Path -Path $qaSettingsPath) {
+            if (Test-Path -Path $qaSettingsPath -ErrorAction Stop) {
                 $global:PSQAConfig = Import-PowerShellDataFile -Path $qaSettingsPath
-            } else {
+            }
+            else {
                 throw "QA settings file not found: $qaSettingsPath"
             }
 
             # Load PSScriptAnalyzer settings
             $pssaSettingsPath = Join-Path -Path $ConfigPath -ChildPath 'PSScriptAnalyzerSettings.psd1'
-            if (Test-Path -Path $pssaSettingsPath) {
+            if (Test-Path -Path $pssaSettingsPath -ErrorAction Stop) {
                 $global:PSQAConfig.PSScriptAnalyzerSettings = $pssaSettingsPath
             }
 
             # Load security rules
             $securityRulesPath = Join-Path -Path $ConfigPath -ChildPath 'SecurityRules.psd1'
-            if (Test-Path -Path $securityRulesPath) {
+            if (Test-Path -Path $securityRulesPath -ErrorAction Stop) {
                 $global:PSQAConfig.SecurityRules = Import-PowerShellDataFile -Path $securityRulesPath
             }
 
             Write-Verbose "Configuration loaded successfully"
 
-        } catch {
+        }
+        catch {
             Write-Error "Failed to load configuration: $_"
             throw
         }
@@ -61,6 +68,8 @@ function Initialize-Configuration {
 }
 
 function Get-PSQAConfig {
+    [CmdletBinding()]
+    [OutputType([object])]
     <#
     .SYNOPSIS
         Returns the global QA engine configuration.

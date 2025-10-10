@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -21,8 +21,13 @@
 .NOTES
     Report files are saved in the current working directory.
 #>
+[CmdletBinding()]
+param()
+
+
 function New-QAReport {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([object])]
     param(
         [Parameter(Mandatory)]
         [PSQAResult[]]$Results,
@@ -42,12 +47,12 @@ function New-QAReport {
 
     if ($pscmdlet.ShouldProcess($OutputFormat, "Generate QA report")) {
         $summary = @{
-            TotalFiles = $Results.Count
-            TotalIssues = ($Results | ForEach-Object { $_.AnalysisResults.Count } | Measure-Object -Sum).Sum
-            ErrorCount = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count } | Measure-Object -Sum).Sum
-            WarningCount = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Warning' }).Count } | Measure-Object -Sum).Sum
-            InfoCount = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Information' }).Count } | Measure-Object -Sum).Sum
-            FixesApplied = ($Results | ForEach-Object { ($_.FixResults | Where-Object { $_.Applied }).Count } | Measure-Object -Sum).Sum
+            TotalFiles    = $Results.Count
+            TotalIssues   = ($Results | ForEach-Object { $_.AnalysisResults.Count } | Measure-Object -Sum).Sum
+            ErrorCount    = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count } | Measure-Object -Sum).Sum
+            WarningCount  = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Warning' }).Count } | Measure-Object -Sum).Sum
+            InfoCount     = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Information' }).Count } | Measure-Object -Sum).Sum
+            FixesApplied  = ($Results | ForEach-Object { ($_.FixResults | Where-Object { $_.Applied }).Count } | Measure-Object -Sum).Sum
             ExecutionTime = (Get-Date) - $StartTime
         }
 
@@ -87,6 +92,8 @@ function New-QAReport {
     Write-ConsoleReport -Results $results -Summary $summary
 #>
 function Write-ConsoleReport {
+    [CmdletBinding()]
+    [OutputType([void])]
     param($Results, $Summary)
 
     Write-Output "`n=== PowerShell QA Engine Report ===" -ForegroundColor Cyan
@@ -128,7 +135,8 @@ function Write-ConsoleReport {
     Write-Output "`n=== Summary ===" -ForegroundColor Cyan
     if ($Summary.TotalIssues -eq 0) {
         Write-Output "✓ No issues found! Code quality is excellent." -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Output "⚠ Found $($Summary.TotalIssues) issues that need attention." -ForegroundColor Yellow
     }
 }
@@ -150,6 +158,8 @@ function Write-ConsoleReport {
     Write-JsonReport -Results $results -Summary $summary
 #>
 function Write-JsonReport {
+    [CmdletBinding()]
+    [OutputType([void])]
     param($Results, $Summary, $TraceId, $EngineVersion)
 
     $reportPath = Join-Path -Path $PWD -ChildPath "qa-report-$(Get-Date -Format 'yyyyMMddHHmmss').json"
@@ -157,14 +167,14 @@ function Write-JsonReport {
     $report = @{
         Metadata = @{
             Timestamp = (Get-Date).ToString('o')
-            TraceId = $TraceId
-            Engine = "PowerShell QA Engine v$($EngineVersion)"
+            TraceId   = $TraceId
+            Engine    = "PowerShell QA Engine v$($EngineVersion)"
         }
-        Summary = $Summary
-        Results = $Results
+        Summary  = $Summary
+        Results  = $Results
     }
 
-    $report | ConvertTo-Json -Depth 10 | Set-Content -Path $reportPath -Encoding UTF8
+    $report | ConvertTo-Json -Depth 10 | Set-Content -Path $reportPath -Encoding UTF8 -ErrorAction Stop
     Write-Verbose "JSON report saved to: $reportPath"
 }
 
@@ -185,6 +195,8 @@ function Write-JsonReport {
     Write-HtmlReport -Results $results -Summary $summary
 #>
 function Write-HtmlReport {
+    [CmdletBinding()]
+    [OutputType([void])]
     param($Results, $Summary)
 
     $reportPath = Join-Path -Path $PWD -ChildPath "qa-report-$(Get-Date -Format 'yyyyMMddHHmmss').html"
@@ -251,7 +263,7 @@ function Write-HtmlReport {
 </html>
 "@
 
-    $html | Set-Content -Path $reportPath -Encoding UTF8
+    $html | Set-Content -Path $reportPath -Encoding UTF8 -ErrorAction Stop
     Write-Verbose "HTML report saved to: $reportPath"
 }
 

@@ -1,5 +1,9 @@
 #requires -Version 5.1
 
+[CmdletBinding()]
+param()
+
+
 BeforeAll {
     # Import module under test
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../modules/Loggers/PSQALogger.psm1'
@@ -70,12 +74,12 @@ Describe 'PSQALogger Module' -Tags 'Unit' {
         It 'Should create log directory if missing' {
             $testLogDir = Join-Path -Path $TestDrive -ChildPath 'test-logs'
             $config = @{
-                FilePath = Join-Path -Path $testLogDir -ChildPath 'test.log'
+                FilePath       = Join-Path -Path $testLogDir -ChildPath 'test.log'
                 StructuredPath = Join-Path -Path $testLogDir -ChildPath 'test.jsonl'
             }
 
             Initialize-PSQALogger -Config $config
-            Test-Path -Path $testLogDir | Should -Be $true
+            Test-Path -Path $testLogDir | Should -Be $true -ErrorAction Stop
         }
     }
 }

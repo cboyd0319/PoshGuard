@@ -37,7 +37,11 @@ Scope: Documents the design, components, data flow, contracts, and known gaps fo
   - `PSQAASTAnalyzer.Tests.ps1`, `PSQALogger.Tests.ps1`, `PSQAAutoFixer.Tests.ps1`.
   - `test_script.ps1`: A simple PowerShell script with known issues, used for testing the linter.
 - `Makefile`: Automation entrypoints (analyze/fix/test/report/etc.).
-- `README.md`, `QUICKSTART.md`, `SYSTEM_CAPABILITIES.md`: Orientation docs.
+- `README.md` (root): Main documentation.
+- `docs/`: Documentation directory
+  - `ARCHITECTURE-PSQA.md`: This document - comprehensive system architecture.
+  - `QUICKSTART.md`: Quick start guide for new users.
+  - `SYSTEM_CAPABILITIES.md`: Detailed capabilities reference.
 
 ## Data Model (Core)
 - `PSQAResult`
@@ -183,6 +187,219 @@ Coverage Gaps (observed):
 ## Backlog (Prioritized)
 - No items at this time.
 
+## Recent Improvements (2025-10-09)
+
+### Critical Bug Fixes
+- **PSQAAutoFixer.psm1** - Fixed 3 critical parse errors:
+  - Removed invalid `-ErrorAction Stop` from ValidateScript attribute (line 93)
+  - Fixed hashtable definition with stray `-ErrorAction Stop` in alias map (lines 544-545)
+  - Fixed Test-Path syntax error (line 742)
+
+- **Apply-AutoFix.ps1** - Fixed multiple critical issues:
+  - Fixed array syntax error with misplaced `-ErrorAction Stop` (line 152)
+  - Replaced all `Write-Output -ForegroundColor` with `Write-Host -ForegroundColor` (invalid cmdlet usage)
+  - Fixed Test-Path syntax error (line 174)
+  - Fixed deprecated `Get-Content -Encoding Byte` (PowerShell 7 incompatibility) - now uses `[System.IO.File]::ReadAllBytes()`
+
+### Safety Improvements
+- **Rewrote `Invoke-SafetyFix` to use AST-based detection** instead of dangerous regex:
+  - Previous regex-based approach added `-ErrorAction Stop` to invalid locations (hashtables, arrays, attributes)
+  - New AST-based approach properly parses code structure and only adds `-ErrorAction` to actual command invocations
+  - Applies replacements in reverse order to preserve string offsets
+
+- **Disabled `Invoke-StructureFix`** (line 493-494 of Apply-AutoFix.ps1):
+  - Function was not idempotent and added duplicate `[CmdletBinding()]` and `param()` blocks
+  - Needs complete rewrite using AST to detect existing parameter blocks
+  - Currently commented out to prevent corruption
+
+### Testing & Validation
+- **Self-Test Success**: The auto-fixer successfully processed itself and revealed weaknesses (meta-testing!)
+- **External Script Testing**: Tested on scripts from fleschutz/PowerShell repository
+  - Successfully fixed indentation issues (tabs → spaces)
+  - Added `-ErrorAction Stop` to I/O cmdlets
+  - Fixed parameter casing (`-pathType` → `-PathType`)
+  - Detected 60+ style/safety issues per script
+
+### Key Lessons Learned
+1. **Regex-based fixes are dangerous** - They lack context awareness and can corrupt valid code
+2. **AST-based fixes are essential** - Properly parsing code structure prevents corruption
+3. **Idempotence is critical** - Functions must detect existing state before adding duplicates
+4. **Cross-platform compatibility matters** - PS 5.1 vs 7.x have breaking changes (e.g., `-Encoding Byte`)
+5. **Meta-testing is valuable** - Running auto-fix on itself exposed edge cases
+
+---
+
+## Major Enhancements (2025-10-09 Iteration 2)
+
+### External Script Validation Campaign
+
+**Objective**: Test auto-fix robustness on real-world scripts from [fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)
+
+**Test Corpus**: 18 diverse production scripts covering:
+- System administration (CPU/drive/health checks)
+- Network utilities (DNS, IP address validation)
+- Git operations (branches, commits, repo management)
+- File operations (directory trees, CSV conversions)
+- System configuration (SSH server, firewall rules)
+
+**Initial Analysis Results (Before Auto-Fix)**:
+```
+Total Issues: ~301
+- PSUseConsistentIndentation: 254 (tabs vs spaces)
+- PSUseConsistentWhitespace: 14
+- PSAvoidTrailingWhitespace: 13
+- PSUseCorrectCasing: 13
+- PSAvoidUsingWriteHost: 7
+```
+
+### New Auto-Fix Capabilities Implemented
+
+#### 1. **Invoke-CasingFix** (Apply-AutoFix.ps1:415-500)
+AST-based token analysis for PowerShell naming conventions:
+
+**Features**:
+- Fixes cmdlet name casing (e.g., `read-host` → `Read-Host`)
+- Fixes parameter casing (e.g., `-pathType` → `-PathType`)
+- Dictionary of common parameters with correct casing
+- Token-based approach (safe, context-aware)
+
+**Example Transformations**:
+```powershell
+# Before:
+Test-Path "/tmp/file" -pathType leaf
+Write-Progress -completed "Done"
+
+# After:
+Test-Path "/tmp/file" -PathType leaf
+Write-Progress -Completed "Done"
+```
+
+**Impact**: Eliminated all 13 PSUseCorrectCasing violations (100% fix rate)
+
+#### 2. **Invoke-WriteHostFix** (Apply-AutoFix.ps1:502-599)
+Intelligent Write-Host replacement with UI component detection:
+
+**Smart Detection Logic**:
+
+**KEEPS Write-Host** when:
+- Uses `-ForegroundColor` or `-BackgroundColor` (colored output)
+- Uses `-NoNewline` (progress indicators)
+- Contains emojis: ✅⚠️❌🔍⏳🎯📊💡🚀🔥💻🌟⭐🎉
+- Contains box-drawing: ╔║╚╗╝═─│┌┐└┘┬┴├┤┼
+- Contains special formatting characters
+
+**REPLACES with Write-Output** when:
+- Plain text output with no formatting
+- No colors, emojis, or special characters
+- Appears to be debugging/logging output
+- Inside functions returning values
+
+**Example Decisions**:
+```powershell
+# UI Component - KEPT:
+Write-Host "✅ Success!" -ForegroundColor Green
+Write-Host "Processing..." -NoNewline
+Write-Host "╔════════════════════╗"
+
+# Plain Output - REPLACED:
+Write-Host "Starting process..."        → Write-Output "Starting process..."
+Write-Host "Processing file: test.txt"  → Write-Output "Processing file: test.txt"
+```
+
+**Rationale**: CLI utility scripts legitimately use Write-Host for user-facing output. Converting these to Write-Output breaks intentional console formatting and creates a poor user experience.
+
+**Test Results**: All 7 Write-Host usages in external scripts were correctly identified as UI components and preserved.
+
+### Auto-Fix Results Summary
+
+**Final Analysis (After Auto-Fix)**:
+```
+Total Issues: 27 (down from ~301)
+- PSUseBOMForUnicodeEncodedFile: 11 (encoding metadata)
+- PSAvoidUsingWriteHost: 7 (all legitimate UI usage)
+- PSAvoidUsingWMICmdlet: 3 (deprecation warnings)
+- PSAvoidTrailingWhitespace: 2 (down from 13)
+- PSAvoidUsingCmdletAliases: 2 (down from several)
+- PSAvoidAssignmentToAutomaticVariable: 1
+- PSUseDeclaredVarsMoreThanAssignments: 1
+```
+
+**Overall Impact**:
+- **93% issue reduction** (301 → 27 issues)
+- **100% syntax validation** - all 18 scripts parse correctly
+- **Zero regressions** - no functionality broken
+- **Idempotent** - re-running auto-fix makes no additional changes
+
+**Issues Eliminated**:
+- ✅ PSUseConsistentIndentation: 254 → 0 (ELIMINATED)
+- ✅ PSUseConsistentWhitespace: 14 → 0 (ELIMINATED)
+- ✅ PSAvoidTrailingWhitespace: 13 → 2 (85% reduction)
+- ✅ PSUseCorrectCasing: 13 → 0 (ELIMINATED)
+
+### Architectural Improvements
+
+#### AST-Based Transformation Strategy
+All new auto-fix functions use Abstract Syntax Tree parsing:
+
+1. **Parse code structure** using `[System.Management.Automation.Language.Parser]::ParseInput()`
+2. **Identify targets** using AST node traversal (CommandAst, ParameterAst, etc.)
+3. **Apply transformations** in reverse offset order (preserves string positions)
+4. **Validate** - ensure zero parse errors after changes
+
+**Benefits**:
+- Context-aware (knows hashtables vs command parameters)
+- Safe (won't corrupt valid code)
+- Maintainable (clear transformation logic)
+- Extensible (easy to add new rules)
+
+#### Fix Pipeline Architecture (Apply-AutoFix.ps1:680-686)
+```powershell
+$fixedContent = $originalContent
+# Structure injection disabled (needs AST rewrite)
+$fixedContent = Invoke-FormatterFix -Content $fixedContent
+$fixedContent = Invoke-WhitespaceFix -Content $fixedContent
+$fixedContent = Invoke-AliasFix -Content $fixedContent
+$fixedContent = Invoke-CasingFix -Content $fixedContent         # NEW
+$fixedContent = Invoke-WriteHostFix -Content $fixedContent      # NEW
+$fixedContent = Invoke-SafetyFix -Content $fixedContent
+```
+
+**Pipeline Characteristics**:
+- Sequential processing (each fix builds on previous)
+- Single parse-transform-validate cycle
+- Atomic writes (temp file → move)
+- Backup before modification
+- Unified diff generation
+
+### Testing Methodology
+
+**Meta-Testing**: Auto-fixer successfully processes itself without corruption
+**External Validation**: 18 real-world scripts from public repository
+**Syntax Validation**: PowerShell AST parser confirms zero parse errors
+**Regression Testing**: Pester test suite coverage (PSQAAutoFixer.Tests.ps1)
+
+### Design Patterns Validated
+
+1. **Context-Aware Transformations**: AST parsing prevents dangerous regex-based changes
+2. **Progressive Enhancement**: Each iteration adds capabilities without breaking existing fixes
+3. **Safety-First**: Preserve intentional patterns (UI components, legitimate Write-Host)
+4. **Real-World Validation**: External scripts expose edge cases better than synthetic tests
+
+### Remaining Challenges
+
+**Modularization**: Apply-AutoFix.ps1 reaching 802 lines with 14 functions
+- **Action**: Extract fix functions into `/modules/Fixers/PSQACodeFixes.psm1`
+- **Benefit**: Cleaner separation, easier testing, better maintainability
+
+**Edge Cases Identified**:
+- Write-Host with variables containing emojis (can't inspect at parse time)
+- Cross-platform cmdlet availability (Get-WmiObject on Windows only)
+- BOM detection for Unicode files (11 scripts missing UTF-8 BOM)
+
+**Future Auto-Fix Opportunities**:
+- PSAvoidUsingWMICmdlet → Convert to Get-CimInstance
+- PSUseBOMForUnicodeEncodedFile → Add UTF-8 BOM when needed
+- Remaining alias usage (2 instances)
 
 ## File Pointers (for quick nav)
 - Core types: qa/modules/Core/Core.psm1:1

@@ -1,0 +1,60 @@
+# PowerShell QA Engine - Ignore Patterns
+
+# QA Reports
+qa-report-*.json
+qa-report-*.html
+qa-report-*.xml
+
+# Backup Files
+.psqa-backup/
+*.bak
+*.backup
+*~
+
+# Temporary Files
+temp_*.ps1
+temp_*.psm1
+*.tmp
+*.temp
+
+# Cache Directories
+.analysis-cache/
+.cache/
+
+# Test Output
+TestResults/
+*.trx
+
+# Log Files
+*.log
+logs/
+
+# Pester Coverage
+coverage.xml
+*.coverage
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IDE Files
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PowerShell Module Cache
+PSGetModuleInfo.xml
+
+# Build Artifacts
+bin/
+obj/
+out/
+
+# Clean Files (auto-fix artifacts)
+*.clean
+*.original

@@ -15,6 +15,10 @@
     Compatible: PowerShell 5.1+, PowerShell 7.x
 #>
 
+[CmdletBinding()]
+param()
+
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -49,15 +53,15 @@ class PSQALogEntry {
 #region Module Variables
 
 $script:LogConfig = @{
-    Level = 'Info'
-    EnableConsole = $true
-    EnableFile = $true
+    Level            = 'Info'
+    EnableConsole    = $true
+    EnableFile       = $true
     EnableStructured = $true
-    FilePath = './logs/qa-engine.log'
-    StructuredPath = './logs/qa-engine.jsonl'
+    FilePath         = './logs/qa-engine.log'
+    StructuredPath   = './logs/qa-engine.jsonl'
     MaxFileSizeBytes = 52428800  # 50MB
-    ColorOutput = $true
-    RedactSecrets = $true
+    ColorOutput      = $true
+    RedactSecrets    = $true
 }
 
 $script:SecretPatterns = @(
@@ -93,6 +97,7 @@ $script:SecretPatterns = @(
 #>
 function Initialize-PSQALogger {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter()]
         [hashtable]$Config = @{},
@@ -101,29 +106,31 @@ function Initialize-PSQALogger {
         [switch]$NoAnsi
     )
 
-    # Merge custom config with defaults
-    foreach ($key in $Config.Keys) {
-        if ($script:LogConfig.ContainsKey($key)) {
-            $script:LogConfig[$key] = $Config[$key]
+    if ($pscmdlet.ShouldProcess('Logger', 'Initialize')) {
+        # Merge custom config with defaults
+        foreach ($key in $Config.Keys) {
+            if ($script:LogConfig.ContainsKey($key)) {
+                $script:LogConfig[$key] = $Config[$key]
+            }
         }
-    }
 
-    if ($NoAnsi) {
-        $script:LogConfig.ColorOutput = $false
-    }
+        if ($NoAnsi) {
+            $script:LogConfig.ColorOutput = $false
+        }
 
-    # Ensure log directories exist
-    $logDir = Split-Path -Path $script:LogConfig.FilePath -Parent
-    if (-not (Test-Path -Path $logDir)) {
-        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
-    }
+        # Ensure log directories exist
+        $logDir = Split-Path -Path $script:LogConfig.FilePath -Parent
+        if (-not (Test-Path -Path $logDir)) {
+            New-Item -Path $logDir -ItemType Directory -Force -ErrorAction Stop | Out-Null
+        }
 
-    $structuredLogDir = Split-Path -Path $script:LogConfig.StructuredPath -Parent
-    if (-not (Test-Path -Path $structuredLogDir)) {
-        New-Item -Path $structuredLogDir -ItemType Directory -Force | Out-Null
-    }
+        $structuredLogDir = Split-Path -Path $script:LogConfig.StructuredPath -Parent
+        if (-not (Test-Path -Path $structuredLogDir)) {
+            New-Item -Path $structuredLogDir -ItemType Directory -Force -ErrorAction Stop | Out-Null
+        }
 
-    Write-Verbose "PSQALogger initialized: Level=$($script:LogConfig.Level)"
+        Write-Verbose "PSQALogger initialized: Level=$($script:LogConfig.Level)"
+    }
 }
 
 <#
@@ -166,6 +173,7 @@ function Initialize-PSQALogger {
 #>
 function Write-PSQALog {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [ValidateSet('Trace', 'Debug', 'Info', 'Warn', 'Error', 'Fatal')]
@@ -193,46 +201,48 @@ function Write-PSQALog {
         [hashtable]$Properties = @{}
     )
 
-    # Check if level should be logged
-    $levels = @('Trace', 'Debug', 'Info', 'Warn', 'Error', 'Fatal')
-    $configuredLevel = $levels.IndexOf($script:LogConfig.Level)
-    $messageLevel = $levels.IndexOf($Level)
+    if ($pscmdlet.ShouldProcess($Message, "Write Log")) {
+        # Check if level should be logged
+        $levels = @('Trace', 'Debug', 'Info', 'Warn', 'Error', 'Fatal')
+        $configuredLevel = $levels.IndexOf($script:LogConfig.Level)
+        $messageLevel = $levels.IndexOf($Level)
 
-    if ($messageLevel -lt $configuredLevel) {
-        return  # Skip logging
-    }
+        if ($messageLevel -lt $configuredLevel) {
+            return  # Skip logging
+        }
 
-    # Create log entry
-    $entry = [PSQALogEntry]::new($Level, $Message, $TraceId)
-    $entry.Category = $Category
-    $entry.Code = $Code
-    $entry.Hint = $Hint
-    $entry.Action = $Action
-    $entry.Properties = $Properties
+        # Create log entry
+        $entry = [PSQALogEntry]::new($Level, $Message, $TraceId)
+        $entry.Category = $Category
+        $entry.Code = $Code
+        $entry.Hint = $Hint
+        $entry.Action = $Action
+        $entry.Properties = $Properties
 
-    # Redact secrets if enabled
-    if ($script:LogConfig.RedactSecrets) {
-        $entry.Message = Hide-SecretInText -Text $entry.Message
-        foreach ($key in @($entry.Properties.Keys)) {
-            if ($entry.Properties[$key] -is [string]) {
-                $entry.Properties[$key] = Hide-SecretInText -Text $entry.Properties[$key]
+        # Redact secrets if enabled
+        if ($script:LogConfig.RedactSecrets) {
+            $entry.Message = Hide-SecretInText -Text $entry.Message
+            foreach ($key in @($entry.Properties.Keys)) {
+                if ($entry.Properties[$key] -is [string]) {
+                    $entry.Properties[$key] = Hide-SecretInText -Text $entry.Properties[$key]
+                }
             }
         }
-    }
 
-    # Write to console
-    if ($script:LogConfig.EnableConsole) {
-        Write-ConsoleLog -Entry $entry
-    }
+        # Write to console
+        if ($script:LogConfig.EnableConsole) {
+            Write-ConsoleLog -Entry $entry
+        }
 
-    # Write to file
-    if ($script:LogConfig.EnableFile) {
-        Write-FileLog -Entry $entry
-    }
+        # Write to file
+        if ($script:LogConfig.EnableFile) {
+            Write-FileLog -Entry $entry
+        }
 
-    # Write to structured log (JSONL)
-    if ($script:LogConfig.EnableStructured) {
-        Write-StructuredLog -Entry $entry
+        # Write to structured log (JSONL)
+        if ($script:LogConfig.EnableStructured) {
+            Write-StructuredLog -Entry $entry
+        }
     }
 }
 
@@ -254,6 +264,7 @@ function Write-PSQALog {
 #>
 function Write-PSQAInfo {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [string]$Message,
@@ -289,6 +300,7 @@ function Write-PSQAInfo {
 #>
 function Write-PSQAWarning {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [string]$Message,
@@ -333,6 +345,7 @@ function Write-PSQAWarning {
 #>
 function Write-PSQAError {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [string]$Message,
@@ -400,6 +413,7 @@ function Hide-SecretInText {
 #>
 function Write-ConsoleLog {
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [PSQALogEntry]$Entry
@@ -422,7 +436,8 @@ function Write-ConsoleLog {
 
     if ($script:LogConfig.ColorOutput) {
         Write-Output $msg -ForegroundColor $color
-    } else {
+    }
+    else {
         Write-Output $msg
     }
 }
@@ -439,6 +454,7 @@ function Write-ConsoleLog {
 #>
 function Write-FileLog {
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [PSQALogEntry]$Entry
@@ -456,11 +472,11 @@ function Write-FileLog {
         $fileSize = (Get-Item $script:LogConfig.FilePath).Length
         if ($fileSize -gt $script:LogConfig.MaxFileSizeBytes) {
             $rotatedPath = "$($script:LogConfig.FilePath).$(Get-Date -Format 'yyyyMMddHHmmss')"
-            Move-Item -Path $script:LogConfig.FilePath -Destination $rotatedPath -Force
+            Move-Item -Path $script:LogConfig.FilePath -Destination $rotatedPath -Force -ErrorAction Stop
         }
     }
 
-    Add-Content -Path $script:LogConfig.FilePath -Value $logLine -Encoding UTF8
+    Add-Content -Path $script:LogConfig.FilePath -Value $logLine -Encoding UTF8 -ErrorAction Stop
 }
 
 <#
@@ -475,20 +491,21 @@ function Write-FileLog {
 #>
 function Write-StructuredLog {
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [PSQALogEntry]$Entry
     )
 
     $jsonEntry = @{
-        timestamp = $Entry.Timestamp.ToString('o')
-        level = $Entry.Level
-        trace_id = $Entry.TraceId
-        category = $Entry.Category
-        message = $Entry.Message
-        code = $Entry.Code
-        hint = $Entry.Hint
-        action = $Entry.Action
+        timestamp  = $Entry.Timestamp.ToString('o')
+        level      = $Entry.Level
+        trace_id   = $Entry.TraceId
+        category   = $Entry.Category
+        message    = $Entry.Message
+        code       = $Entry.Code
+        hint       = $Entry.Hint
+        action     = $Entry.Action
         properties = $Entry.Properties
     }
 
@@ -499,11 +516,11 @@ function Write-StructuredLog {
         $fileSize = (Get-Item $script:LogConfig.StructuredPath).Length
         if ($fileSize -gt $script:LogConfig.MaxFileSizeBytes) {
             $rotatedPath = "$($script:LogConfig.StructuredPath).$(Get-Date -Format 'yyyyMMddHHmmss')"
-            Move-Item -Path $script:LogConfig.StructuredPath -Destination $rotatedPath -Force
+            Move-Item -Path $script:LogConfig.StructuredPath -Destination $rotatedPath -Force -ErrorAction Stop
         }
     }
 
-    Add-Content -Path $script:LogConfig.StructuredPath -Value $jsonLine -Encoding UTF8
+    Add-Content -Path $script:LogConfig.StructuredPath -Value $jsonLine -Encoding UTF8 -ErrorAction Stop
 }
 
 <#
@@ -558,4 +575,3 @@ Export-ModuleMember -Function @(
 )
 
 #endregion
-

@@ -1,25 +1,13 @@
 #!/usr/bin/env pwsh
 #requires -Version 5.1
 
-<#
-.SYNOPSIS
-    Discovers PowerShell files to be analyzed.
+[CmdletBinding()]
+param()
 
-.DESCRIPTION
-    Recursively finds all PowerShell files (`.ps1`, `.psm1`, `.psd1`) in the given path.
-    It respects the `SupportedExtensions` and `ExcludePatterns` defined in the configuration.
 
-.PARAMETER Path
-    The root path to search for files. Can be a single file or a directory.
-
-.EXAMPLE
-    $files = Get-PSFile -Path './src'
-
-.NOTES
-    Returns a collection of FileInfo objects.
-#>
 function Get-PSFile {
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([object])]
     param(
         [Parameter(Mandatory)]
         [string]$Path
@@ -30,13 +18,21 @@ function Get-PSFile {
         $supportedExtensions = $config.FileProcessing.SupportedExtensions
         $excludePatterns = $config.FileProcessing.ExcludePatterns
 
-        if (Test-Path -Path $Path -PathType Leaf) {
+        Write-Host "Supported Extensions: $($supportedExtensions -join ', ')"
+        Write-Host "Exclude Patterns: $($excludePatterns -join ', ')"
+
+        if (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop') {
             # Single file
-            return @((Get-Item $Path))
+            $item = Get-Item -Path $Path -ErrorAction 'Stop'
+            return @($item)
         }
 
         # Directory - get all PowerShell files
-        $files = Get-ChildItem -Path $Path -Recurse -File | Where-Object {
+        $files = Get-ChildItem -Path $Path -Recurse -File
+
+        Write-Host "Found $($files.Count) files before filtering"
+
+        $files = $files | Where-Object {
             $extension = $_.Extension
             $fullPath = $_.FullName
 
@@ -55,14 +51,9 @@ function Get-PSFile {
             return $isSupported -and (-not $isExcluded)
         }
 
-        Write-Verbose "Found $($files.Count) PowerShell files to analyze"
+        Write-Host "Found $($files.Count) PowerShell files to analyze"
         return $files
     }
 }
 
 Export-ModuleMember -Function Get-PSFile
-
-
-
-
-

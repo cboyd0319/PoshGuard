@@ -32,15 +32,15 @@
     Enable verbose output
 
 .EXAMPLE
-    .\Set-AutoFix.ps1 -Path ./src -DryRun
+    .\Apply-AutoFix.ps1 -Path ./src -DryRun
     Preview fixes without applying
 
 .EXAMPLE
-    .\Set-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
+    .\Apply-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
     Apply fixes and show unified diffs
 
 .EXAMPLE
-    .\Set-AutoFix.ps1 -Path ./src
+    .\Apply-AutoFix.ps1 -Path ./src
     Apply all safe fixes to directory
 
 .NOTES
@@ -53,30 +53,24 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateScript({ Test-Path -Path $_ })]
-# FIXME: Unused parameter commented out by PSQA.
-#     [string]$Path,
+    [ValidateScript({ Test-Path -Path $_ -ErrorAction Stop })]
+    [string]$Path,
 
-#     [Parameter()]
-# FIXME: Unused parameter commented out by PSQA.
-#     [switch]$DryRun,
+    [Parameter()]
+    [switch]$DryRun,
 
-#     [Parameter()]
-# FIXME: Unused parameter commented out by PSQA.
-#     [switch]$NoBackup,
+    [Parameter()]
+    [switch]$NoBackup,
 
-#     [Parameter()]
-# FIXME: Unused parameter commented out by PSQA.
-#     [switch]$ShowDiff,
+    [Parameter()]
+    [switch]$ShowDiff,
 
-#     [Parameter()]
-# FIXME: Unused parameter commented out by PSQA.
-#     [switch]$CleanBackups,
+    [Parameter()]
+    [switch]$CleanBackups,
 
     [Parameter()]
     [ValidateSet('Default', 'UTF8', 'UTF8BOM')]
-# FIXME: Unused parameter commented out by PSQA.
-#     [string]$Encoding = 'Default'
+    [string]$Encoding = 'Default'
 )
 
 Set-StrictMode -Version Latest
@@ -97,80 +91,28 @@ $script:Config = @{
 
 #region Helper Functions
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[CmdletBinding(SupportsShouldProcess)]
-[CmdletBinding(SupportsShouldProcess)]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Clean-Backups -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Clean-Backups {
-        if ($pscmdlet.ShouldProcess("Target", "Operation")) {
-            # Add state-changing code here
-        }
-        if ($pscmdlet.ShouldProcess("Target", "Operation")) {
-            # Add state-changing code here
-        }
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param()
 
-    $backupDir = Join-Path -Path $PSScriptRoot -ChildPath $script:Config.BackupDirectory
-    if (-not (Test-Path -Path $backupDir)) {
-        return
-    }
+    if ($pscmdlet.ShouldProcess("Target", "Operation")) {
+        $backupDir = Join-Path -Path $PSScriptRoot -ChildPath $script:Config.BackupDirectory
+        if (-not (Test-Path -Path $backupDir -ErrorAction Stop)) {
+            return
+        }
 
-    $cutoffDate = (Get-Date).AddDays(-$script:Config.BackupRetentionDays)
-    Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate } | ForEach-Object {
-        Write-Log -Level Info -Message "Deleting old backup: $($_.FullName)"
-        Remove-Item -Path $_.FullName -Force
+        $cutoffDate = (Get-Date).AddDays(-$script:Config.BackupRetentionDays)
+        Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate } | ForEach-Object {
+            Write-Log -Level Info -Message "Deleting old backup: $($_.FullName)"
+            Remove-Item -Path $_.FullName -Force -ErrorAction Stop
+        }
     }
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Write-Log -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Write-Log {
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [ValidateSet('Info', 'Warn', 'Error', 'Success')]
@@ -195,44 +137,19 @@ function Write-Log {
         'Success' { '[OK]' }
     }
 
-    Write-Output "$timestamp $prefix $Message" -ForegroundColor $color
+    Write-Host "$timestamp $prefix $Message" -ForegroundColor $color
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Get-PowerShellFiles -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Get-PowerShellFiles {
     [CmdletBinding()]
     [OutputType([System.IO.FileInfo[]])]
     param(
-#         [Parameter(Mandatory)]
-# FIXME: Unused parameter commented out by PSQA.
-#         [string]$Path
+        [Parameter(Mandatory)]
+        [string]$Path
     )
 
-    if (Test-Path -Path $Path -PathType Leaf) {
-        return @((Get-Item -Path $Path))
+    if (Test-Path -Path $Path -PathType Leaf -ErrorAction Stop) {
+        return @(Get-Item -Path $Path -ErrorAction Stop)
     }
 
     $files = Get-ChildItem -Path $Path -Recurse -File | Where-Object {
@@ -242,80 +159,34 @@ function Get-PowerShellFiles {
     return $files
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> New-FileBackup -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function New-FileBackup {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$FilePath
     )
 
-    $fileDir = Split-Path -Path $FilePath -Parent
-    $backupDir = Join-Path -Path $fileDir -ChildPath $script:Config.BackupDirectory
+    if ($pscmdlet.ShouldProcess($FilePath, "Backup")) {
+        $fileDir = Split-Path -Path $FilePath -Parent
+        $backupDir = Join-Path -Path $fileDir -ChildPath $script:Config.BackupDirectory
 
-    if (-not (Test-Path -Path $backupDir)) {
-        New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+        if (-not (Test-Path -Path $backupDir -ErrorAction SilentlyContinue)) {
+            New-Item -Path $backupDir -ItemType Directory -Force -ErrorAction Stop | Out-Null
+        }
+
+        $fileName = Split-Path -Path $FilePath -Leaf
+        $timestamp = Get-Date -Format 'yyyyMMddHHmmss'
+        $backupPath = Join-Path -Path $backupDir -ChildPath "$fileName.$timestamp.bak"
+
+        Copy-Item -Path $FilePath -Destination $backupPath -Force -ErrorAction Stop
+
+        return $backupPath
     }
-
-    $fileName = Split-Path -Path $FilePath -Leaf
-    $timestamp = Get-Date -Format 'yyyyMMddHHmmss'
-    $backupPath = Join-Path -Path $backupDir -ChildPath "$fileName.$timestamp.bak"
-
-    Copy-Item -Path $FilePath -Destination $backupPath -Force
-
-    return $backupPath
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> New-UnifiedDiff -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function New-UnifiedDiff {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     [OutputType([string])]
     param(
         [Parameter(Mandatory)]
@@ -331,8 +202,8 @@ function New-UnifiedDiff {
     $diff = Compare-Object -ReferenceObject ($Original -split '\r?\n') -DifferenceObject ($Modified -split '\r?\n') -IncludeEqual
 
     $lines = @()
-    $lines += "---    a/$FilePath"
-    $lines += "+++    b/$FilePath"
+    $lines += "--- a/$FilePath"
+    $lines += "+++ b/$FilePath"
 
     # This is a simplified diff generator, not a full-fidelity one.
     foreach ($line in $diff) {
@@ -341,7 +212,7 @@ function New-UnifiedDiff {
             '<=' { '-' }
             '=>' { '+' }
         }
-        $lines += "$indicator$($line.InputObject)"
+        $lines += "$($indicator)$($line.InputObject)"
     }
 
     if ($lines.Count -eq 2) {
@@ -355,32 +226,9 @@ function New-UnifiedDiff {
 
 #region Fix Functions
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-FormatterFix -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Invoke-FormatterFix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content,
@@ -407,32 +255,9 @@ function Invoke-FormatterFix {
     return $Content
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-WhitespaceFix -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Invoke-WhitespaceFix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content
@@ -449,32 +274,9 @@ function Invoke-WhitespaceFix {
     return $result
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-AliasFix -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Invoke-AliasFix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content,
@@ -490,50 +292,9 @@ function Invoke-AliasFix {
     return Invoke-AliasFixAst -Content $Content
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-AliasFix -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-AliasFixAst -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Invoke-AliasFixAst {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content
@@ -586,66 +347,267 @@ function Invoke-AliasFixAst {
     return $newContent
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-<#
-.SYNOPSIS
-    Provides a brief summary of the function's purpose.
-
-.DESCRIPTION
-    Provides a detailed description of what the function does.
-
-.EXAMPLE
-    PS C:\> Invoke-SafetyFix -ParameterName "Value"
-    Shows how to use the function.
-
-.OUTPUTS
-    [object]
-    Describes the objects that the cmdlet returns.
-
-.NOTES
-    Provides additional information about the function.
-#>
 function Invoke-SafetyFix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content
     )
 
     $fixed = $Content
-    # Use single quotes for regex patterns
-    $fixed = $fixed -replace '(?m)^\s*Write-Output\s+(["\'\$][^-\r\n]+)$', 'Write-Output $1'
-    $fixed = $fixed -replace '(\S*)\s+(-eq|-ne)\s+\$null\b', '$null $2 $1'
 
-    $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
-    foreach ($cmdlet in $ioCmdlets) {
-        $pattern = "(?i)(\b$cmdlet\b(?!.*-ErrorAction))"
-        $fixed = $fixed -replace $pattern, "$1 -ErrorAction Stop"
+    # Fix $null comparison order (safe regex)
+    # Only fix when variable is on the left side of comparison
+    $fixed = $fixed -replace '(\$\w+)\s+(-eq|-ne)\s+\$null\b', '$null $2 $1'
+
+    # AST-based ErrorAction addition (MUCH safer than regex)
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($fixed, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            # Find all command ASTs
+            $commandAsts = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst]
+            }, $true)
+
+            $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
+            $replacements = @()
+
+            foreach ($cmdAst in $commandAsts) {
+                $cmdName = $cmdAst.GetCommandName()
+                if ($cmdName -in $ioCmdlets) {
+                    # Check if -ErrorAction parameter already exists
+                    $hasErrorAction = $false
+                    foreach ($element in $cmdAst.CommandElements) {
+                        if ($element -is [System.Management.Automation.Language.CommandParameterAst] -and
+                            $element.ParameterName -eq 'ErrorAction') {
+                            $hasErrorAction = $true
+                            break
+                        }
+                    }
+
+                    if (-not $hasErrorAction) {
+                        # Add to replacements list (we'll apply them in reverse order)
+                        $replacements += @{
+                            Offset = $cmdAst.Extent.EndOffset
+                            Text = ' -ErrorAction Stop'
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order to preserve offsets
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Insert($replacement.Offset, $replacement.Text)
+            }
+        }
+    } catch {
+        # If AST parsing fails, don't apply ErrorAction fixes
+        Write-Verbose "AST-based safety fix failed: $_"
     }
 
     return $fixed
 }
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
+function Invoke-CasingFix {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST-based cmdlet/parameter casing fix
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all command elements and fix casing
+            foreach ($token in $tokens) {
+                if ($token.Kind -eq 'Generic' -or $token.Kind -eq 'Identifier') {
+                    # Check if this is a known cmdlet with wrong casing
+                    try {
+                        $cmd = Get-Command -Name $token.Text -ErrorAction SilentlyContinue
+                        if ($cmd -and $cmd.Name -cne $token.Text) {
+                            # Found a casing mismatch
+                            $replacements += @{
+                                Offset = $token.Extent.StartOffset
+                                Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                                Replacement = $cmd.Name
+                            }
+                        }
+                    } catch {
+                        # Ignore - not a valid cmdlet
+                    }
+                }
+                elseif ($token.Kind -eq 'Parameter') {
+                    # Fix parameter casing (e.g., -pathType -> -PathType)
+                    $paramName = $token.Text
+                    if ($paramName -match '^-(.+)$') {
+                        $paramWithoutDash = $Matches[1]
+                        # Common parameter names with correct casing
+                        $correctCasing = @{
+                            'path' = 'Path'
+                            'pathtype' = 'PathType'
+                            'force' = 'Force'
+                            'recurse' = 'Recurse'
+                            'filter' = 'Filter'
+                            'include' = 'Include'
+                            'exclude' = 'Exclude'
+                            'erroraction' = 'ErrorAction'
+                            'warningaction' = 'WarningAction'
+                            'verbose' = 'Verbose'
+                            'debug' = 'Debug'
+                            'whatif' = 'WhatIf'
+                            'confirm' = 'Confirm'
+                            'completed' = 'Completed'
+                        }
+
+                        $lowerParam = $paramWithoutDash.ToLower()
+                        if ($correctCasing.ContainsKey($lowerParam)) {
+                            $correctParam = "-$($correctCasing[$lowerParam])"
+                            if ($correctParam -cne $paramName) {
+                                $replacements += @{
+                                    Offset = $token.Extent.StartOffset
+                                    Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                                    Replacement = $correctParam
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+            }
+            return $fixed
+        }
+    } catch {
+        Write-Verbose "Casing fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-WriteHostFix {
+    <#
+    .SYNOPSIS
+        Smart Write-Host replacement that preserves UI/display components
+
+    .DESCRIPTION
+        Intelligently replaces Write-Host with Write-Output ONLY when it's not a UI component.
+
+        KEEPS Write-Host (UI components) when:
+        - Uses -ForegroundColor or -BackgroundColor (colored output)
+        - Uses -NoNewline (progress indicators, spinners)
+        - Contains emojis (✅⚠️❌🔍⏳🎯📊💡)
+        - Contains box-drawing characters (╔║╚═─│┌┐└┘)
+        - Contains special formatting (ASCII art, tables, banners)
+
+        REPLACES with Write-Output when:
+        - Plain text output with no formatting
+        - No colors, emojis, or special formatting
+        - Appears to be debugging/logging output
+
+    .EXAMPLE
+        # UI component - KEPT:
+        Write-Host "✅ Success!" -ForegroundColor Green
+
+        # Plain output - REPLACED:
+        Write-Host "Processing file..."  # → Write-Output "Processing file..."
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $fixed = $Content
+
+    # AST-based Write-Host analysis
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            # Find all command ASTs for Write-Host
+            $writeHostAsts = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                $args[0].GetCommandName() -eq 'Write-Host'
+            }, $true)
+
+            $replacements = @()
+
+            foreach ($cmdAst in $writeHostAsts) {
+                $shouldReplace = $true
+
+                # Check for UI indicators that mean we should KEEP Write-Host
+                $cmdText = $cmdAst.Extent.Text
+
+                # Check for color parameters
+                if ($cmdText -match '-ForegroundColor|-BackgroundColor') {
+                    $shouldReplace = $false
+                }
+
+                # Check for -NoNewline (progress indicators)
+                if ($cmdText -match '-NoNewline') {
+                    $shouldReplace = $false
+                }
+
+                # Check for emojis in the output string
+                if ($cmdText -match '[✅⚠️❌🔍⏳🎯📊💡🚀🔥💻🌟⭐🎉]') {
+                    $shouldReplace = $false
+                }
+
+                # Check for box-drawing characters (tables, banners)
+                if ($cmdText -match '[╔║╚╗╝═─│┌┐└┘┬┴├┤┼▀▄█▌▐░▒▓]') {
+                    $shouldReplace = $false
+                }
+
+                # If none of the UI indicators were found, replace Write-Host → Write-Output
+                if ($shouldReplace) {
+                    $replacements += @{
+                        Offset = $cmdAst.Extent.StartOffset
+                        Length = 10  # Length of "Write-Host"
+                        Replacement = 'Write-Output'
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order to preserve offsets
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+            }
+        }
+    } catch {
+        Write-Verbose "Write-Host fix failed: $_"
+    }
+
+    return $fixed
+}
+
 function Invoke-StructureFix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]
         [string]$Content
     )
 
     # Skip for module manifests (PSD1) or if already compliant
-    if ($Content.Trim().StartsWith("@{ ") -or $Content -match '(?s)^\s*\[CmdletBinding\(\]') {
+    if ($Content.Trim().StartsWith('@{ ') -or $Content -match '(?s)^\s*\[CmdletBinding\(\]') {
         return $Content
     }
 
@@ -678,92 +640,99 @@ function Invoke-StructureFix {
 
 #region Main Processing
 
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
-[OutputType([object])]
 function Invoke-FileFix {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory)]
         [System.IO.FileInfo]$File
     )
 
-    Write-Log -Level Info -Message "Processing: $($File.Name)"
+    if ($pscmdlet.ShouldProcess($File.FullName, 'Analyzing file')) {
+        Write-Log -Level Info -Message "Processing: $($File.Name)"
 
-    if ($File.Length -gt $script:Config.MaxFileSizeBytes) {
-        Write-Log -Level Warn -Message "Skipping (file too large): $($File.Name)"
-        return $null
-    }
-
-    try {
-        $originalContent = Get-Content -Path $File.FullName -Raw -Encoding Default
-        $originalEncodingBytes = Get-Content -Path $File.FullName -Encoding Byte -ReadCount 4
-        $hasBom = $false
-        if ($originalEncodingBytes.Length -ge 3) {
-            $hasBom = $originalEncodingBytes[0] -eq 0xEF -and $originalEncodingBytes[1] -eq 0xBB -and $originalEncodingBytes[2] -eq 0xBF
-        }
-
-        if (-not $originalContent.Trim()) {
-            Write-Log -Level Warn -Message "Skipping (empty file): $($File.Name)"
+        if ($File.Length -gt $script:Config.MaxFileSizeBytes) {
+            Write-Log -Level Warn -Message "Skipping (file too large): $($File.Name)"
             return $null
         }
 
-        $fixedContent = $originalContent
-        $fixedContent = Invoke-StructureFix -Content $fixedContent
-        $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
-        $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
-        $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
-        $fixedContent = Invoke-SafetyFix -Content $fixedContent
+        try {
+            $originalContent = Get-Content -Path $File.FullName -Raw -ErrorAction Stop
 
-        $finalEncoding = $Encoding
-        if ($Encoding -eq 'Default') {
-            $containsNonAscii = $fixedContent | Select-String -Pattern '[^\u0000-\u007F]' -Quiet
-            if ($containsNonAscii -and -not $hasBom) {
-                $finalEncoding = 'utf8BOM'
-                Write-Log -Level Info -Message "File contains non-ASCII characters, ensuring UTF8-BOM encoding."
+            # Check for BOM (cross-platform compatible)
+            $hasBom = $false
+            try {
+                $bytes = [System.IO.File]::ReadAllBytes($File.FullName)
+                if ($bytes.Length -ge 3) {
+                    $hasBom = $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+                }
+            } catch {
+                Write-Verbose "Could not read bytes for BOM detection: $_"
             }
-        }
 
-        if (($fixedContent -eq $originalContent) -and ($finalEncoding -ne 'utf8BOM')) {
-            Write-Log -Level Info -Message "No changes needed: $($File.Name)"
+            if (-not $originalContent.Trim()) {
+                Write-Log -Level Warn -Message "Skipping (empty file): $($File.Name)"
+                return $null
+            }
+
+            $fixedContent = $originalContent
+            # DISABLED: Invoke-StructureFix adds duplicate [CmdletBinding()] blocks - needs AST fix
+            # $fixedContent = Invoke-StructureFix -Content $fixedContent
+            $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
+            $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
+            $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
+            $fixedContent = Invoke-CasingFix -Content $fixedContent
+            $fixedContent = Invoke-WriteHostFix -Content $fixedContent
+            $fixedContent = Invoke-SafetyFix -Content $fixedContent
+
+            $finalEncoding = $Encoding
+            if ($Encoding -eq 'Default') {
+                $containsNonAscii = $fixedContent | Select-String -Pattern '[^\u0000-\u007F]' -Quiet
+                if ($containsNonAscii -and -not $hasBom) {
+                    $finalEncoding = 'utf8BOM'
+                    Write-Log -Level Info -Message 'File contains non-ASCII characters, ensuring UTF8-BOM encoding.'
+                }
+            }
+
+            if (($fixedContent -eq $originalContent) -and ($finalEncoding -ne 'utf8BOM')) {
+                Write-Log -Level Info -Message "No changes needed: $($File.Name)"
+                return $null
+            }
+
+            if ($ShowDiff) {
+                $diff = New-UnifiedDiff -Original $originalContent -Modified $fixedContent -FilePath $File.Name
+                if ($diff) {
+                    Write-Host "`n--- Unified Diff for $($File.Name) ---" -ForegroundColor Magenta
+                    Write-Host $diff -ForegroundColor Gray
+                    Write-Host "--- End Diff ---
+" -ForegroundColor Magenta
+                }
+            }
+
+            if (-not $DryRun) {
+                if (-not $NoBackup) {
+                    $backupPath = New-FileBackup -FilePath $File.FullName
+                    Write-Log -Level Info -Message "Backup created: $(Split-Path -Path $backupPath -Leaf)"
+                }
+
+                $tempPath = "$($File.FullName).tmp"
+                Set-Content -Path $tempPath -Value $fixedContent -Encoding $finalEncoding -NoNewline -ErrorAction Stop
+                Move-Item -Path $tempPath -Destination $File.FullName -Force -ErrorAction Stop
+
+                Write-Log -Level Success -Message "Fixes applied: $($File.Name)"
+            } else {
+                Write-Log -Level Info -Message "Would fix: $($File.Name) (dry-run)"
+            }
+
+            return @{
+                File = $File.Name
+                Changed = $true
+            }
+
+        } catch {
+            Write-Log -Level Error -Message "Failed to process $($File.Name): $_ "
             return $null
         }
-
-        if ($ShowDiff) {
-            $diff = New-UnifiedDiff -Original $originalContent -Modified $fixedContent -FilePath $File.Name
-            if ($diff) {
-                Write-Output "`n--- Unified Diff for $($File.Name) ---" -ForegroundColor Magenta
-                Write-Output $diff -ForegroundColor Gray
-                Write-Output "--- End Diff ---`n" -ForegroundColor Magenta
-            }
-        }
-
-        if (-not $DryRun) {
-            if (-not $NoBackup) {
-                $backupPath = New-FileBackup -FilePath $File.FullName
-                Write-Log -Level Info -Message "Backup created: $(Split-Path -Path $backupPath -Leaf)"
-            }
-
-            $tempPath = "$($File.FullName).tmp"
-            Set-Content -Path $tempPath -Value $fixedContent -Encoding $finalEncoding -NoNewline
-            Move-Item -Path $tempPath -Destination $File.FullName -Force
-
-            Write-Log -Level Success -Message "Fixes applied: $($File.Name)"
-        } else {
-            Write-Log -Level Info -Message "Would fix: $($File.Name) (dry-run)"
-        }
-
-        return @{
-            File = $File.Name
-            Changed = $true
-        }
-
-    } catch {
-        Write-Log -Level Error -Message "Failed to process $($File.Name): $_ "
-        return $null
     }
 }
 
@@ -772,10 +741,10 @@ function Invoke-FileFix {
 #region Main Execution
 
 try {
-    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Output "║         PowerShell QA Auto-Fix Engine v4.0.0                  ║" -ForegroundColor Cyan
-    Write-Output "║         Idempotent - Safe - Production-Grade                  ║" -ForegroundColor Cyan
-    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         PowerShell QA Auto-Fix Engine v4.0.0                  ║" -ForegroundColor Cyan
+    Write-Host "║         Idempotent - Safe - Production-Grade                  ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-Log -Level Info -Message "Trace ID: $($script:Config.TraceId)"
     Write-Log -Level Info -Message "Mode: $(if ($DryRun) { 'DRY RUN (Preview)' } else { 'APPLY FIXES' })"
@@ -803,19 +772,19 @@ try {
         }
     }
 
-    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Output "║                         SUMMARY                                ║" -ForegroundColor Cyan
-    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║                         SUMMARY                                ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-Log -Level Info -Message "Files processed: $($files.Count)"
     Write-Log -Level Success -Message "Files $(if ($DryRun) { 'that would be ' })fixed: $fixedCount"
     Write-Log -Level Info -Message "Files unchanged: $($files.Count - $fixedCount)"
 
     if ($DryRun) {
-        Write-Output "`n[DRY RUN MODE] No changes were applied." -ForegroundColor Yellow
-        Write-Output "Run without -DryRun to apply fixes.`n" -ForegroundColor Yellow
+        Write-Host "`n[DRY RUN MODE] No changes were applied." -ForegroundColor Yellow
+        Write-Host "Run without -DryRun to apply fixes.`n" -ForegroundColor Yellow
     } else {
-        Write-Output "`n[SUCCESS] Auto-fix complete!`n" -ForegroundColor Green
+        Write-Host "`n[SUCCESS] Auto-fix complete!`n" -ForegroundColor Green
     }
 
     if ($CleanBackups) {
@@ -826,11 +795,9 @@ try {
 
 } catch {
     Write-Log -Level Error -Message "Fatal error: $_ "
-    Write-Output "`nStack Trace:" -ForegroundColor Red
-    Write-Output $_.ScriptStackTrace -ForegroundColor Red
+    Write-Host "`nStack Trace:" -ForegroundColor Red
+    Write-Host $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
 
 #endregion
-
-
