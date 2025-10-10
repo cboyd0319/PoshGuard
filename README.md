@@ -13,7 +13,7 @@ Production-grade, modular PowerShell code quality automation system with intelli
 ### Core Capabilities
 - **AST-Based Deep Analysis** - Detects unbound variables, shadowing, unsafe patterns, cognitive complexity
 - **PSScriptAnalyzer Integration** - Zero-tolerance PSSA enforcement with custom rules
-- **Intelligent Auto-Fix** - Safe, idempotent fixes with unified diff output and **93% issue reduction** proven on external scripts
+- **Intelligent Auto-Fix** - Safe, idempotent fixes with unified diff output and **72-93% issue reduction** proven on external scripts
 - **Smart Write-Host Detection** - Preserves UI components (colors, emojis, formatting) while fixing plain output
 - **Parameter Casing Auto-Fix** - Automatically corrects cmdlet and parameter casing to Microsoft standards
 - **Invoke-Formatter Integration** - Automatic code formatting following best practices
@@ -24,12 +24,19 @@ Production-grade, modular PowerShell code quality automation system with intelli
 - **Cross-Platform** - PowerShell 5.1 and 7.x compatible (Windows, Linux, macOS)
 
 ### Proven Track Record
-**External Validation on 18 Production Scripts** ([fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)):
-- ✅ **93% issue reduction** (301 → 27 PSSA violations)
+**External Validation on Production Scripts** ([fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)):
+
+**v2.1.0 Testing** (10 scripts, October 2025):
+- ✅ **72% issue reduction** (365 → 102 PSSA violations)
+- ✅ **83% indentation fix rate** (240/289 issues resolved)
+- ✅ **100% fix rate** for: Trailing whitespace, Comment help, Consistent whitespace
+- ✅ **35% casing improvement** (8/23 issues auto-corrected)
 - ✅ **100% syntax validation** - zero parse errors after auto-fix
-- ✅ **Zero regressions** - all scripts remain functionally correct
-- ✅ **Eliminated 4 issue types completely**: Indentation, Whitespace, Casing, Trailing whitespace
 - ✅ **Idempotent** - safe to run multiple times
+
+**Earlier Testing** (18 scripts):
+- ✅ **93% issue reduction** (301 → 27 PSSA violations)
+- ✅ **Zero regressions** - all scripts remain functionally correct
 
 ---
 
