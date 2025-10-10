@@ -9,10 +9,10 @@
     and multiple sinks (console, file, JSONL). Implements trace propagation for
     distributed debugging and comprehensive audit trails.
 
-.NOTES
-    Author: PowerShell QA Engine
-    Version: 3.0.0
-    Compatible: PowerShell 5.1+, PowerShell 7.x
+    .NOTES
+    Part of PoshGuard
+    Author: https://github.com/cboyd0319
+    Module: PSQALogger.psm1
 #>
 
 [CmdletBinding()]

@@ -13,10 +13,10 @@
     - Security anti-patterns
     - Performance bottlenecks
 
-.NOTES
-    Author: PowerShell QA Engine
-    Version: 3.0.0
-    Compatible: PowerShell 5.1+, PowerShell 7.x
+    .NOTES
+    Part of PoshGuard
+    Author: https://github.com/cboyd0319
+    Module: PSQAASTAnalyzer.psm1
 #>
 
 Set-StrictMode -Version Latest

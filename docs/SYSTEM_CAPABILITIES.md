@@ -1,5 +1,7 @@
 # PowerShell QA & Auto-Fix System - Capabilities
 
+**PoshGuard v2.3.0**
+
 ## Current Capabilities
 
 ### 1. AST-Based Analysis (PSQAASTAnalyzer.psm1)

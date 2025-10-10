@@ -43,7 +43,7 @@
     Restore specific backup version
 
 .NOTES
-    Author: PowerShell QA Engine
+    Author: https://github.com/cboyd0319
     Version: 3.0.0
     Safe: Confirms before restore, keeps backup history
 #>

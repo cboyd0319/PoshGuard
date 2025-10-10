@@ -13,11 +13,10 @@
     - Validates fixes before application
     - Supports dry-run mode for preview
 
-.NOTES
-    Author: PowerShell QA Engine
-    Version: 3.0.0
-    Compatible: PowerShell 5.1+, PowerShell 7.x
-    Requires: PSScriptAnalyzer module
+    .NOTES
+    Part of PoshGuard v2.1.0
+    Author: https://github.com/cboyd0319
+    Module: PSQAAutoFixer.psm1
 #>
 
 Set-StrictMode -Version Latest
