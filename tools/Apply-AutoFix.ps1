@@ -348,6 +348,118 @@ function Invoke-AliasFixAst {
     return $newContent
 }
 
+function Invoke-NullComparisonFix {
+    <#
+    .SYNOPSIS
+        Fixes incorrect $null comparison order
+
+    .DESCRIPTION
+        PowerShell best practice requires $null to be on the left side of comparisons.
+        This prevents accidental assignment and handles arrays correctly.
+
+        FIXES:
+        - $var -eq $null → $null -eq $var
+        - $var -ne $null → $null -ne $var
+        - Also handles: -gt, -lt, -ge, -le comparisons
+
+    .EXAMPLE
+        # BEFORE:
+        if ($value -eq $null) { }
+
+        # AFTER:
+        if ($null -eq $value) { }
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST-based null comparison fix
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all binary expression ASTs (comparisons)
+            $binaryExprs = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.BinaryExpressionAst]
+                }, $true)
+
+            foreach ($expr in $binaryExprs) {
+                # Check if this is a comparison with $null
+                $isNullComparison = $false
+                $nullOnRight = $false
+                $comparisonOp = $expr.Operator
+
+                # Check if operator is a comparison operator
+                # PowerShell uses case-insensitive operators by default (Ieq, Ine, etc.)
+                if ($comparisonOp -match '^(I|C)?(eq|ne|gt|lt|ge|le)$') {
+                    # Check if right side is $null
+                    if ($expr.Right -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                        $expr.Right.VariablePath.UserPath -eq 'null') {
+                        $isNullComparison = $true
+                        $nullOnRight = $true
+                    }
+                }
+
+                # If we found a comparison with $null on the right side, swap it
+                if ($isNullComparison -and $nullOnRight) {
+                    # Get the text of left and right expressions
+                    $leftText = $expr.Left.Extent.Text
+                    $rightText = $expr.Right.Extent.Text  # This should be '$null'
+
+                    # Map operator to its text representation - preserve case sensitivity
+                    $opText = switch -Regex ($comparisonOp) {
+                        '^I?eq$' { '-eq' }
+                        '^Ceq$' { '-ceq' }
+                        '^I?ne$' { '-ne' }
+                        '^Cne$' { '-cne' }
+                        '^I?gt$' { '-gt' }
+                        '^Cgt$' { '-cgt' }
+                        '^I?lt$' { '-lt' }
+                        '^Clt$' { '-clt' }
+                        '^I?ge$' { '-ge' }
+                        '^Cge$' { '-cge' }
+                        '^I?le$' { '-le' }
+                        '^Cle$' { '-cle' }
+                    }
+
+                    # Swap: $var -eq $null → $null -eq $var
+                    $newText = "$rightText $opText $leftText"
+
+                    $replacements += @{
+                        Offset      = $expr.Extent.StartOffset
+                        Length      = $expr.Extent.Text.Length
+                        Replacement = $newText
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order to preserve offsets
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Fixed $($replacements.Count) null comparison(s)"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Null comparison fix failed: $_"
+    }
+
+    return $Content
+}
+
 function Invoke-SafetyFix {
     [CmdletBinding()]
     [OutputType([string])]
@@ -358,11 +470,7 @@ function Invoke-SafetyFix {
 
     $fixed = $Content
 
-    # Fix $null comparison order (safe regex)
-    # Only fix when variable is on the left side of comparison
-    $fixed = $fixed -replace '(\$\w+)\s+(-eq|-ne)\s+\$null\b', '$null $2 $1'
-
-    # AST-based ErrorAction addition (MUCH safer than regex)
+    # AST-based ErrorAction addition
     try {
         $tokens = $null
         $errors = $null
@@ -603,6 +711,768 @@ function Invoke-WriteHostFix {
     return $fixed
 }
 
+function Invoke-SemicolonFix {
+    <#
+    .SYNOPSIS
+        Removes unnecessary trailing semicolons from PowerShell code
+
+    .DESCRIPTION
+        PowerShell doesn't require semicolons as line terminators (unlike C#).
+        This function removes semicolons that are used as line terminators while
+        preserving semicolons that are used as statement separators on the same line.
+
+        REMOVES:
+        - Trailing semicolons at end of lines
+        - Semicolons followed only by whitespace/comments
+
+        PRESERVES:
+        - Semicolons between statements on same line: $x = 1; $y = 2
+        - Semicolons in strings or comments
+
+    .EXAMPLE
+        # BEFORE:
+        $x = 5;
+        Write-Output "Hello";
+
+        # AFTER:
+        $x = 5
+        Write-Output "Hello"
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST token-based semicolon removal
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all semicolon tokens
+            $semicolonTokens = $tokens | Where-Object { $_.Kind -eq 'Semi' }
+
+            foreach ($token in $semicolonTokens) {
+                # Check if this semicolon is a line terminator (not a statement separator)
+                # A semicolon is a line terminator if it's followed only by whitespace/newline/comment
+                $afterSemicolon = $Content.Substring($token.Extent.EndOffset)
+
+                # Check if there's only whitespace/newline before the next statement
+                if ($afterSemicolon -match '^\s*($|#)') {
+                    # This is a line terminator - safe to remove
+                    $replacements += @{
+                        Offset = $token.Extent.StartOffset
+                        Length = 1  # Length of semicolon
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order to preserve offsets
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length)
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Removed $($replacements.Count) unnecessary trailing semicolon(s)"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Semicolon fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-SingularNounFix {
+    <#
+    .SYNOPSIS
+        Converts function names with plural nouns to singular nouns
+
+    .DESCRIPTION
+        PowerShell convention dictates that function nouns should be singular.
+        This function detects function declarations with plural nouns and converts them to singular.
+
+        CONVERTS:
+        - Users → User
+        - Items → Item
+        - Entries → Entry
+        - Children → Child
+        - etc.
+
+    .EXAMPLE
+        # BEFORE:
+        function Get-Users { }
+
+        # AFTER:
+        function Get-User { }
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST-based function name detection
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all function definitions
+            $functionAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)
+
+            foreach ($funcAst in $functionAsts) {
+                $functionName = $funcAst.Name
+
+                # Split function name into Verb-Noun format
+                if ($functionName -match '^([A-Za-z]+)-([A-Za-z]+)$') {
+                    $verb = $Matches[1]
+                    $noun = $Matches[2]
+
+                    # Apply pluralization rules to get singular form
+                    $singularNoun = $null
+
+                    # Rule 1: Words ending in 'ies' → 'y' (Entries → Entry)
+                    if ($noun -match '^(.+)ies$') {
+                        $singularNoun = $Matches[1] + 'y'
+                    }
+                    # Rule 2: Words ending in 'es' (not 'ies') → remove 'es' (Processes → Process)
+                    elseif ($noun -match '^(.+[^i])es$') {
+                        $singularNoun = $Matches[1]
+                    }
+                    # Rule 3: Words ending in 'ves' → 'fe' or 'f' (Knives → Knife)
+                    elseif ($noun -match '^(.+)ves$') {
+                        $singularNoun = $Matches[1] + 'fe'
+                    }
+                    # Rule 4: Words ending in 's' (but not 'ss') → remove 's' (Users → User)
+                    elseif ($noun -match '^(.+[^s])s$') {
+                        $singularNoun = $Matches[1]
+                    }
+
+                    # If we found a singular form and it's different from the original
+                    if ($singularNoun -and $singularNoun -ne $noun) {
+                        $newFunctionName = "$verb-$singularNoun"
+
+                        # Only replace if the new name is actually different
+                        if ($newFunctionName -ne $functionName) {
+                            # Find the exact location of the function name in the AST
+                            $replacements += @{
+                                Offset      = $funcAst.Extent.StartOffset
+                                Length      = $funcAst.Extent.Text.Length
+                                OldName     = $functionName
+                                NewName     = $newFunctionName
+                                FuncExtent  = $funcAst.Extent.Text
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                # Replace the function definition
+                $oldFuncText = $replacement.FuncExtent
+                $newFuncText = $oldFuncText -replace [regex]::Escape($replacement.OldName), $replacement.NewName
+
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $newFuncText)
+
+                Write-Verbose "Converted function name: $($replacement.OldName) → $($replacement.NewName)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Converted $($replacements.Count) function name(s) to singular form"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Singular noun fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-ApprovedVerbFix {
+    <#
+    .SYNOPSIS
+        Fixes function names with unapproved PowerShell verbs
+
+    .DESCRIPTION
+        PowerShell has a set of approved verbs (Get-Verb) that should be used for consistency.
+        This function detects unapproved verbs and replaces them with approved alternatives.
+
+        COMMON MAPPINGS:
+        - Validate → Test
+        - Check → Test
+        - Verify → Test
+        - Display → Show
+        - Print → Write
+        - Create → New
+        - Delete → Remove
+        - Destroy → Remove
+        - Make → New
+        - Build → New
+        - Generate → New
+        - Retrieve → Get
+        - Fetch → Get
+        - Obtain → Get
+        - Acquire → Get
+        - Change → Set
+        - Modify → Set
+        - Update → Set
+        - Edit → Set
+        - List → Get
+        - Enumerate → Get
+
+    .EXAMPLE
+        PS C:\> Invoke-ApprovedVerbFix -Content $scriptContent
+
+        Replaces unapproved verbs with approved alternatives
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST-based function name detection
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            # Get list of approved verbs from PowerShell
+            $approvedVerbs = @{}
+            try {
+                Get-Verb | ForEach-Object { $approvedVerbs[$_.Verb.ToLower()] = $_.Verb }
+            }
+            catch {
+                # If Get-Verb fails, use a hardcoded list of common approved verbs
+                $commonApprovedVerbs = @(
+                    'Add', 'Clear', 'Close', 'Copy', 'Enter', 'Exit', 'Find', 'Format', 'Get', 'Hide',
+                    'Join', 'Lock', 'Move', 'New', 'Open', 'Optimize', 'Pop', 'Push', 'Redo', 'Remove',
+                    'Rename', 'Reset', 'Resize', 'Search', 'Select', 'Set', 'Show', 'Skip', 'Split',
+                    'Step', 'Switch', 'Undo', 'Unlock', 'Watch', 'Backup', 'Checkpoint', 'Compare',
+                    'Compress', 'Convert', 'ConvertFrom', 'ConvertTo', 'Dismount', 'Edit', 'Expand',
+                    'Export', 'Group', 'Import', 'Initialize', 'Limit', 'Merge', 'Mount', 'Out',
+                    'Publish', 'Restore', 'Save', 'Sync', 'Unpublish', 'Update', 'Approve', 'Assert',
+                    'Complete', 'Confirm', 'Deny', 'Disable', 'Enable', 'Install', 'Invoke', 'Register',
+                    'Request', 'Restart', 'Resume', 'Start', 'Stop', 'Submit', 'Suspend', 'Uninstall',
+                    'Unregister', 'Wait', 'Debug', 'Measure', 'Ping', 'Repair', 'Resolve', 'Test',
+                    'Trace', 'Connect', 'Disconnect', 'Read', 'Receive', 'Send', 'Write', 'Block',
+                    'Grant', 'Protect', 'Revoke', 'Unblock', 'Unprotect', 'Use'
+                )
+                $commonApprovedVerbs | ForEach-Object { $approvedVerbs[$_.ToLower()] = $_ }
+            }
+
+            # Common unapproved verb mappings to approved verbs
+            $verbMappings = @{
+                'Validate'  = 'Test'
+                'Check'     = 'Test'
+                'Verify'    = 'Test'
+                'Display'   = 'Show'
+                'Print'     = 'Write'
+                'Create'    = 'New'
+                'Delete'    = 'Remove'
+                'Destroy'   = 'Remove'
+                'Make'      = 'New'
+                'Build'     = 'New'
+                'Generate'  = 'New'
+                'Retrieve'  = 'Get'
+                'Fetch'     = 'Get'
+                'Obtain'    = 'Get'
+                'Acquire'   = 'Get'
+                'Change'    = 'Set'
+                'Modify'    = 'Set'
+                'Alter'     = 'Set'
+                'Edit'      = 'Edit'  # Edit is actually approved
+                'List'      = 'Get'
+                'Enumerate' = 'Get'
+                'Query'     = 'Get'
+                'Load'      = 'Import'
+                'Save'      = 'Export'
+                'Unload'    = 'Remove'
+                'Execute'   = 'Invoke'
+                'Run'       = 'Invoke'
+                'Call'      = 'Invoke'
+                'Launch'    = 'Start'
+                'Kill'      = 'Stop'
+                'Terminate' = 'Stop'
+                'Quit'      = 'Exit'
+                'Close'     = 'Close'  # Close is approved
+                'Open'      = 'Open'   # Open is approved
+            }
+
+            $replacements = @()
+
+            # Find all function definitions
+            $functionAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)
+
+            foreach ($funcAst in $functionAsts) {
+                $functionName = $funcAst.Name
+
+                # Split function name into Verb-Noun format
+                if ($functionName -match '^([A-Za-z]+)-([A-Za-z]+)$') {
+                    $verb = $Matches[1]
+                    $noun = $Matches[2]
+
+                    # Check if verb is approved (case-insensitive)
+                    $verbLower = $verb.ToLower()
+
+                    if (-not $approvedVerbs.ContainsKey($verbLower)) {
+                        # Verb is not approved, try to find a mapping
+                        $approvedVerb = $null
+
+                        # First check our mapping table
+                        if ($verbMappings.ContainsKey($verb)) {
+                            $approvedVerb = $verbMappings[$verb]
+                        }
+                        else {
+                            # Try case-insensitive lookup in mappings
+                            foreach ($key in $verbMappings.Keys) {
+                                if ($key -eq $verb -or $key.ToLower() -eq $verbLower) {
+                                    $approvedVerb = $verbMappings[$key]
+                                    break
+                                }
+                            }
+                        }
+
+                        if ($approvedVerb) {
+                            $newFunctionName = "$approvedVerb-$noun"
+
+                            # Only replace if the new name is different
+                            if ($newFunctionName -ne $functionName) {
+                                $replacements += @{
+                                    Offset      = $funcAst.Extent.StartOffset
+                                    Length      = $funcAst.Extent.Text.Length
+                                    OldName     = $functionName
+                                    NewName     = $newFunctionName
+                                    FuncExtent  = $funcAst.Extent.Text
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                # Replace the function definition
+                $oldFuncText = $replacement.FuncExtent
+                $newFuncText = $oldFuncText -replace [regex]::Escape($replacement.OldName), $replacement.NewName
+
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $newFuncText)
+
+                Write-Verbose "Converted unapproved verb: $($replacement.OldName) → $($replacement.NewName)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Converted $($replacements.Count) function(s) to use approved verbs"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Approved verb fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-SupportsShouldProcessFix {
+    <#
+    .SYNOPSIS
+        Adds SupportsShouldProcess to CmdletBinding when ShouldProcess is used
+
+    .DESCRIPTION
+        Functions using $PSCmdlet.ShouldProcess() must declare SupportsShouldProcess
+        in their CmdletBinding attribute. This fix detects such usage and adds the attribute.
+
+    .EXAMPLE
+        PS C:\> Invoke-SupportsShouldProcessFix -Content $scriptContent
+
+        Adds SupportsShouldProcess=$true to functions using ShouldProcess
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all function definitions
+            $functionAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)
+
+            foreach ($funcAst in $functionAsts) {
+                # Check if function uses $PSCmdlet.ShouldProcess
+                $usesShouldProcess = $false
+
+                $shouldProcessCalls = $funcAst.FindAll({
+                        $args[0] -is [System.Management.Automation.Language.MemberExpressionAst] -and
+                        $args[0].Member.Extent.Text -eq 'ShouldProcess'
+                    }, $true)
+
+                if ($shouldProcessCalls.Count -gt 0) {
+                    $usesShouldProcess = $true
+                }
+
+                if ($usesShouldProcess) {
+                    # Check if function has CmdletBinding attribute
+                    $paramBlock = $funcAst.Body.ParamBlock
+
+                    if ($paramBlock -and $paramBlock.Attributes) {
+                        foreach ($attr in $paramBlock.Attributes) {
+                            if ($attr.TypeName.Name -eq 'CmdletBinding') {
+                                # Check if SupportsShouldProcess is already present
+                                $hasSupportsShouldProcess = $false
+
+                                foreach ($namedArg in $attr.NamedArguments) {
+                                    if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
+                                        $hasSupportsShouldProcess = $true
+                                        break
+                                    }
+                                }
+
+                                if (-not $hasSupportsShouldProcess) {
+                                    # Add SupportsShouldProcess to existing CmdletBinding
+                                    $attrText = $attr.Extent.Text
+
+                                    if ($attrText -match '^\[CmdletBinding\(\s*\)\]$') {
+                                        # Empty CmdletBinding()
+                                        $newAttrText = '[CmdletBinding(SupportsShouldProcess=$true)]'
+                                    }
+                                    else {
+                                        # Has existing arguments
+                                        $newAttrText = $attrText -replace '\)\]$', ', SupportsShouldProcess=$true)]'
+                                    }
+
+                                    $replacements += @{
+                                        Offset      = $attr.Extent.StartOffset
+                                        Length      = $attr.Extent.Text.Length
+                                        Replacement = $newAttrText
+                                        FuncName    = $funcAst.Name
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+                Write-Verbose "Added SupportsShouldProcess to: $($replacement.FuncName)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Added SupportsShouldProcess to $($replacements.Count) function(s)"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "SupportsShouldProcess fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-GlobalVarFix {
+    <#
+    .SYNOPSIS
+        Converts global variables to script scope
+
+    .DESCRIPTION
+        Global variables should be avoided as they pollute the global namespace.
+        This fix converts $global: variables to $script: scope.
+
+    .EXAMPLE
+        PS C:\> Invoke-GlobalVarFix -Content $scriptContent
+
+        Converts $global:Var to $script:Var
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all variable expressions
+            $varAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
+                }, $true)
+
+            foreach ($varAst in $varAsts) {
+                # Check if variable uses global scope
+                if ($varAst.VariablePath.DriveName -eq 'global') {
+                    # Convert to script scope
+                    $varName = $varAst.VariablePath.UserPath
+                    $newVarText = "`$script:$varName"
+
+                    $replacements += @{
+                        Offset      = $varAst.Extent.StartOffset
+                        Length      = $varAst.Extent.Text.Length
+                        Replacement = $newVarText
+                        VarName     = $varAst.Extent.Text
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+                Write-Verbose "Converted global variable: $($replacement.VarName) → $($replacement.Replacement)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Converted $($replacements.Count) global variable(s) to script scope"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Global variable fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-DoubleQuoteFix {
+    <#
+    .SYNOPSIS
+        Converts double quotes to single quotes for constant strings
+
+    .DESCRIPTION
+        PowerShell best practice is to use single quotes for constant strings
+        (strings without variable expansion). This improves performance slightly
+        and makes the intent clearer.
+
+    .EXAMPLE
+        PS C:\> Invoke-DoubleQuoteFix -Content $scriptContent
+
+        Converts "Hello" to 'Hello' when no variables are present
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # Find all string literals
+            $stringAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                }, $true)
+
+            foreach ($stringAst in $stringAsts) {
+                # Check if it's a double-quoted string
+                if ($stringAst.StringConstantType -eq 'DoubleQuoted') {
+                    $stringValue = $stringAst.Value
+
+                    # Check if string contains single quotes (would need escaping)
+                    if ($stringValue -notmatch "'") {
+                        # Check if string contains special characters that require double quotes
+                        # Allow conversion if no variables, escape sequences, or special chars
+                        if ($stringValue -notmatch '[\$`]') {
+                            # Safe to convert to single quotes
+                            $newStringText = "'$stringValue'"
+
+                            $replacements += @{
+                                Offset      = $stringAst.Extent.StartOffset
+                                Length      = $stringAst.Extent.Text.Length
+                                Replacement = $newStringText
+                                Original    = $stringAst.Extent.Text
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+                Write-Verbose "Converted double quotes: $($replacement.Original) → $($replacement.Replacement)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Converted $($replacements.Count) string(s) from double to single quotes"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Double quote fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-CommentHelpFix {
+    <#
+    .SYNOPSIS
+        Adds basic comment-based help to functions without help
+
+    .DESCRIPTION
+        PowerShell best practice requires functions to have comment-based help.
+        This function detects functions without help and adds a basic template.
+
+        ADDS:
+        - .SYNOPSIS section
+        - .DESCRIPTION section
+        - .EXAMPLE section
+
+    .EXAMPLE
+        PS C:\> Invoke-CommentHelpFix -Content $scriptContent
+
+        Adds comment-based help template to functions without help
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # AST-based function detection
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $insertions = @()
+
+            # Find all function definitions
+            $functionAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)
+
+            foreach ($funcAst in $functionAsts) {
+                $functionName = $funcAst.Name
+
+                # Check if function already has help
+                $hasHelp = $false
+
+                # Look for comment-based help in the function body
+                if ($funcAst.Body.ParamBlock -and $funcAst.Body.ParamBlock.Extent.Text -match '<#[\s\S]*?\.SYNOPSIS[\s\S]*?#>') {
+                    $hasHelp = $true
+                }
+
+                # Also check for help before the function
+                $startOffset = $funcAst.Extent.StartOffset
+                if ($startOffset -gt 0) {
+                    $textBefore = $Content.Substring(0, $startOffset)
+                    # Check last 500 characters before function for help block
+                    $checkLength = [Math]::Min(500, $textBefore.Length)
+                    $recentText = $textBefore.Substring($textBefore.Length - $checkLength)
+                    if ($recentText -match '<#[\s\S]*?\.SYNOPSIS[\s\S]*?#>[\s\r\n]*$') {
+                        $hasHelp = $true
+                    }
+                }
+
+                # If no help found, add template
+                if (-not $hasHelp) {
+                    # Generate help template
+                    $helpTemplate = @"
+<#
+.SYNOPSIS
+    Brief description of $functionName
+
+.DESCRIPTION
+    Detailed description of $functionName
+
+.EXAMPLE
+    PS C:\> $functionName
+    Example usage of $functionName
+#>
+
+"@
+                    $insertions += @{
+                        Offset   = $funcAst.Extent.StartOffset
+                        Text     = $helpTemplate
+                        FuncName = $functionName
+                    }
+                }
+            }
+
+            # Apply insertions in reverse order to preserve offsets
+            $fixed = $Content
+            foreach ($insertion in ($insertions | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Insert($insertion.Offset, $insertion.Text)
+                Write-Verbose "Added comment-based help for: $($insertion.FuncName)"
+            }
+
+            if ($insertions.Count -gt 0) {
+                Write-Verbose "Added help to $($insertions.Count) function(s)"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Comment help fix failed: $_"
+    }
+
+    return $Content
+}
+
 function Invoke-DuplicateLineFix {
     <#
     .SYNOPSIS
@@ -823,8 +1693,16 @@ function Invoke-FileFix {
             $fixedContent = $originalContent
             # DISABLED: Invoke-StructureFix adds duplicate [CmdletBinding()] blocks - needs AST fix
             # $fixedContent = Invoke-StructureFix -Content $fixedContent
+            $fixedContent = Invoke-CommentHelpFix -Content $fixedContent
+            $fixedContent = Invoke-SupportsShouldProcessFix -Content $fixedContent
             $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
+            $fixedContent = Invoke-SemicolonFix -Content $fixedContent
+            $fixedContent = Invoke-ApprovedVerbFix -Content $fixedContent
+            $fixedContent = Invoke-SingularNounFix -Content $fixedContent
+            $fixedContent = Invoke-GlobalVarFix -Content $fixedContent
+            $fixedContent = Invoke-DoubleQuoteFix -Content $fixedContent
+            $fixedContent = Invoke-NullComparisonFix -Content $fixedContent
             $fixedContent = Invoke-DuplicateLineFix -Content $fixedContent
             $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-CasingFix -Content $fixedContent
