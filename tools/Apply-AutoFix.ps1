@@ -45,7 +45,7 @@
 
 .NOTES
     Author: PowerShell QA Engine
-    Version: 4.0.0
+    Version: 2.1.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
 #>
@@ -1364,6 +1364,489 @@ function Invoke-DoubleQuoteFix {
     return $Content
 }
 
+function Invoke-WmiToCimFix {
+    <#
+    .SYNOPSIS
+        Converts deprecated WMI cmdlets to CIM cmdlets
+
+    .DESCRIPTION
+        WMI cmdlets (Get-WmiObject, etc.) are deprecated in PowerShell 7+.
+        This function converts them to modern CIM cmdlets with proper parameter mapping.
+
+        CONVERSIONS:
+        - Get-WmiObject → Get-CimInstance
+        - Set-WmiInstance → Set-CimInstance
+        - Invoke-WmiMethod → Invoke-CimMethod
+        - Remove-WmiObject → Remove-CimInstance
+        - Register-WmiEvent → Register-CimIndicationEvent
+
+        PARAMETER MAPPINGS:
+        - -Class → -ClassName
+        - -Namespace remains -Namespace
+        - -ComputerName remains -ComputerName
+        - -Credential remains -Credential
+        - -Filter remains -Filter
+        - -Property remains -Property
+
+    .EXAMPLE
+        PS C:\> Invoke-WmiToCimFix -Content $scriptContent
+
+        Converts Get-WmiObject -Class Win32_Process to Get-CimInstance -ClassName Win32_Process
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = @()
+
+            # WMI to CIM cmdlet mappings
+            $cmdletMappings = @{
+                'Get-WmiObject'      = 'Get-CimInstance'
+                'Set-WmiInstance'    = 'Set-CimInstance'
+                'Invoke-WmiMethod'   = 'Invoke-CimMethod'
+                'Remove-WmiObject'   = 'Remove-CimInstance'
+                'Register-WmiEvent'  = 'Register-CimIndicationEvent'
+            }
+
+            # Find all command ASTs
+            $commandAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.CommandAst]
+                }, $true)
+
+            foreach ($cmdAst in $commandAsts) {
+                $cmdName = $cmdAst.GetCommandName()
+
+                if ($cmdletMappings.ContainsKey($cmdName)) {
+                    # This is a WMI cmdlet that needs conversion
+                    $newCmdName = $cmdletMappings[$cmdName]
+
+                    # Build the new command text
+                    $cmdElements = $cmdAst.CommandElements
+                    $newCommandParts = @()
+
+                    # Start with the new cmdlet name
+                    $newCommandParts += $newCmdName
+
+                    # Process parameters
+                    $i = 1  # Skip the command name itself
+                    while ($i -lt $cmdElements.Count) {
+                        $element = $cmdElements[$i]
+
+                        if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+                            # This is a parameter
+                            $paramName = $element.ParameterName
+
+                            # Map -Class to -ClassName for CIM cmdlets
+                            if ($paramName -eq 'Class') {
+                                $newCommandParts += '-ClassName'
+                            }
+                            else {
+                                # Keep other parameters as-is
+                                $newCommandParts += "-$paramName"
+                            }
+
+                            # Check if there's an argument for this parameter
+                            if ($element.Argument) {
+                                # Argument is part of the parameter (e.g., -Class:Win32_Process)
+                                $newCommandParts += $element.Argument.Extent.Text
+                            }
+                            elseif ($i + 1 -lt $cmdElements.Count) {
+                                # Check if next element is the argument
+                                $nextElement = $cmdElements[$i + 1]
+                                if ($nextElement -isnot [System.Management.Automation.Language.CommandParameterAst]) {
+                                    # This is the parameter value
+                                    $newCommandParts += $nextElement.Extent.Text
+                                    $i++  # Skip the next element since we've processed it
+                                }
+                            }
+                        }
+                        else {
+                            # This is a positional argument or other element
+                            $newCommandParts += $element.Extent.Text
+                        }
+
+                        $i++
+                    }
+
+                    # Join all parts with spaces
+                    $newCommandText = $newCommandParts -join ' '
+
+                    $replacements += @{
+                        Offset      = $cmdAst.Extent.StartOffset
+                        Length      = $cmdAst.Extent.Text.Length
+                        Replacement = $newCommandText
+                        OldCmd      = $cmdName
+                        NewCmd      = $newCmdName
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order
+            $fixed = $Content
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+                Write-Verbose "Converted WMI cmdlet: $($replacement.OldCmd) → $($replacement.NewCmd)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Converted $($replacements.Count) WMI cmdlet(s) to CIM cmdlets"
+            }
+
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "WMI to CIM conversion failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-ReservedParamsFix {
+    <#
+    .SYNOPSIS
+        Renames parameters that conflict with PowerShell reserved/common parameter names
+
+    .DESCRIPTION
+        PowerShell has reserved parameter names (Common Parameters) that should not be used
+        as custom parameters. This function detects such conflicts and renames them.
+
+        Common Parameters:
+        - Verbose, Debug, ErrorAction, WarningAction, InformationAction
+        - ErrorVariable, WarningVariable, InformationVariable
+        - OutVariable, OutBuffer, PipelineVariable
+
+        Renaming Strategy:
+        - Verbose → VerboseOutput
+        - Debug → DebugMode
+        - ErrorAction → ErrorHandling
+        - WarningAction → WarningHandling
+        - InformationAction → InformationHandling
+        - ErrorVariable → ErrorVar
+        - WarningVariable → WarningVar
+        - InformationVariable → InformationVar
+        - OutVariable → OutputVariable
+        - OutBuffer → OutputBuffer
+        - PipelineVariable → PipelineVar
+
+    .EXAMPLE
+        PS C:\> Invoke-ReservedParamsFix -Content $scriptContent
+
+        Renames reserved parameter names to avoid conflicts
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # Reserved parameter name mappings
+    $reservedMappings = @{
+        'Verbose'             = 'VerboseOutput'
+        'Debug'               = 'DebugMode'
+        'ErrorAction'         = 'ErrorHandling'
+        'WarningAction'       = 'WarningHandling'
+        'InformationAction'   = 'InformationHandling'
+        'ErrorVariable'       = 'ErrorVar'
+        'WarningVariable'     = 'WarningVar'
+        'InformationVariable' = 'InformationVar'
+        'OutVariable'         = 'OutputVariable'
+        'OutBuffer'           = 'OutputBuffer'
+        'PipelineVariable'    = 'PipelineVar'
+        'WhatIf'              = 'WhatIfMode'
+        'Confirm'             = 'ConfirmAction'
+    }
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = [System.Collections.ArrayList]::new()
+
+            # Find all function definitions
+            $functions = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+            }, $true)
+
+            foreach ($funcAst in $functions) {
+                # Get all parameters in this function
+                $parameters = $funcAst.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.ParameterAst]
+                }, $true)
+
+                foreach ($paramAst in $parameters) {
+                    $paramName = $paramAst.Name.VariablePath.UserPath
+
+                    # Check if parameter name conflicts with reserved names
+                    if ($reservedMappings.ContainsKey($paramName)) {
+                        $newParamName = $reservedMappings[$paramName]
+
+                        # Find all references to this parameter within the function
+                        $varRefs = $funcAst.FindAll({
+                            $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                            $args[0].VariablePath.UserPath -eq $paramName
+                        }, $true)
+
+                        # Add replacements for all references (sorted by position descending)
+                        foreach ($varRef in $varRefs) {
+                            $extent = $varRef.Extent
+                            $oldText = $extent.Text
+                            $newText = "`$$newParamName"
+
+                            $replacements.Add([PSCustomObject]@{
+                                StartOffset = $extent.StartOffset
+                                EndOffset = $extent.EndOffset
+                                OldText = $oldText
+                                NewText = $newText
+                            }) | Out-Null
+                        }
+
+                        Write-Verbose "Renaming reserved parameter: $paramName → $newParamName in function $($funcAst.Name)"
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order (end to start)
+            if ($replacements.Count -gt 0) {
+                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+                $fixed = $Content
+
+                foreach ($replacement in $replacements) {
+                    $before = $fixed.Substring(0, $replacement.StartOffset)
+                    $after = $fixed.Substring($replacement.EndOffset)
+                    $fixed = $before + $replacement.NewText + $after
+                }
+
+                Write-Verbose "Renamed $($replacements.Count) reserved parameter reference(s)"
+                return $fixed
+            }
+        }
+    }
+    catch {
+        Write-Verbose "Reserved params fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-SwitchParameterDefaultFix {
+    <#
+    .SYNOPSIS
+        Removes default values from [switch] parameters
+
+    .DESCRIPTION
+        Switch parameters should not have default values (= $true or = $false).
+        This is a PowerShell best practice violation that can cause unexpected behavior.
+
+        Removes:
+        - [switch]$MySwitch = $true
+        - [switch]$MySwitch = $false
+
+        Converts to:
+        - [switch]$MySwitch
+
+    .EXAMPLE
+        PS C:\> Invoke-SwitchParameterDefaultFix -Content $scriptContent
+
+        Removes default values from switch parameters
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = [System.Collections.ArrayList]::new()
+
+            # Find all parameters with [switch] type
+            $parameters = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.ParameterAst]
+            }, $true)
+
+            foreach ($paramAst in $parameters) {
+                # Check if parameter has [switch] attribute
+                $hasSwitch = $false
+                foreach ($attr in $paramAst.Attributes) {
+                    if ($attr.TypeName.FullName -eq 'switch') {
+                        $hasSwitch = $true
+                        break
+                    }
+                }
+
+                if ($hasSwitch -and $paramAst.DefaultValue) {
+                    # Has a default value - remove it
+                    $paramName = $paramAst.Name.VariablePath.UserPath
+
+                    # Get the text from parameter start to default value end
+                    $paramStartOffset = $paramAst.Extent.StartOffset
+                    $defaultValueEndOffset = $paramAst.DefaultValue.Extent.EndOffset
+
+                    # Find the = sign before the default value
+                    $textBetween = $Content.Substring($paramAst.Name.Extent.EndOffset,
+                                                      $paramAst.DefaultValue.Extent.StartOffset - $paramAst.Name.Extent.EndOffset)
+
+                    if ($textBetween -match '\s*=\s*') {
+                        # Remove everything from the end of variable name to end of default value
+                        $oldText = $Content.Substring($paramAst.Name.Extent.EndOffset,
+                                                      $defaultValueEndOffset - $paramAst.Name.Extent.EndOffset)
+
+                        $replacements.Add([PSCustomObject]@{
+                            StartOffset = $paramAst.Name.Extent.EndOffset
+                            EndOffset = $defaultValueEndOffset
+                            OldText = $oldText
+                            NewText = ''
+                        }) | Out-Null
+
+                        Write-Verbose "Removing default value from switch parameter: $paramName"
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order (end to start)
+            if ($replacements.Count -gt 0) {
+                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+                $fixed = $Content
+
+                foreach ($replacement in $replacements) {
+                    $before = $fixed.Substring(0, $replacement.StartOffset)
+                    $after = $fixed.Substring($replacement.EndOffset)
+                    $fixed = $before + $replacement.NewText + $after
+                }
+
+                Write-Verbose "Removed default values from $($replacements.Count) switch parameter(s)"
+                return $fixed
+            }
+        }
+    }
+    catch {
+        Write-Verbose "Switch parameter default fix failed: $_"
+    }
+
+    return $Content
+}
+
+function Invoke-BrokenHashAlgorithmFix {
+    <#
+    .SYNOPSIS
+        Replaces insecure hash algorithms with secure alternatives
+
+    .DESCRIPTION
+        Detects and replaces broken/weak cryptographic hash algorithms with secure alternatives.
+
+        Broken Algorithms (replaced):
+        - MD5 → SHA256
+        - SHA1 → SHA256
+        - RIPEMD160 → SHA256
+
+        Secure Alternatives:
+        - SHA256 (default replacement)
+        - SHA384
+        - SHA512
+
+        This fix targets:
+        - [System.Security.Cryptography.MD5]::Create()
+        - [System.Security.Cryptography.SHA1]::Create()
+        - New-Object System.Security.Cryptography.MD5CryptoServiceProvider
+        - etc.
+
+    .EXAMPLE
+        PS C:\> Invoke-BrokenHashAlgorithmFix -Content $scriptContent
+
+        Replaces broken hash algorithms with SHA256
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    # Hash algorithm mappings (broken → secure)
+    $hashMappings = @(
+        @{ Pattern = 'MD5CryptoServiceProvider';         Replacement = 'SHA256CryptoServiceProvider';    Algorithm = 'MD5' }
+        @{ Pattern = 'MD5Cng';                          Replacement = 'SHA256Cng';                      Algorithm = 'MD5' }
+        @{ Pattern = 'MD5';                             Replacement = 'SHA256';                         Algorithm = 'MD5' }
+        @{ Pattern = 'SHA1CryptoServiceProvider';       Replacement = 'SHA256CryptoServiceProvider';    Algorithm = 'SHA1' }
+        @{ Pattern = 'SHA1Cng';                         Replacement = 'SHA256Cng';                      Algorithm = 'SHA1' }
+        @{ Pattern = 'SHA1Managed';                     Replacement = 'SHA256Managed';                  Algorithm = 'SHA1' }
+        @{ Pattern = 'SHA1';                            Replacement = 'SHA256';                         Algorithm = 'SHA1' }
+        @{ Pattern = 'RIPEMD160Managed';                Replacement = 'SHA256Managed';                  Algorithm = 'RIPEMD160' }
+        @{ Pattern = 'RIPEMD160';                       Replacement = 'SHA256';                         Algorithm = 'RIPEMD160' }
+    )
+
+    try {
+        $fixed = $Content
+        $replacementCount = 0
+
+        foreach ($mapping in $hashMappings) {
+            $pattern = $mapping.Pattern
+            $replacement = $mapping.Replacement
+            $algorithm = $mapping.Algorithm
+
+            # Match patterns like:
+            # [System.Security.Cryptography.MD5]::Create()
+            # New-Object System.Security.Cryptography.MD5CryptoServiceProvider
+            # [MD5]::Create()
+
+            $regex = [regex]::new("(\[(?:System\.Security\.Cryptography\.)?$pattern\]|System\.Security\.Cryptography\.$pattern\b)",
+                                  [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+
+            $matches = $regex.Matches($fixed)
+            if ($matches.Count -gt 0) {
+                $fixed = $regex.Replace($fixed, {
+                    param($match)
+                    $originalText = $match.Groups[1].Value
+
+                    # Preserve the structure (brackets, namespace, etc.)
+                    if ($originalText -match '^\[') {
+                        # [System.Security.Cryptography.MD5] or [MD5]
+                        if ($originalText -match 'System\.Security\.Cryptography') {
+                            "[System.Security.Cryptography.$replacement]"
+                        } else {
+                            "[$replacement]"
+                        }
+                    } else {
+                        # System.Security.Cryptography.MD5 (no brackets)
+                        "System.Security.Cryptography.$replacement"
+                    }
+                })
+
+                $replacementCount += $matches.Count
+                Write-Verbose "Replaced $($matches.Count) instance(s) of insecure $algorithm hash algorithm with $replacement"
+            }
+        }
+
+        if ($replacementCount -gt 0) {
+            Write-Verbose "Total: Replaced $replacementCount insecure hash algorithm reference(s)"
+            return $fixed
+        }
+    }
+    catch {
+        Write-Verbose "Broken hash algorithm fix failed: $_"
+    }
+
+    return $Content
+}
+
 function Invoke-CommentHelpFix {
     <#
     .SYNOPSIS
@@ -1693,8 +2176,12 @@ function Invoke-FileFix {
             $fixedContent = $originalContent
             # DISABLED: Invoke-StructureFix adds duplicate [CmdletBinding()] blocks - needs AST fix
             # $fixedContent = Invoke-StructureFix -Content $fixedContent
+            $fixedContent = Invoke-ReservedParamsFix -Content $fixedContent
+            $fixedContent = Invoke-SwitchParameterDefaultFix -Content $fixedContent
+            $fixedContent = Invoke-BrokenHashAlgorithmFix -Content $fixedContent
             $fixedContent = Invoke-CommentHelpFix -Content $fixedContent
             $fixedContent = Invoke-SupportsShouldProcessFix -Content $fixedContent
+            $fixedContent = Invoke-WmiToCimFix -Content $fixedContent
             $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
             $fixedContent = Invoke-SemicolonFix -Content $fixedContent
@@ -1769,7 +2256,7 @@ function Invoke-FileFix {
 
 try {
     Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         PowerShell QA Auto-Fix Engine v4.0.0                  ║" -ForegroundColor Cyan
+    Write-Host "║         PowerShell QA Auto-Fix Engine v2.1.0                  ║" -ForegroundColor Cyan
     Write-Host "║         Idempotent - Safe - Production-Grade                  ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 

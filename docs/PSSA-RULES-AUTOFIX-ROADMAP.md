@@ -2,12 +2,12 @@
 
 **Last Updated**: 2025-10-10
 **Total PSSA Rules**: 70
-**Currently Auto-Fixed**: 17 rules (24%)
+**Currently Auto-Fixed**: 21 rules (30%)
 **Auto-Fix Coverage Goal**: 30+ rules (43%)
 
 ---
 
-## Current Auto-Fix Coverage (17/70 = 24%)
+## Current Auto-Fix Coverage (21/70 = 30%)
 
 ### ✅ Fully Auto-Fixed Rules
 
@@ -29,6 +29,10 @@
 | **PSUseBOMForUnicodeEncodedFile** ⭐ | Warning | Auto-detection + UTF8-BOM | Apply-AutoFix.ps1:1713-1717 |
 | **PSProvideCommentHelp** ⭐ | Information | Invoke-CommentHelpFix (AST-based) | Apply-AutoFix.ps1:1367-1485 |
 | **PSPossibleIncorrectComparisonWithNull** ⭐ | Warning | Invoke-NullComparisonFix (AST-based) | Apply-AutoFix.ps1:351-454 |
+| **PSAvoidUsingWMICmdlet** ⭐ | Warning | Invoke-WmiToCimFix (AST-based cmdlet mapping) | Apply-AutoFix.ps1:1367-1512 |
+| **PSReservedParams** ⭐ | Error | Invoke-ReservedParamsFix (AST-based parameter renaming) | Apply-AutoFix.ps1:1514-1642 |
+| **PSAvoidDefaultValueSwitchParameter** ⭐ | Warning | Invoke-SwitchParameterDefaultFix (AST-based) | Apply-AutoFix.ps1:1644-1745 |
+| **PSAvoidUsingBrokenHashAlgorithms** ⭐ | Warning | Invoke-BrokenHashAlgorithmFix (Regex-based) | Apply-AutoFix.ps1:1747-1848 |
 
 ### 🟡 Partially Auto-Fixed Rules
 
@@ -77,22 +81,18 @@ All high-priority quick wins from Phase 1 have been implemented:
 
 ## Phase 2: High-Value Complex Fixes (Next Priority)
 
-### 🔥 PSAvoidUsingWMICmdlet (Warning)
-**Issue**: Get-WmiObject is deprecated in PowerShell 7+
-**Auto-Fix**: Replace with Get-CimInstance
-**Complexity**: Medium (AST-based replacement)
-**Example**:
-```powershell
-# Before:
-Get-WmiObject -Class Win32_Process
-
-# After:
-Get-CimInstance -ClassName Win32_Process
-```
-**Implementation Strategy**:
-- AST-based CommandAst detection
-- Map WMI class parameters to CIM equivalents
-- Handle common parameter translations
+### ✅ ~~PSAvoidUsingWMICmdlet~~ (Warning) - **COMPLETED**
+**Status**: Fully implemented
+**Implementation**: AST-based cmdlet mapping with 5 WMI→CIM conversions and parameter mapping
+**File**: Apply-AutoFix.ps1:1367-1512
+**Completion Date**: 2025-10-10
+**Mappings**:
+- Get-WmiObject → Get-CimInstance
+- Set-WmiInstance → Set-CimInstance
+- Invoke-WmiMethod → Invoke-CimMethod
+- Remove-WmiObject → Remove-CimInstance
+- Register-WmiEvent → Register-CimIndicationEvent
+**Parameter Mapping**: -Class → -ClassName
 
 ---
 
@@ -264,7 +264,7 @@ These rules only apply to DSC resources:
 
 ## Implementation Roadmap
 
-### Phase 1: Quick Wins (v4.1) - ✅ **100% COMPLETED**
+### Phase 1: Quick Wins (v2.1) - ✅ **100% COMPLETED**
 Target: 14/70 = 20% coverage (✅ **ACHIEVED**)
 
 1. ✅ **PSUseBOMForUnicodeEncodedFile** - Completed 2025-10-10
@@ -278,16 +278,17 @@ Target: 14/70 = 20% coverage (✅ **ACHIEVED**)
 **Actual Effort**: 1 day
 **Coverage Achieved**: 20% (14/70 rules - target met!)
 
-### Phase 2: High-Value Complex Fixes (v4.2) - 3 rules
+### Phase 2: High-Value Complex Fixes (v2.2) - 2 rules remaining
 Target: 20/70 = 29% coverage (close to Phase 3 goal!)
 
-1. 🔥 **PSAvoidUsingWMICmdlet** - WMI → CIM conversion
+1. ✅ **PSAvoidUsingWMICmdlet** - WMI → CIM conversion ✅ **COMPLETED**
 2. 🔥 **PSAvoidLongLines** - Intelligent line wrapping
 3. ⚠️ **PSReviewUnusedParameter** - AST-based parameter analysis
 
-**Estimated Effort**: 5-7 days
+**Progress**: 1/3 completed (33%)
+**Status**: PSAvoidUsingWMICmdlet completed 2025-10-10
 
-### Phase 3: Advanced Scaffolding (v5.0) - 2 rules
+### Phase 3: Advanced Scaffolding (v3.0) - 2 rules
 Target: 19/70 = 27% coverage
 
 1. ⚠️ **PSShouldProcess** - Full ShouldProcess scaffolding
@@ -299,22 +300,25 @@ Target: 19/70 = 27% coverage
 
 ## Success Metrics
 
-| Metric | Baseline (v4.0) | Phase 1 (v4.1) ✅ | Bonus Rules ✅ | Phase 2 (v4.2) | Phase 3 (v5.0) |
-|--------|-----------------|-------------------|----------------|----------------|----------------|
-| Rules Auto-Fixed | 8 | **14** ✅ | **17** ✅ | 18 | 21 |
-| Coverage % | 11% | **20%** ✅ | **24%** ✅ | 26% | 30% |
-| High-Priority Coverage | 0/4 | **4/4** ✅ (100%) | **4/4** ✅ | - | - |
-| Medium-Priority Coverage | 0/7 | **2/7** ✅ | **5/7** ✅ (71%) | 6/7 | 7/7 |
+| Metric | Baseline (v2.0) | Phase 1 (v2.1) ✅ | Bonus Rules ✅ | Phase 2 Progress ✅ | Phase 3 (v3.0) |
+|--------|-----------------|-------------------|----------------|---------------------|----------------|
+| Rules Auto-Fixed | 8 | **14** ✅ | **17** ✅ | **21** ✅ | 24 |
+| Coverage % | 11% | **20%** ✅ | **24%** ✅ | **30%** ✅ | 34% |
+| Error-Level Coverage | 0/8 | 0/8 | 0/8 | **1/8** ✅ | 2/8 |
+| High-Priority Coverage | 0/4 | **4/4** ✅ (100%) | **4/4** ✅ | **4/4** ✅ | - |
+| Medium-Priority Coverage | 0/7 | **2/7** ✅ | **5/7** ✅ (71%) | **6/7** ✅ (86%) | 7/7 |
 | External Script Test | 93% | 95%+ | 96%+ | 97%+ | 98%+ |
 
 **Notes**:
 - ✅ Phase 1 target achieved: 14/70 rules = 20% coverage
 - ✅ Bonus: Added 3 more easy wins → 17/70 rules = 24% coverage
+- ✅ Phase 2 progress: PSAvoidUsingWMICmdlet + 3 more → 21/70 rules = 30% coverage 🎯
+- ✅ First Error-level auto-fix implemented: PSReservedParams 🎉
 - ✅ All 4 high-priority rules completed (100%)
-- ✅ 5 of 7 medium-priority rules completed (71%)
-- New auto-fixes: PSAvoidSemicolonsAsLineTerminators, PSUseSingularNouns, PSUseApprovedVerbs, PSUseBOMForUnicodeEncodedFile, PSProvideCommentHelp, PSPossibleIncorrectComparisonWithNull, PSUseSupportsShouldProcess, PSAvoidGlobalVars, PSAvoidUsingDoubleQuotesForConstantString
-- Coverage increased by 13 percentage points (11% → 24%)
-- 9 rules added in a single day 🚀
+- ✅ 6 of 7 medium-priority rules completed (86%)
+- New auto-fixes: PSAvoidSemicolonsAsLineTerminators, PSUseSingularNouns, PSUseApprovedVerbs, PSUseBOMForUnicodeEncodedFile, PSProvideCommentHelp, PSPossibleIncorrectComparisonWithNull, PSUseSupportsShouldProcess, PSAvoidGlobalVars, PSAvoidUsingDoubleQuotesForConstantString, PSAvoidUsingWMICmdlet, PSReservedParams, PSAvoidDefaultValueSwitchParameter, PSAvoidUsingBrokenHashAlgorithms
+- Coverage increased by 19 percentage points (11% → 30%) 🎯
+- **30% coverage goal achieved!** 13 rules added in a single day 🚀
 
 ---
 
@@ -327,14 +331,14 @@ Target: 19/70 = 27% coverage
 - PSDSCStandardDSCFunctionsInResource
 - PSDSCUseIdenticalMandatoryParametersForDSC
 - PSDSCUseIdenticalParametersForDSC
-- PSReservedParams
+- PSReservedParams ✅
 - PSUseCompatibleSyntax
 
 ### Warning Severity (51 rules)
 - PSAlignAssignmentStatement
 - PSAvoidAssignmentToAutomaticVariable
 - PSAvoidDefaultValueForMandatoryParameter
-- PSAvoidDefaultValueSwitchParameter
+- PSAvoidDefaultValueSwitchParameter ✅
 - PSAvoidExclaimOperator
 - PSAvoidGlobalAliases
 - PSAvoidGlobalFunctions
@@ -347,12 +351,12 @@ Target: 19/70 = 27% coverage
 - PSAvoidSemicolonsAsLineTerminators ✅
 - PSAvoidShouldContinueWithoutForce
 - PSAvoidUsingAllowUnencryptedAuthentication
-- PSAvoidUsingBrokenHashAlgorithms
+- PSAvoidUsingBrokenHashAlgorithms ✅
 - PSAvoidUsingCmdletAliases ✅
 - PSAvoidUsingEmptyCatchBlock
 - PSAvoidUsingInvokeExpression
 - PSAvoidUsingPlainTextForPassword
-- PSAvoidUsingWMICmdlet 🔥
+- PSAvoidUsingWMICmdlet ✅
 - PSAvoidUsingWriteHost 🟡
 - PSMisleadingBacktick
 - PSMissingModuleManifestField
@@ -398,18 +402,18 @@ Target: 19/70 = 27% coverage
 ---
 
 **Legend**:
-- ✅ Currently auto-fixed (17 rules) ⭐ +9 new in v4.1
+- ✅ Currently auto-fixed (21 rules) ⭐ +13 new in v2.1
 - 🟡 Partially auto-fixed (1 rule)
-- 🔥 High priority for implementation (0 rules - all completed!)
-- ⚠️ Medium priority for implementation (2 rules remaining)
+- 🔥 High priority for implementation (2 rules remaining)
+- ⚠️ Medium priority for implementation (1 rule remaining)
 - ℹ️ Low priority - requires human judgment
 
 ---
 
 ## Recent Updates
 
-### v4.1 (2025-10-10) - Phase 1 + Bonus Easy Wins ✅ **COMPLETE**
-**Added 9 new auto-fixes:**
+### v2.1.0 (2025-10-10) - Phase 1 + Bonus Easy Wins + Phase 2 Progress ✅ 🎯
+**Added 13 new auto-fixes:**
 1. PSAvoidSemicolonsAsLineTerminators - AST token-based semicolon removal
 2. PSUseSingularNouns - Function name pluralization fix (4 rules: -s, -es, -ies, -ves)
 3. PSUseApprovedVerbs - Comprehensive verb mapping (30+ unapproved→approved mappings)
@@ -419,9 +423,13 @@ Target: 19/70 = 27% coverage
 7. **PSUseSupportsShouldProcess** - CmdletBinding attribute modification for ShouldProcess
 8. **PSAvoidGlobalVars** - Global to script scope conversion ($global: → $script:)
 9. **PSAvoidUsingDoubleQuotesForConstantString** - String quote optimization ("text" → 'text')
+10. **PSAvoidUsingWMICmdlet** - WMI to CIM cmdlet conversion (5 cmdlet mappings + parameter mapping)
+11. **PSReservedParams** - First Error-level fix! Reserved parameter renaming (13 parameter mappings)
+12. **PSAvoidDefaultValueSwitchParameter** - Switch parameter default value removal
+13. **PSAvoidUsingBrokenHashAlgorithms** - Security fix! MD5/SHA1/RIPEMD160 → SHA256
 
-**Coverage**: 11% → 24% (13 percentage point increase!)
-**Status**: Phase 1 complete + 3 bonus rules 🎉🚀
+**Coverage**: 11% → 30% (19 percentage point increase!) 🎯
+**Status**: Phase 1 complete + 3 bonus rules + Phase 2 in progress + **30% GOAL ACHIEVED!** 🎉🚀
 
 ---
 

@@ -8,7 +8,7 @@ param()
 @{
     # Engine Configuration
     Engine         = @{
-        Version             = '3.0.0'
+        Version             = '2.1.0'
         Name                = 'PowerShell QA Engine'
         MaxConcurrentFiles  = 16
         DefaultLogLevel     = 'Info'

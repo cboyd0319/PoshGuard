@@ -1,4 +1,4 @@
-# PowerShell QA & Auto-Fix Engine v4.0.0
+# PoshGuard - PowerShell QA & Auto-Fix Engine v2.1.0
 
 **The World's Best PowerShell QA and Auto-Fix Solution**
 

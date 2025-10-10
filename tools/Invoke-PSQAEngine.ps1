@@ -26,7 +26,7 @@ param(
     [string]$OutputFormat = 'Console'
 )
 
-$script:EngineVersion = '4.0.0'
+$script:EngineVersion = '2.1.0'
 
 . "$PSScriptRoot/Import-Modules.ps1"
 
