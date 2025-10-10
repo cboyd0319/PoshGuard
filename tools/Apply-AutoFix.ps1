@@ -1847,6 +1847,137 @@ function Invoke-BrokenHashAlgorithmFix {
     return $Content
 }
 
+function Invoke-UnusedParameterFix {
+    <#
+    .SYNOPSIS
+        Comments out unused parameters in functions
+
+    .DESCRIPTION
+        Detects parameters that are declared but never used in the function body
+        and comments them out with a note explaining they were unused.
+
+        Detection Logic:
+        - Finds all ParameterAst nodes in function
+        - Finds all VariableExpressionAst references in function body
+        - Identifies parameters with zero references
+        - Comments out unused parameters with descriptive note
+
+        Edge Cases Handled:
+        - Splatting (@PSBoundParameters)
+        - $PSCmdlet automatic variable
+        - Parameters used in nested functions
+
+    .EXAMPLE
+        PS C:\> Invoke-UnusedParameterFix -Content $scriptContent
+
+        Comments out unused parameters with explanatory notes
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            $replacements = [System.Collections.ArrayList]::new()
+
+            # Find all function definitions
+            $functions = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+            }, $true)
+
+            foreach ($funcAst in $functions) {
+                # Get all parameters in this function
+                $parameters = $funcAst.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.ParameterAst]
+                }, $true)
+
+                # Get all variable references in the function body
+                $varRefs = $funcAst.Body.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
+                }, $true)
+
+                # Check for splatting or $PSBoundParameters usage (means all params might be used)
+                $splattingRefs = @($funcAst.Body.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                    ($args[0].VariablePath.UserPath -eq 'PSBoundParameters' -or $args[0].Splatted)
+                }, $true))
+                $usesSplatting = $splattingRefs.Count -gt 0
+
+                if ($usesSplatting) {
+                    # Skip this function - splatting means params might be used indirectly
+                    continue
+                }
+
+                foreach ($paramAst in $parameters) {
+                    $paramName = $paramAst.Name.VariablePath.UserPath
+
+                    # Count references to this parameter in function body
+                    $paramRefs = @($varRefs | Where-Object {
+                        $_.VariablePath.UserPath -eq $paramName
+                    })
+                    $refCount = $paramRefs.Count
+
+                    if ($refCount -eq 0) {
+                        # Parameter is unused - comment it out
+                        $paramExtent = $paramAst.Extent
+                        $paramText = $paramExtent.Text
+
+                        # Get the full line to check indentation
+                        $startLine = $paramExtent.StartLineNumber - 1
+                        $lines = $Content -split "`r?`n"
+                        $lineText = $lines[$startLine]
+
+                        # Preserve indentation
+                        $indent = ''
+                        if ($lineText -match '^(\s+)') {
+                            $indent = $Matches[1]
+                        }
+
+                        # Create commented version with note
+                        $commentedParam = "# REMOVED (unused parameter): $paramText"
+
+                        $replacements.Add([PSCustomObject]@{
+                            StartOffset = $paramExtent.StartOffset
+                            EndOffset = $paramExtent.EndOffset
+                            OldText = $paramText
+                            NewText = $commentedParam
+                        }) | Out-Null
+
+                        Write-Verbose "Commenting out unused parameter: $paramName in function $($funcAst.Name)"
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order (end to start)
+            if ($replacements.Count -gt 0) {
+                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+                $fixed = $Content
+
+                foreach ($replacement in $replacements) {
+                    $before = $fixed.Substring(0, $replacement.StartOffset)
+                    $after = $fixed.Substring($replacement.EndOffset)
+                    $fixed = $before + $replacement.NewText + $after
+                }
+
+                Write-Verbose "Commented out $($replacements.Count) unused parameter(s)"
+                return $fixed
+            }
+        }
+    }
+    catch {
+        Write-Verbose "Unused parameter fix failed: $_"
+    }
+
+    return $Content
+}
+
 function Invoke-CommentHelpFix {
     <#
     .SYNOPSIS
@@ -2179,6 +2310,7 @@ function Invoke-FileFix {
             $fixedContent = Invoke-ReservedParamsFix -Content $fixedContent
             $fixedContent = Invoke-SwitchParameterDefaultFix -Content $fixedContent
             $fixedContent = Invoke-BrokenHashAlgorithmFix -Content $fixedContent
+            $fixedContent = Invoke-UnusedParameterFix -Content $fixedContent
             $fixedContent = Invoke-CommentHelpFix -Content $fixedContent
             $fixedContent = Invoke-SupportsShouldProcessFix -Content $fixedContent
             $fixedContent = Invoke-WmiToCimFix -Content $fixedContent

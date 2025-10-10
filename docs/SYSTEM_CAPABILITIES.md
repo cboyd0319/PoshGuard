@@ -1,105 +1,89 @@
-# PowerShell QA & Auto-Fix System - Comprehensive Capabilities Report
+# PowerShell QA & Auto-Fix System - Capabilities
 
-## ✅ Current Capabilities (Production-Ready)
+## Current Capabilities
 
-### 1. **AST-Based Deep Analysis** (PSQAASTAnalyzer.psm1)
+### 1. AST-Based Analysis (PSQAASTAnalyzer.psm1)
+
 **Detects:**
-- ✅ **Unbound Variables** - Variables used before assignment
-- ✅ **Variable Shadowing** - Inner scope vars hiding outer scope
-- ✅ **Cognitive Complexity** - Functions exceeding complexity threshold (>15)
-- ✅ **Dead Code** - Unreachable code after return/throw/exit
-- ✅ **Unsafe Patterns** - Invoke-Expression, global variables
-- ✅ **Empty Catch Blocks** - Silent error swallowing
-- ✅ **Missing Parameter Validation** - Unvalidated string/array parameters
-- ✅ **Pipeline Binding Issues** - ForEach-Object without $_ usage
+- Unbound variables
+- Variable shadowing
+- Cognitive complexity (>15)
+- Dead code
+- Unsafe patterns (Invoke-Expression, globals)
+- Empty catch blocks
+- Missing parameter validation
+- Pipeline binding issues
 
-**Strengths:**
-- Deep syntactic analysis beyond surface-level linting
+**What it does:**
 - Detects runtime issues at parse-time
-- Provides actionable suggestions for each issue
+- Provides actionable suggestions
 
-**Limitations:**
-- Cannot detect logical errors (e.g., wrong algorithm)
-- No data flow analysis (taint tracking)
-- Limited cross-function analysis
+**What it doesn't:**
+- Logical errors (wrong algorithm)
+- Data flow analysis
+- Cross-function analysis
 
 ---
 
-### 2. **Intelligent Auto-Fix** (PSQAAutoFixer.psm1 + Apply-AutoFix.ps1)
-**Fixes:**
-- ✅ **Formatting** - Via Invoke-Formatter (Microsoft best practices)
-- ✅ **Whitespace** - Trailing spaces, line ending normalization
-- ✅ **Cmdlet Aliases** - Expands gci → Get-ChildItem, etc.
-- ✅ **$null Position** - Fixes `$var -eq $null` → `$null -eq $var`
-- ✅ **Idempotent** - Safe to run multiple times
-- ✅ **Unified Diffs** - Shows exact changes with context
-- ✅ **Automatic Backups** - Timestamped in `.psqa-backup/`
+### 2. Auto-Fix (PSQAAutoFixer.psm1 + Apply-AutoFix.ps1)
 
-**Strengths:**
-- Safe, conservative fixes only
-- Complete transparency via diffs
+**Fixes:**
+- Formatting (Invoke-Formatter)
+- Whitespace and line endings
+- Cmdlet aliases
+- $null comparison order
+- Idempotent (safe to run multiple times)
+- Unified diffs
+- Automatic backups in `.psqa-backup/`
+
+**What it does:**
+- Safe, conservative fixes
+- Transparent diffs
 - Rollback support
 
-**Limitations & Known Issues:**
-1. **✅ FIXED - Double-Expansion Bug** - Invoke-AliasFix now detects if Invoke-Formatter already expanded aliases and skips expansion to prevent double-expansion
-
-2. **No Complex Refactoring** - Cannot:
-   - Extract methods/functions
-   - Inline variables
-   - Simplify complex conditionals
-   - Optimize loops
-
-3. **Limited Regex Safety** - Naive string replacement could break:
-   - Strings containing similar patterns
-   - Comments that look like code
+**What it doesn't:**
+- Complex refactoring (extract method, inline, etc.)
+- Loop optimization
+- Conditional simplification
 
 ---
 
-### 3. **Structured Logging** (PSQALogger.psm1)
-**Features:**
-- ✅ **JSONL Output** - Machine-parsable logs
-- ✅ **TraceId Propagation** - Distributed tracing support
-- ✅ **Secret Redaction** - Passwords, tokens, API keys
-- ✅ **Multiple Sinks** - Console, file, structured
-- ✅ **Log Rotation** - Automatic at 50MB threshold
+### 3. Logging (PSQALogger.psm1)
 
-**Strengths:**
-- Production-grade observability
-- Easy debugging with correlation IDs
+**Features:**
+- JSONL output
+- TraceId correlation
+- Secret redaction
+- Multiple sinks (console, file)
+- Log rotation at 50MB
 
 **Limitations:**
-- No log aggregation integration (e.g., Elasticsearch, Splunk)
-- No log levels per module (global only)
+- No log aggregation (Elasticsearch, Splunk)
+- Global log level only
 
 ---
 
-### 4. **Rollback System** (Restore-Backup.ps1)
-**Features:**
-- ✅ **Selective Restore** - By timestamp or latest
-- ✅ **Batch Operations** - Restore multiple files
-- ✅ **Safety Confirmations** - Prevents accidental rollback
-- ✅ **Safety Backups** - Creates backup before restore
+### 4. Rollback (Restore-Backup.ps1)
 
-**Strengths:**
-- Foolproof undo mechanism
-- Preserves history
+**Features:**
+- Selective restore (timestamp or latest)
+- Batch operations
+- Confirmation prompts
+- Safety backups before restore
 
 **Limitations:**
-- No automatic cleanup (backups accumulate)
-- No compression (large projects = many GB)
+- No automatic cleanup
+- No compression
 
 ---
 
-### 5. **Testing** (Pester v5)
+### 5. Testing (Pester v5)
+
 **Coverage:**
-- ✅ Logger module tests
-- ✅ AST analyzer tests
-- ✅ Auto-fixer tests
-- ✅ Mocking for I/O operations
-
-**Strengths:**
-- Comprehensive happy path coverage
-- Edge case testing
+- Logger tests
+- AST analyzer tests
+- Auto-fixer tests
+- I/O mocking
 
 **Limitations:**
 - No mutation testing
@@ -108,11 +92,11 @@
 
 ---
 
-## ⚠️ Edge Cases & Improvements Needed
+## Edge Cases & Improvements
 
-### **Critical Issues to Address**
+### Critical Issues
 
-#### 1. **Alias Expansion Double-Application**
+#### 1. Alias Expansion Double-Application
 **Problem:** Formatter expands aliases, then our code expands again
 ```powershell
 # Original
@@ -138,8 +122,7 @@ function Invoke-AliasFix {
 }
 ```
 
-#### 2. **Context-Aware String Replacement**
-**Problem:** Naive regex replaces code-like patterns in strings/comments
+#### 2. Context-Aware String Replacement
 ```powershell
 # This should NOT be changed:
 $message = "Use gci to list files"  # gci inside string
@@ -148,108 +131,91 @@ $message = "Use gci to list files"  # gci inside string
 $files = gci
 ```
 
-**Solution:** Use AST-based token analysis instead of regex
+**Fix:** Use AST-based token analysis instead of regex
 
 ---
 
-### **Additional Enhancements**
+### Additional Enhancements
 
-#### 1. **Advanced Security Analysis**
-**Add:**
-- Command injection detection (Start-Process with vars)
-- Path traversal detection (../ in file paths)
+#### 1. Security Analysis
+- Command injection (Start-Process with vars)
+- Path traversal (../ in paths)
 - XXE/SSRF in Invoke-WebRequest
-- Deserialization attacks (Import-Clixml)
+- Deserialization (Import-Clixml)
 
-#### 2. **Performance Analysis**
-**Add:**
-- N+1 query detection (loops with I/O)
-- Inefficient string concatenation (use StringBuilder)
-- Unnecessary pipeline usage
-- Memory leak detection (unclosed handles)
+#### 2. Performance Analysis
+- N+1 queries (loops with I/O)
+- String concatenation (use StringBuilder)
+- Unnecessary pipelines
+- Memory leaks (unclosed handles)
 
-#### 3. **Cross-Function Analysis**
-**Add:**
-- Call graph generation
+#### 3. Cross-Function Analysis
+- Call graphs
 - Dead function detection
-- Circular dependency detection
-- Module cohesion metrics
+- Circular dependencies
+- Module cohesion
 
-#### 4. **Smart Auto-Fixes**
-**Add:**
-- Add missing CmdletBinding()
-- Add missing parameter help
-- Generate Pester tests from functions
+#### 4. Smart Auto-Fixes
+- Add CmdletBinding()
+- Add parameter help
+- Generate Pester tests
 - Add output type attributes
 
-#### 5. **Configuration Profiles**
-**Add:**
-- Strict mode (zero tolerance)
-- Relaxed mode (warnings only)
-- Project-specific overrides
-- Rule disable comments (# psqa-disable)
+#### 5. Configuration Profiles
+- Strict mode
+- Relaxed mode
+- Project overrides
+- Rule disable comments
 
 ---
 
-## 🎯 Recommendation: Prioritized Improvements
+## Prioritized Improvements
 
-### **Phase 1 (Critical - COMPLETED ✅)**
-1. ✅ **FIXED** - Double-expansion bug in alias fixer (skips if Invoke-Formatter already expanded)
-2. ✅ **FIXED** - Restore-Backup.ps1 array handling error
-3. ⚠️ **PENDING** - Add backup cleanup utility (delete older than X days)
+### Phase 1 (Completed)
+1. Double-expansion bug fixed
+2. Restore-Backup.ps1 array handling fixed
+3. Backup cleanup utility (pending)
 
-### **Phase 2 (High Value)**
-4. Advanced security patterns (command injection, path traversal)
-5. Performance anti-pattern detection
-6. Smart comment-based help generation
+### Phase 2 (High Value)
+- Security patterns (injection, traversal)
+- Performance anti-patterns
+- Comment help generation
 
-### **Phase 3 (Nice to Have)**
-7. Call graph analysis
-8. Mutation testing integration
-9. VS Code extension integration
-10. Real-time file watcher mode
+### Phase 3
+- Call graph analysis
+- Mutation testing
+- VS Code extension
+- File watcher mode
 
 ---
 
-## 📊 Current System Stats
+## System Stats
 
 ```
 Modules:          3 (Logger, AST Analyzer, Auto-Fixer)
-Tools:            3 (Apply-AutoFix, Restore-Backup, Main Engine)
+Tools:            3 (Apply-AutoFix, Restore-Backup, Engine)
 Tests:            3 Pester v5 suites
-Lines of Code:    ~2000
+Lines of Code:    ~2400
 PSSA Rules:       50+ enforced
 Security Rules:   30+ patterns
-Coverage:         Core functionality tested
 ```
 
 ---
 
-## 💡 Bottom Line
+## Summary
 
-**What it DOES handle:**
-- ✅ All PSScriptAnalyzer-detectable issues
-- ✅ Deep AST syntactic analysis
-- ✅ Safe formatting and style fixes
-- ✅ Common security anti-patterns
-- ✅ Production-grade logging and rollback
+**Handles:**
+- PSScriptAnalyzer issues
+- AST analysis
+- Safe formatting and style
+- Common security anti-patterns
+- Logging and rollback
 
-**What it DOESN'T handle (yet):**
-- ❌ Complex refactoring (extract method, inline, etc.)
-- ❌ Semantic/logical errors (wrong algorithm)
-- ❌ Advanced security (command injection in variables)
-- ❌ Performance optimization
-- ❌ Cross-module dependencies
+**Doesn't handle:**
+- Complex refactoring
+- Logical errors
+- Advanced security (injection in variables)
+- Performance optimization
+- Cross-module dependencies
 
-**Verdict:** This is a **world-class foundation** for PowerShell QA. With Phase 1 fixes (double-expansion), it's production-ready for 95% of use cases. Phases 2-3 would make it **the definitive** PowerShell quality system.
-
----
-
-## 🚀 Next Steps
-
-1. **Fix critical double-expansion bug**
-2. **Run full regression test suite**
-3. **Document all edge cases in README**
-4. **Deploy to production with confidence**
-
-The system is **modular, well-documented, maintainable, and expandable** as requested. All code follows the strictest PowerShell standards.
+**Status:** Production-ready for most use cases. Modular, documented, maintainable.

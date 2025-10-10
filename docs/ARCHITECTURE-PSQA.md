@@ -1,15 +1,16 @@
-# PowerShell QA & Auto‑Fix System — Architecture and Operations
+# PowerShell QA & Auto-Fix System - Architecture
 
-Version: 2025-10-09
+Version: 2025-10-10
 
-Scope: Documents the design, components, data flow, contracts, and known gaps for the `qa` folder. Use this to quickly regain context and continue work.
+Design, components, data flow, contracts, and gaps for PoshGuard.
 
-## Mission & Guardrails
-- Correctness: Explicit contracts, validated inputs, strict behavior; zero analyzer errors.
-- Safety & Security: Idempotent fixes, backups, rollback, no secrets in logs, least privilege.
-- Clarity & UX: Clean CLI, readable output, sensible defaults; `--dry-run` previews; unified diffs.
-- Testability: Pester v5 tests per module (happy/edge/failure), mocks for IO.
-- Maintainability: Modular design, analyzer settings, consistent style, docs and examples.
+## Principles
+
+- **Correctness** - Explicit contracts, validated inputs, zero analyzer errors
+- **Safety** - Idempotent fixes, backups, rollback, no secrets in logs
+- **Clarity** - Clean CLI, readable output, dry-run previews, unified diffs
+- **Testability** - Pester v5 tests per module, mocks for I/O
+- **Maintainability** - Modular design, consistent style, documentation
 
 ## Directory Map (qa/)
 - `config/`

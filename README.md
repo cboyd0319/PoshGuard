@@ -1,42 +1,40 @@
 # PoshGuard - PowerShell QA & Auto-Fix Engine v2.1.0
 
-**The World's Best PowerShell QA and Auto-Fix Solution**
+PowerShell code quality automation with auto-fix, AST analysis, security scanning, and testing.
 
-Production-grade, modular PowerShell code quality automation system with intelligent auto-fix, AST analysis, security scanning, and comprehensive testing.
-
-**🎯 Proven Results**: 93% issue reduction on real-world scripts | Zero regressions | 100% syntax validation
+**Proven on real-world scripts**: 72-93% issue reduction | Zero regressions | 100% syntax validation
 
 ---
 
 ## Features
 
-### Core Capabilities
-- **AST-Based Deep Analysis** - Detects unbound variables, shadowing, unsafe patterns, cognitive complexity
-- **PSScriptAnalyzer Integration** - Zero-tolerance PSSA enforcement with custom rules
-- **Intelligent Auto-Fix** - Safe, idempotent fixes with unified diff output and **72-93% issue reduction** proven on external scripts
-- **Smart Write-Host Detection** - Preserves UI components (colors, emojis, formatting) while fixing plain output
-- **Parameter Casing Auto-Fix** - Automatically corrects cmdlet and parameter casing to Microsoft standards
-- **Invoke-Formatter Integration** - Automatic code formatting following best practices
-- **Security Hardening** - AST-based safety fixes, credential scanning, injection detection
-- **Structured Logging** - JSONL logs with traceId propagation and secret redaction
-- **Rollback Automation** - Safe restore from timestamped backups
-- **Comprehensive Testing** - Pester v5 test suite with mocks and coverage
-- **Cross-Platform** - PowerShell 5.1 and 7.x compatible (Windows, Linux, macOS)
+- **AST-based analysis** - Unbound variables, shadowing, unsafe patterns, cognitive complexity
+- **PSScriptAnalyzer integration** - PSSA enforcement with custom rules
+- **Auto-fix** - Safe, idempotent fixes with unified diffs (72-93% issue reduction)
+- **Smart Write-Host detection** - Preserves UI components (colors, emojis), fixes plain output
+- **Parameter casing** - Corrects cmdlet and parameter casing to Microsoft standards
+- **Code formatting** - Invoke-Formatter integration
+- **Security** - AST-based safety fixes, credential scanning, injection detection
+- **Logging** - JSONL logs with traceId and secret redaction
+- **Rollback** - Restore from timestamped backups
+- **Testing** - Pester v5 suite with mocks and coverage
+- **Cross-platform** - PowerShell 5.1 and 7.x (Windows, Linux, macOS)
 
-### Proven Track Record
-**External Validation on Production Scripts** ([fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)):
+## Test Results
 
-**v2.1.0 Testing** (10 scripts, October 2025):
-- ✅ **72% issue reduction** (365 → 102 PSSA violations)
-- ✅ **83% indentation fix rate** (240/289 issues resolved)
-- ✅ **100% fix rate** for: Trailing whitespace, Comment help, Consistent whitespace
-- ✅ **35% casing improvement** (8/23 issues auto-corrected)
-- ✅ **100% syntax validation** - zero parse errors after auto-fix
-- ✅ **Idempotent** - safe to run multiple times
+Tested on [fleschutz/PowerShell](https://github.com/fleschutz/PowerShell) production scripts:
 
-**Earlier Testing** (18 scripts):
-- ✅ **93% issue reduction** (301 → 27 PSSA violations)
-- ✅ **Zero regressions** - all scripts remain functionally correct
+**v2.1.0** (10 scripts):
+- 72% issue reduction (365 → 102 violations)
+- 83% indentation fix rate (240/289 resolved)
+- 100% fix rate: Trailing whitespace, comment help, consistent whitespace
+- 35% casing improvement (8/23 fixed)
+- Zero parse errors after auto-fix
+- Idempotent (safe to run multiple times)
+
+**Earlier test** (18 scripts):
+- 93% issue reduction (301 → 27 violations)
+- Zero regressions
 
 ---
 
@@ -139,8 +137,6 @@ qa/
 
 ### 1. Apply-AutoFix.ps1 (Standalone Auto-Fix)
 
-**The safest, most powerful auto-fix tool.**
-
 ```powershell
 # Preview fixes without applying
 .\tools\Apply-AutoFix.ps1 -Path ./src -DryRun -ShowDiff
@@ -155,25 +151,19 @@ qa/
 .\tools\Apply-AutoFix.ps1 -Path ./src -Verbose
 ```
 
-**Features:**
-- Idempotent (safe to run multiple times)
-- Creates automatic backups in `.psqa-backup/`
-- Generates unified diffs
-- **AST-based transformations** (context-aware, safe)
-- Formats with Invoke-Formatter
-- Expands cmdlet aliases (AST-based, string-literal safe)
-- **Fixes parameter casing** (`-pathType` → `-PathType`)
-- **Smart Write-Host replacement** (preserves UI components)
-- Removes trailing whitespace
-- Normalizes line endings
-- Fixes $null position in comparisons
-- **Adds -ErrorAction Stop to I/O cmdlets** (AST-based)
+**What it fixes:**
+- Formatting (Invoke-Formatter)
+- Trailing whitespace and line endings
+- Cmdlet aliases (AST-based, preserves string literals)
+- Parameter casing (`-pathType` → `-PathType`)
+- Write-Host (preserves UI components, fixes plain output)
+- $null comparison order
+- Adds -ErrorAction Stop to I/O cmdlets (AST-based)
 - Atomic file writes (temp → rename)
-- **93% issue reduction proven** on real-world scripts
+- Creates backups in `.psqa-backup/`
+- Idempotent (safe to run multiple times)
 
 ### 2. Restore-Backup.ps1 (Rollback System)
-
-**Safe rollback from .psqa-backup directories.**
 
 ```powershell
 # List available backups
@@ -189,16 +179,13 @@ qa/
 .\tools\Restore-Backup.ps1 -Path ./src -Latest -Force
 ```
 
-**Safety Features:**
-- Shows preview before restore
-- Requires confirmation (unless -Force)
-- Creates safety backup of current file before restore
-- Preserves backup history
-- Lists all backups with timestamps
+**Safety:**
+- Preview before restore
+- Confirmation required (unless -Force)
+- Creates backup before restore
+- Preserves history
 
 ### 3. Invoke-PSQAEngine.ps1 (Full QA Engine)
-
-**Comprehensive QA analysis and reporting.**
 
 ```powershell
 # Analyze only
@@ -241,12 +228,12 @@ Write-PSQAError "Analysis failed" -Code "E001" -Hint "File corrupt" -Action "Re-
 ```
 
 **Features:**
-- Structured JSONL output
+- JSONL output
 - Secret redaction (passwords, tokens, keys)
-- TraceId propagation for correlation
+- TraceId correlation
 - Multiple sinks (console, file, JSONL)
-- Automatic log rotation
-- Color-coded console output
+- Log rotation at 50MB
+- Color-coded output
 
 ### PSQAASTAnalyzer.psm1 - Deep Code Analysis
 
@@ -262,18 +249,18 @@ $issues | ForEach-Object {
 }
 ```
 
-**Detections:**
-- Unbound variables (used before assignment)
-- Variable shadowing (inner scope hides outer)
+**Detects:**
+- Unbound variables
+- Variable shadowing
 - Unsafe pipeline binding
 - High cognitive complexity (>15)
-- Dead code (unreachable)
+- Dead code
 - Invoke-Expression usage
 - Global variables
 - Empty catch blocks
 - Missing parameter validation
 
-### PSQAAutoFixer.psm1 - Intelligent Auto-Fix
+### PSQAAutoFixer.psm1 - Auto-Fix
 
 ```powershell
 Import-Module ./modules/Fixers/PSQAAutoFixer.psm1
@@ -317,9 +304,7 @@ Invoke-PSQAAutoFix -FilePath ./script.ps1 -FixTypes @('Formatting', 'Whitespace'
 
 ### PSScriptAnalyzerSettings.psd1
 
-Zero-tolerance PSSA configuration with strict formatting, security, and best practice rules.
-
-**Key Settings:**
+PSSA configuration with strict formatting and security rules:
 - 4-space indentation (no tabs)
 - K&R brace style
 - No trailing whitespace
@@ -330,28 +315,24 @@ Zero-tolerance PSSA configuration with strict formatting, security, and best pra
 
 ### QASettings.psd1
 
-Comprehensive QA engine configuration.
-
-**Highlights:**
+Engine configuration:
 - Max file size: 10MB
-- Cross-platform compatibility checks
-- Security scanning enabled
+- Cross-platform checks
+- Security scanning
 - Code coverage threshold: 80%
 - Max cyclomatic complexity: 15
-- Structured logging (JSONL)
+- JSONL logging
 
 ### SecurityRules.psd1
 
-Advanced security pattern detection.
-
-**Categories:**
-- Credential/secret management
-- Code injection prevention
+Security pattern detection:
+- Credentials and secrets
+- Code injection
 - Dangerous commands
-- Error handling validation
-- Data validation requirements
+- Error handling
+- Data validation
 - Module security
-- System modification monitoring
+- System modifications
 
 ---
 
@@ -539,137 +520,80 @@ Test-Path -Path ./src/.psqa-backup -IsValid
 
 ---
 
-## What's New in v4.0.0
+## What's New in v2.1.0
 
-### Major Enhancements
+**New auto-fixes:**
+- Reserved parameter detection (Error-level)
+- Switch parameter default value removal
+- Broken hash algorithm replacement (MD5/SHA1 → SHA256)
 
-**1. Smart Write-Host Detection (Invoke-WriteHostFix)**
-- Intelligently preserves UI components (colors, emojis, box-drawing)
-- Only replaces plain text Write-Host with Write-Output
-- Tested on 18 production scripts - 100% accuracy
+**Improvements:**
+- Write-Host detection now preserves UI components (colors, emojis)
+- Parameter casing fix (AST-based)
+- WMI to CIM cmdlet conversion
+- Comment help scaffolding
 
-**2. Parameter Casing Auto-Fix (Invoke-CasingFix)**
-- AST-based token analysis for correct casing
-- Fixes cmdlet names and parameters to Microsoft standards
-- Eliminated 100% of PSUseCorrectCasing violations in test corpus
-
-**3. AST-Based Safety Improvements**
-- Rewrote Invoke-SafetyFix to use AST instead of dangerous regex
-- Context-aware -ErrorAction injection (avoids hashtables, arrays, attributes)
-- Zero corruption risk
-
-**4. External Script Validation**
-- Validated on 18 real-world production scripts
-- 93% issue reduction (301 → 27 violations)
-- Zero regressions, 100% syntax validation
-- Proven idempotent operation
-
-### Bug Fixes
-- Fixed PSQAAutoFixer.psm1 parse errors (3 critical issues)
-- Fixed Apply-AutoFix.ps1 array syntax and cmdlet usage
-- Fixed cross-platform compatibility (PS 5.1 vs 7.x)
-- Disabled non-idempotent Invoke-StructureFix (pending AST rewrite)
-
-### Performance & Quality
-- All fixes now use AST-based transformations
-- Reverse offset ordering preserves string positions
-- Comprehensive documentation in ARCHITECTURE-PSQA.md
-- Meta-testing validated (auto-fixer processes itself successfully)
+**Testing:**
+- Validated on 28 production scripts (fleschutz/PowerShell)
+- 72-93% issue reduction proven
+- Zero regressions
+- 100% syntax validation
 
 ---
 
 ## Roadmap
 
-### v4.1 (Next)
-- [ ] Modularize Apply-AutoFix.ps1 into PSQACodeFixes.psm1
-- [ ] Add Get-CimInstance replacement for Get-WmiObject
-- [ ] UTF-8 BOM auto-detection and addition
-- [ ] Remaining alias expansion (2 instances)
+**v2.2** (Next):
+- Modularize Apply-AutoFix.ps1 into PSQACodeFixes.psm1
+- Add more PSSA auto-fixes (targeting 40% coverage)
+- Backup cleanup utility
 
-### v4.2 (Future)
-- [ ] Mutation testing support
-- [ ] Pre-commit git hooks
-- [ ] Semantic versioning automation
-- [ ] Code signing integration
-- [ ] Custom PSScriptAnalyzer rules
+**v2.3**:
+- Mutation testing
+- Pre-commit git hooks
+- Semantic versioning automation
 
-### v5.0 (Future)
-- [ ] VSCode extension integration
-- [ ] Real-time analysis (file watcher)
-- [ ] Diff-based incremental analysis
-- [ ] AI-powered fix suggestions
+**v3.0**:
+- VSCode extension
+- Real-time analysis (file watcher)
+- Diff-based incremental analysis
 
 ---
 
 ## Documentation
 
-**📚 Comprehensive documentation available in the `docs/` directory:**
+**Available in `docs/`:**
 
-- **[QUICKSTART.md](docs/QUICKSTART.md)** - Get started in 5 minutes
-  - Installation steps
-  - Basic usage examples
-  - Common workflows
-
-- **[ARCHITECTURE-PSQA.md](docs/ARCHITECTURE-PSQA.md)** - Deep dive into the system
-  - Complete architecture overview
-  - Module responsibilities and APIs
-  - Data flow and processing pipeline
-  - Recent improvements and iterations
-  - Design patterns and best practices
-
-- **[SYSTEM_CAPABILITIES.md](docs/SYSTEM_CAPABILITIES.md)** - Detailed feature reference
-  - Complete capabilities catalog
-  - Configuration options
-  - Advanced usage patterns
-  - Extension points
-
-- **[PSSA-RULES-AUTOFIX-ROADMAP.md](docs/PSSA-RULES-AUTOFIX-ROADMAP.md)** - Complete auto-fix roadmap
-  - All 70 PSSA rules inventory
-  - **Current coverage: 8/70 (11%)**
-  - Prioritized implementation roadmap
-  - Phase 1-3 targets (20% → 30% coverage)
-  - Detailed implementation strategies
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - Installation and basic usage
+- **[ARCHITECTURE-PSQA.md](docs/ARCHITECTURE-PSQA.md)** - System architecture and design
+- **[SYSTEM_CAPABILITIES.md](docs/SYSTEM_CAPABILITIES.md)** - Feature reference and configuration
+- **[PSSA-RULES-AUTOFIX-ROADMAP.md](docs/PSSA-RULES-AUTOFIX-ROADMAP.md)** - Auto-fix roadmap (21/70 rules, 30% coverage)
 
 ---
 
 ## Contributing
 
-This is a production-grade QA system. All contributions must:
+All contributions must:
 1. Pass PSSA analysis (zero errors/warnings)
 2. Include Pester v5 tests
 3. Maintain backward compatibility (PS 5.1+)
-4. Include comprehensive documentation
+4. Include documentation
 5. Follow PowerShell best practices
 
 ---
 
 ## License
 
-MIT License - Production use approved
+MIT License
 
 ---
 
 ## Credits
-
-**PowerShell QA & Auto-Fix Engine v4.0.0**
 
 Built with:
 - PowerShell 7.4+ (compatible with 5.1+)
 - PSScriptAnalyzer
 - Pester v5
 - AST-based transformations
-- Best practices from Microsoft PowerShell Team
 
-**Validated on real-world production scripts:**
-- 18 scripts from [fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)
-- 93% issue reduction proven
-- Zero regressions
-- 100% syntax validation
-
----
-
-**THE WORLD'S BEST POWERSHELL QA AND AUTO-FIX SOLUTION**
-
-*Bulletproof. Production-Grade. Zero-Tolerance Quality.*
-
-**🎯 93% Issue Reduction Proven | AST-Based | Context-Aware | Idempotent**
+Validated on 28 production scripts from [fleschutz/PowerShell](https://github.com/fleschutz/PowerShell)

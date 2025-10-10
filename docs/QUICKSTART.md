@@ -1,15 +1,15 @@
-# Quick Start Guide - PowerShell QA Engine v3.0.0
+# Quick Start - PowerShell QA Engine v2.1.0
 
-## Installation (One-Time Setup)
+## Installation
 
 ```bash
-cd /Users/chadboyd/Documents/GitHub/job-search-automation/qa
+cd /path/to/PoshGuard
 make setup
 ```
 
-This installs:
-- PSScriptAnalyzer (for formatting & analysis)
-- Pester v5 (for testing)
+Installs:
+- PSScriptAnalyzer
+- Pester v5
 
 ---
 
@@ -21,7 +21,7 @@ This installs:
 pwsh ./tools/Apply-AutoFix.ps1 -Path ../src -DryRun -ShowDiff
 ```
 
-**Shows unified diffs** of all proposed changes without modifying files.
+Shows proposed changes without modifying files.
 
 ### 2. Apply Fixes
 
@@ -29,13 +29,13 @@ pwsh ./tools/Apply-AutoFix.ps1 -Path ../src -DryRun -ShowDiff
 pwsh ./tools/Apply-AutoFix.ps1 -Path ../src
 ```
 
-**Applies all safe fixes:**
-- Formats with Invoke-Formatter
-- Removes trailing whitespace
-- Expands cmdlet aliases (gci → Get-ChildItem)
-- Normalizes line endings
-- Fixes $null position in comparisons
-- Creates automatic backups in `.psqa-backup/`
+Applies fixes:
+- Formatting (Invoke-Formatter)
+- Trailing whitespace removal
+- Cmdlet alias expansion
+- Line ending normalization
+- $null comparison order
+- Creates backups in `.psqa-backup/`
 
 ### 3. Verify Changes
 
@@ -104,17 +104,16 @@ pwsh ./tools/Restore-Backup.ps1 -Path ./src -BackupTimestamp 20251008123045
 
 ---
 
-## Idempotent Behavior
+## Idempotent
 
-**Running the same fix multiple times is safe:**
+Safe to run multiple times:
 
 ```bash
 # First run - fixes issues
 pwsh ./tools/Apply-AutoFix.ps1 -Path ./src
 
-# Second run - no changes (already fixed)
+# Second run - no changes
 pwsh ./tools/Apply-AutoFix.ps1 -Path ./src
-# Output: "Files unchanged: X"
 ```
 
 ---
@@ -255,4 +254,4 @@ pwsh ./tools/Restore-Backup.ps1 -Path ../src -Latest
 
 ---
 
-**That's it! You're ready to use the world's best PowerShell QA system.**
+Done. You can now run PoshGuard QA checks.
