@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -80,10 +80,10 @@ $ErrorActionPreference = 'Stop'
 
 $script:Config = @{
     SupportedExtensions = @('.ps1', '.psm1', '.psd1')
-    BackupDirectory = '.psqa-backup'
-    LogDirectory = './logs'
-    MaxFileSizeBytes = 10485760  # 10MB
-    TraceId = (New-Guid).ToString()
+    BackupDirectory     = '.psqa-backup'
+    LogDirectory        = './logs'
+    MaxFileSizeBytes    = 10485760  # 10MB
+    TraceId             = (New-Guid).ToString()
     BackupRetentionDays = 1
 }
 
@@ -124,16 +124,16 @@ function Write-Log {
 
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $color = switch ($Level) {
-        'Info'    { 'Cyan' }
-        'Warn'    { 'Yellow' }
-        'Error'   { 'Red' }
+        'Info' { 'Cyan' }
+        'Warn' { 'Yellow' }
+        'Error' { 'Red' }
         'Success' { 'Green' }
     }
 
     $prefix = switch ($Level) {
-        'Info'    { '[INFO]' }
-        'Warn'    { '[WARN]' }
-        'Error'   { '[ERROR]' }
+        'Info' { '[INFO]' }
+        'Warn' { '[WARN]' }
+        'Error' { '[ERROR]' }
         'Success' { '[OK]' }
     }
 
@@ -248,7 +248,8 @@ function Invoke-FormatterFix {
 
     try {
         return Invoke-Formatter -ScriptDefinition $Content
-    } catch {
+    }
+    catch {
         Write-Log -Level Warn -Message "Invoke-Formatter failed: $_ "
     }
 
@@ -326,7 +327,7 @@ function Invoke-AliasFixAst {
         if ($aliasMap.ContainsKey($commandName)) {
             $extent = $commandAst.Extent
             $fixes[$extent.StartOffset] = @{
-                Length = $extent.EndOffset - $extent.StartOffset
+                Length      = $extent.EndOffset - $extent.StartOffset
                 Replacement = $aliasMap[$commandName]
             }
         }
@@ -370,8 +371,8 @@ function Invoke-SafetyFix {
         if ($errors.Count -eq 0) {
             # Find all command ASTs
             $commandAsts = $ast.FindAll({
-                $args[0] -is [System.Management.Automation.Language.CommandAst]
-            }, $true)
+                    $args[0] -is [System.Management.Automation.Language.CommandAst]
+                }, $true)
 
             $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
             $replacements = @()
@@ -393,7 +394,7 @@ function Invoke-SafetyFix {
                         # Add to replacements list (we'll apply them in reverse order)
                         $replacements += @{
                             Offset = $cmdAst.Extent.EndOffset
-                            Text = ' -ErrorAction Stop'
+                            Text   = ' -ErrorAction Stop'
                         }
                     }
                 }
@@ -404,7 +405,8 @@ function Invoke-SafetyFix {
                 $fixed = $fixed.Insert($replacement.Offset, $replacement.Text)
             }
         }
-    } catch {
+    }
+    catch {
         # If AST parsing fails, don't apply ErrorAction fixes
         Write-Verbose "AST-based safety fix failed: $_"
     }
@@ -438,12 +440,13 @@ function Invoke-CasingFix {
                         if ($cmd -and $cmd.Name -cne $token.Text) {
                             # Found a casing mismatch
                             $replacements += @{
-                                Offset = $token.Extent.StartOffset
-                                Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                                Offset      = $token.Extent.StartOffset
+                                Length      = $token.Extent.EndOffset - $token.Extent.StartOffset
                                 Replacement = $cmd.Name
                             }
                         }
-                    } catch {
+                    }
+                    catch {
                         # Ignore - not a valid cmdlet
                     }
                 }
@@ -454,20 +457,20 @@ function Invoke-CasingFix {
                         $paramWithoutDash = $Matches[1]
                         # Common parameter names with correct casing
                         $correctCasing = @{
-                            'path' = 'Path'
-                            'pathtype' = 'PathType'
-                            'force' = 'Force'
-                            'recurse' = 'Recurse'
-                            'filter' = 'Filter'
-                            'include' = 'Include'
-                            'exclude' = 'Exclude'
-                            'erroraction' = 'ErrorAction'
+                            'path'          = 'Path'
+                            'pathtype'      = 'PathType'
+                            'force'         = 'Force'
+                            'recurse'       = 'Recurse'
+                            'filter'        = 'Filter'
+                            'include'       = 'Include'
+                            'exclude'       = 'Exclude'
+                            'erroraction'   = 'ErrorAction'
                             'warningaction' = 'WarningAction'
-                            'verbose' = 'Verbose'
-                            'debug' = 'Debug'
-                            'whatif' = 'WhatIf'
-                            'confirm' = 'Confirm'
-                            'completed' = 'Completed'
+                            'verbose'       = 'Verbose'
+                            'debug'         = 'Debug'
+                            'whatif'        = 'WhatIf'
+                            'confirm'       = 'Confirm'
+                            'completed'     = 'Completed'
                         }
 
                         $lowerParam = $paramWithoutDash.ToLower()
@@ -475,8 +478,8 @@ function Invoke-CasingFix {
                             $correctParam = "-$($correctCasing[$lowerParam])"
                             if ($correctParam -cne $paramName) {
                                 $replacements += @{
-                                    Offset = $token.Extent.StartOffset
-                                    Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                                    Offset      = $token.Extent.StartOffset
+                                    Length      = $token.Extent.EndOffset - $token.Extent.StartOffset
                                     Replacement = $correctParam
                                 }
                             }
@@ -492,7 +495,8 @@ function Invoke-CasingFix {
             }
             return $fixed
         }
-    } catch {
+    }
+    catch {
         Write-Verbose "Casing fix failed: $_"
     }
 
@@ -544,9 +548,9 @@ function Invoke-WriteHostFix {
         if ($errors.Count -eq 0) {
             # Find all command ASTs for Write-Host
             $writeHostAsts = $ast.FindAll({
-                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
-                $args[0].GetCommandName() -eq 'Write-Host'
-            }, $true)
+                    $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                    $args[0].GetCommandName() -eq 'Write-Host'
+                }, $true)
 
             $replacements = @()
 
@@ -579,8 +583,8 @@ function Invoke-WriteHostFix {
                 # If none of the UI indicators were found, replace Write-Host → Write-Output
                 if ($shouldReplace) {
                     $replacements += @{
-                        Offset = $cmdAst.Extent.StartOffset
-                        Length = 10  # Length of "Write-Host"
+                        Offset      = $cmdAst.Extent.StartOffset
+                        Length      = 10  # Length of "Write-Host"
                         Replacement = 'Write-Output'
                     }
                 }
@@ -591,8 +595,148 @@ function Invoke-WriteHostFix {
                 $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
             }
         }
-    } catch {
+    }
+    catch {
         Write-Verbose "Write-Host fix failed: $_"
+    }
+
+    return $fixed
+}
+
+function Invoke-DuplicateLineFix {
+    <#
+    .SYNOPSIS
+        Removes duplicate consecutive lines
+
+    .DESCRIPTION
+        Detects and removes duplicate consecutive non-empty lines.
+        This catches common copy-paste errors and duplicate import statements.
+
+        REMOVES:
+        - Duplicate consecutive lines (exact match)
+        - Preserves blank lines
+        - Case-sensitive comparison
+
+    .EXAMPLE
+        # BEFORE:
+        Import-Module Foo
+
+        # AFTER:
+        Import-Module Foo
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $lines = $Content -split '\r?\n'
+    $result = @()
+    $previousLine = $null
+
+    foreach ($line in $lines) {
+        # Always keep blank lines and lines different from previous
+        if ([string]::IsNullOrWhiteSpace($line) -or $line -ne $previousLine) {
+            $result += $line
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                $previousLine = $line
+            }
+        }
+        # Skip duplicate consecutive non-empty lines
+    }
+
+    return $result -join "`n"
+}
+
+function Invoke-CmdletParameterFix {
+    <#
+    .SYNOPSIS
+        Fixes cmdlets with invalid parameter combinations
+
+    .DESCRIPTION
+        AST-based detection and correction of cmdlet parameter mismatches:
+
+        FIXES:
+        - Write-Output -ForegroundColor → Write-Host -ForegroundColor
+        - Write-Output -BackgroundColor → Write-Host -BackgroundColor
+        - Write-Output -NoNewline → Write-Host -NoNewline
+
+        These are RUNTIME errors that don't cause parse failures but fail when executed.
+        Write-Output doesn't support color or formatting parameters.
+
+    .EXAMPLE
+        # BEFORE (runtime error):
+        Write-Output "Success!" -ForegroundColor Green
+
+        # AFTER (fixed):
+        Write-Host "Success!" -ForegroundColor Green
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $fixed = $Content
+
+    # AST-based cmdlet parameter validation
+    try {
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+
+        if ($errors.Count -eq 0) {
+            # Find all Write-Output commands
+            $writeOutputAsts = $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                    $args[0].GetCommandName() -eq 'Write-Output'
+                }, $true)
+
+            $replacements = @()
+
+            foreach ($cmdAst in $writeOutputAsts) {
+                $hasInvalidParam = $false
+
+                # Check for parameters that Write-Output doesn't support
+                $invalidParams = @('ForegroundColor', 'BackgroundColor', 'NoNewline')
+
+                foreach ($element in $cmdAst.CommandElements) {
+                    if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+                        if ($invalidParams -contains $element.ParameterName) {
+                            $hasInvalidParam = $true
+                            break
+                        }
+                    }
+                }
+
+                # If Write-Output has invalid parameters, replace with Write-Host
+                if ($hasInvalidParam) {
+                    # Find the exact position of "Write-Output" in the command
+                    $cmdName = $cmdAst.CommandElements[0]
+                    $replacements += @{
+                        Offset      = $cmdName.Extent.StartOffset
+                        Length      = $cmdName.Extent.Text.Length
+                        Replacement = 'Write-Host'
+                        Line        = $cmdName.Extent.StartLineNumber
+                    }
+                }
+            }
+
+            # Apply replacements in reverse order to preserve offsets
+            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+                Write-Verbose "Fixed Write-Output → Write-Host at line $($replacement.Line)"
+            }
+
+            if ($replacements.Count -gt 0) {
+                Write-Verbose "Fixed $($replacements.Count) Write-Output cmdlet(s) with invalid parameters"
+            }
+        }
+    }
+    catch {
+        Write-Verbose "Cmdlet parameter fix failed: $_"
     }
 
     return $fixed
@@ -666,7 +810,8 @@ function Invoke-FileFix {
                 if ($bytes.Length -ge 3) {
                     $hasBom = $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
                 }
-            } catch {
+            }
+            catch {
                 Write-Verbose "Could not read bytes for BOM detection: $_"
             }
 
@@ -680,8 +825,10 @@ function Invoke-FileFix {
             # $fixedContent = Invoke-StructureFix -Content $fixedContent
             $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
+            $fixedContent = Invoke-DuplicateLineFix -Content $fixedContent
             $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-CasingFix -Content $fixedContent
+            $fixedContent = Invoke-CmdletParameterFix -Content $fixedContent
             $fixedContent = Invoke-WriteHostFix -Content $fixedContent
             $fixedContent = Invoke-SafetyFix -Content $fixedContent
 
@@ -720,16 +867,18 @@ function Invoke-FileFix {
                 Move-Item -Path $tempPath -Destination $File.FullName -Force -ErrorAction Stop
 
                 Write-Log -Level Success -Message "Fixes applied: $($File.Name)"
-            } else {
+            }
+            else {
                 Write-Log -Level Info -Message "Would fix: $($File.Name) (dry-run)"
             }
 
             return @{
-                File = $File.Name
+                file    = $File.Name
                 Changed = $true
             }
 
-        } catch {
+        }
+        catch {
             Write-Log -Level Error -Message "Failed to process $($File.Name): $_ "
             return $null
         }
@@ -783,7 +932,8 @@ try {
     if ($DryRun) {
         Write-Host "`n[DRY RUN MODE] No changes were applied." -ForegroundColor Yellow
         Write-Host "Run without -DryRun to apply fixes.`n" -ForegroundColor Yellow
-    } else {
+    }
+    else {
         Write-Host "`n[SUCCESS] Auto-fix complete!`n" -ForegroundColor Green
     }
 
@@ -793,7 +943,8 @@ try {
 
     exit 0
 
-} catch {
+}
+catch {
     Write-Log -Level Error -Message "Fatal error: $_ "
     Write-Host "`nStack Trace:" -ForegroundColor Red
     Write-Host $_.ScriptStackTrace -ForegroundColor Red

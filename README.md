@@ -616,6 +616,13 @@ Test-Path -Path ./src/.psqa-backup -IsValid
   - Advanced usage patterns
   - Extension points
 
+- **[PSSA-RULES-AUTOFIX-ROADMAP.md](docs/PSSA-RULES-AUTOFIX-ROADMAP.md)** - Complete auto-fix roadmap
+  - All 70 PSSA rules inventory
+  - **Current coverage: 8/70 (11%)**
+  - Prioritized implementation roadmap
+  - Phase 1-3 targets (20% → 30% coverage)
+  - Detailed implementation strategies
+
 ---
 
 ## Contributing

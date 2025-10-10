@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -48,11 +48,11 @@ function New-QAReport {
     if ($pscmdlet.ShouldProcess($OutputFormat, "Generate QA report")) {
         $summary = @{
             TotalFiles    = $Results.Count
-            TotalIssues   = ($Results | ForEach-Object { $_.AnalysisResults.Count } | Measure-Object -Sum).Sum
-            ErrorCount    = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count } | Measure-Object -Sum).Sum
-            WarningCount  = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Warning' }).Count } | Measure-Object -Sum).Sum
-            InfoCount     = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Information' }).Count } | Measure-Object -Sum).Sum
-            FixesApplied  = ($Results | ForEach-Object { ($_.FixResults | Where-Object { $_.Applied }).Count } | Measure-Object -Sum).Sum
+            TotalIssues   = ($Results | ForEach-Object { $_.AnalysisResults.Count } | Measure-Object -Sum).sum
+            ErrorCount    = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count } | Measure-Object -Sum).sum
+            WarningCount  = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Warning' }).Count } | Measure-Object -Sum).sum
+            InfoCount     = ($Results | ForEach-Object { ($_.AnalysisResults | Where-Object { $_.Severity -eq 'Information' }).Count } | Measure-Object -Sum).sum
+            FixesApplied  = ($Results | ForEach-Object { ($_.FixResults | Where-Object { $_.Applied }).Count } | Measure-Object -Sum).sum
             ExecutionTime = (Get-Date) - $StartTime
         }
 
@@ -96,29 +96,29 @@ function Write-ConsoleReport {
     [OutputType([void])]
     param($Results, $Summary)
 
-    Write-Output "`n=== PowerShell QA Engine Report ===" -ForegroundColor Cyan
-    Write-Output "Execution Time: $($Summary.ExecutionTime.TotalSeconds.ToString('F2')) seconds" -ForegroundColor Gray
-    Write-Output "Files Analyzed: $($Summary.TotalFiles)" -ForegroundColor Gray
-    Write-Output "Total Issues: $($Summary.TotalIssues)" -ForegroundColor Gray
+    Write-Host "`n=== PowerShell QA Engine Report ===" -ForegroundColor Cyan
+    Write-Host "Execution Time: $($Summary.ExecutionTime.TotalSeconds.ToString('F2')) seconds" -ForegroundColor Gray
+    Write-Host "Files Analyzed: $($Summary.TotalFiles)" -ForegroundColor Gray
+    Write-Host "Total Issues: $($Summary.TotalIssues)" -ForegroundColor Gray
 
     if ($Summary.ErrorCount -gt 0) {
-        Write-Output "Errors: $($Summary.ErrorCount)" -ForegroundColor Red
+        Write-Host "Errors: $($Summary.ErrorCount)" -ForegroundColor Red
     }
     if ($Summary.WarningCount -gt 0) {
-        Write-Output "Warnings: $($Summary.WarningCount)" -ForegroundColor Yellow
+        Write-Host "Warnings: $($Summary.WarningCount)" -ForegroundColor Yellow
     }
     if ($Summary.InfoCount -gt 0) {
-        Write-Output "Information: $($Summary.InfoCount)" -ForegroundColor Blue
+        Write-Host "Information: $($Summary.InfoCount)" -ForegroundColor Blue
     }
     if ($Summary.FixesApplied -gt 0) {
-        Write-Output "Fixes Applied: $($Summary.FixesApplied)" -ForegroundColor Green
+        Write-Host "Fixes Applied: $($Summary.FixesApplied)" -ForegroundColor Green
     }
 
-    Write-Output "`n=== Detailed Results ===" -ForegroundColor Cyan
+    Write-Host "`n=== Detailed Results ===" -ForegroundColor Cyan
 
     foreach ($result in $Results) {
         if ($result.AnalysisResults.Count -gt 0) {
-            Write-Output "`nFile: $($result.FilePath)" -ForegroundColor White
+            Write-Host "`nFile: $($result.FilePath)" -ForegroundColor White
 
             foreach ($issue in $result.AnalysisResults) {
                 $color = switch ($issue.Severity) {
@@ -127,17 +127,17 @@ function Write-ConsoleReport {
                     'Information' { 'Blue' }
                     default { 'Gray' }
                 }
-                Write-Output "  [$($issue.Severity)] Line $($issue.Line): $($issue.Message) ($($issue.RuleName))" -ForegroundColor $color
+                Write-Host "  [$($issue.Severity)] Line $($issue.Line): $($issue.Message) ($($issue.RuleName))" -ForegroundColor $color
             }
         }
     }
 
-    Write-Output "`n=== Summary ===" -ForegroundColor Cyan
+    Write-Host "`n=== Summary ===" -ForegroundColor Cyan
     if ($Summary.TotalIssues -eq 0) {
-        Write-Output "✓ No issues found! Code quality is excellent." -ForegroundColor Green
+        Write-Host "✓ No issues found! Code quality is excellent." -ForegroundColor Green
     }
     else {
-        Write-Output "⚠ Found $($Summary.TotalIssues) issues that need attention." -ForegroundColor Yellow
+        Write-Host "⚠ Found $($Summary.TotalIssues) issues that need attention." -ForegroundColor Yellow
     }
 }
 

@@ -30,8 +30,6 @@ $script:EngineVersion = '4.0.0'
 
 . "$PSScriptRoot/Import-Modules.ps1"
 
-. "$PSScriptRoot/Import-Modules.ps1"
-
 Import-Module "$PSScriptRoot/../modules/Analyzers/PSQAASTAnalyzer.psm1" -Force
 
 try {
@@ -90,21 +88,6 @@ try {
     if ($Mode -ne 'CI') {
         $results | ConvertTo-Json -Depth 5
     }
-
-    # Run tests
-    if ($Mode -in 'Test', 'All') {
-        Write-Verbose "Running Pester tests..."
-        Invoke-Pester -Path './tests' -CI
-    }
-
-    # Generate report
-    if (($Mode -in 'Report', 'All') -or $OutputFormat -ne 'Console') {
-        New-QAReport -Results $results -OutputFormat $OutputFormat
-    }
-
-    Write-Verbose "QA Engine execution completed successfully"
-
-    $results | ConvertTo-Json -Depth 5
 } catch {
     $errorMessage = "PowerShell QA Engine failed: $_"
     Write-Error $errorMessage

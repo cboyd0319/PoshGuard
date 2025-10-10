@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 
 <#
 .SYNOPSIS
@@ -115,7 +115,7 @@ function Write-ColorOutput {
         'Error' { '[ERROR]' }
     }
 
-    Write-Output "$prefix $Message" -ForegroundColor $color
+    Write-Host "$prefix $Message" -ForegroundColor $color
 }
 
 <#
@@ -162,11 +162,11 @@ function Get-BackupFiles {
                 $originalPath = Join-Path -Path $backupDir.Parent.FullName -ChildPath $originalName
 
                 $backups += [PSCustomObject]@{
-                    OriginalFile = $originalPath
-                    BackupFile = $backupFile.FullName
-                    Timestamp = $timestamp
-                    DateTime = [DateTime]::ParseExact($timestamp, 'yyyyMMddHHmmss', $null)
-                    Size = $backupFile.Length
+                    OriginalFile   = $originalPath
+                    BackupFile     = $backupFile.FullName
+                    Timestamp      = $timestamp
+                    DateTime       = [DateTime]::ParseExact($timestamp, 'yyyyMMddHHmmss', $null)
+                    size           = $backupFile.Length
                     OriginalExists = (Test-Path -Path $originalPath)
                 }
             }
@@ -202,16 +202,16 @@ function Show-BackupList {
     )
 
     Write-ColorOutput "`nAvailable Backups:" -Level Info
-    Write-Output ("=" * 100) -ForegroundColor Gray
+    Write-Host ("=" * 100) -ForegroundColor Gray
 
     $Backups | Format-Table -AutoSize -Property `
-        @{Label='Timestamp'; Expression={$_.Timestamp}},
-        @{Label='Date/Time'; Expression={$_.DateTime.ToString('yyyy-MM-dd HH:mm:ss')}},
-        @{Label='Original File'; Expression={Split-Path -Path $_.OriginalFile -Leaf}},
-        @{Label='Size (KB)'; Expression={[Math]::Round($_.Size / 1KB, 2)}},
-        @{Label='Current Exists'; Expression={if ($_.OriginalExists) { 'Yes' } else { 'No' }}}
+    @{Label = 'Timestamp'; Expression = { $_.Timestamp } },
+    @{Label = 'Date/Time'; Expression = { $_.DateTime.ToString('yyyy-MM-dd HH:mm:ss') } },
+    @{Label = 'Original File'; Expression = { Split-Path -Path $_.OriginalFile -Leaf } },
+    @{Label = 'Size (KB)'; Expression = { [Math]::Round($_.size / 1KB, 2) } },
+    @{Label = 'Current Exists'; Expression = { if ($_.OriginalExists) { 'Yes' } else { 'No' } } }
 
-    Write-Output ("=" * 100) -ForegroundColor Gray
+    Write-Host ("=" * 100) -ForegroundColor Gray
     Write-ColorOutput "Total backups found: $($Backups.Count)" -Level Info
 }
 
@@ -247,9 +247,9 @@ function Restore-BackupFile {
     $backupFile = $Backup.BackupFile
 
     Write-ColorOutput "`nRestoring backup:" -Level Info
-    Write-Output "  From: $backupFile" -ForegroundColor Gray
-    Write-Output "  To:   $originalFile" -ForegroundColor Gray
-    Write-Output "  Date: $($Backup.DateTime)" -ForegroundColor Gray
+    Write-Host "  From: $backupFile" -ForegroundColor Gray
+    Write-Host "  To:   $originalFile" -ForegroundColor Gray
+    Write-Host "  Date: $($Backup.DateTime)" -ForegroundColor Gray
 
     # Confirm if not forced
     if (-not $Force -and -not $PSCmdlet.ShouldProcess($originalFile, 'Restore from backup')) {
@@ -264,17 +264,18 @@ function Restore-BackupFile {
         # Create safety backup of current file if it exists
         if (Test-Path -Path $originalFile) {
             $safetyBackup = "$originalFile.before-restore.$(Get-Date -Format 'yyyyMMddHHmmss')"
-            Copy-Item -Path $originalFile -Destination $safetyBackup -Force
+            Copy-Item -Path $originalFile -Destination $safetyBackup -Force -ErrorAction Stop
             Write-ColorOutput "Safety backup created: $safetyBackup" -Level Info
         }
 
         # Restore from backup
-        Copy-Item -Path $backupFile -Destination $originalFile -Force
+        Copy-Item -Path $backupFile -Destination $originalFile -Force -ErrorAction Stop
 
         Write-ColorOutput "Successfully restored: $originalFile" -Level Success
         return $true
 
-    } catch {
+    }
+    catch {
         Write-ColorOutput "Failed to restore $originalFile : $_" -Level Error
         return $false
     }
@@ -285,10 +286,10 @@ function Restore-BackupFile {
 #region Main Execution
 
 try {
-    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Output "║      PowerShell QA Rollback System v3.0.0                     ║" -ForegroundColor Cyan
-    Write-Output "║      Safe Restore from .psqa-backup                           ║" -ForegroundColor Cyan
-    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║      PowerShell QA Rollback System v3.0.0                     ║" -ForegroundColor Cyan
+    Write-Host "║      Safe Restore from .psqa-backup                           ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     # Resolve path
     $resolvedPath = Resolve-Path -Path $Path
@@ -318,10 +319,11 @@ try {
             Write-ColorOutput "No backups found with timestamp: $BackupTimestamp" -Level Error
             exit 1
         }
-    } elseif ($Latest) {
+    }
+    elseif ($Latest) {
         # Group by original file and get latest for each
         $backupsToRestore = $backups | Group-Object -Property OriginalFile | ForEach-Object {
-            $_.Group | Sort-Object -Property DateTime -Descending | Select-Object -First 1
+            $_.group | Sort-Object -Property DateTime -Descending | Select-Object -First 1
         }
         Write-ColorOutput "Restoring latest backup for each file" -Level Info
     }
@@ -346,15 +348,16 @@ try {
     foreach ($backup in $backupsToRestore) {
         if (Restore-BackupFile -Backup $backup -Force:$Force) {
             $restoredCount++
-        } else {
+        }
+        else {
             $failedCount++
         }
     }
 
     # Summary
-    Write-Output "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Output "║                         SUMMARY                                ║" -ForegroundColor Cyan
-    Write-Output "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+    Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║                         SUMMARY                                ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-ColorOutput "Backups found: $($backups.Count)" -Level Info
     Write-ColorOutput "Files restored: $restoredCount" -Level Success
@@ -363,14 +366,15 @@ try {
         Write-ColorOutput "Failed restores: $failedCount" -Level Error
     }
 
-    Write-Output "`n[SUCCESS] Rollback complete!`n" -ForegroundColor Green
+    Write-Host "`n[SUCCESS] Rollback complete!`n" -ForegroundColor Green
 
     exit 0
 
-} catch {
+}
+catch {
     Write-ColorOutput "Fatal error during rollback: $_" -Level Error
-    Write-Output "`nStack Trace:" -ForegroundColor Red
-    Write-Output $_.ScriptStackTrace -ForegroundColor Red
+    Write-Host "`nStack Trace:" -ForegroundColor Red
+    Write-Host $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
 

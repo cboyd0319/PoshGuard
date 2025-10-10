@@ -37,7 +37,7 @@ function Invoke-AutoFix {
         Write-Verbose "Attempting auto-fix for: $($AnalysisResult.FilePath)"
 
         $fixResults = @()
-        $content = Get-Content -Path $AnalysisResult.FilePath -Raw
+        $content = Get-Content -Path $AnalysisResult.FilePath -Raw -ErrorAction Stop
         $originalContent = $content
         $backupPath = $null
 
@@ -53,7 +53,8 @@ function Invoke-AutoFix {
                     $content = $newContent
                     Write-Verbose "Applied fix for: $($issue.RuleName)"
                 }
-            } catch {
+            }
+            catch {
                 Write-Warning "Could not apply fix for $($issue.RuleName): $_ "
             }
 
@@ -65,11 +66,11 @@ function Invoke-AutoFix {
             if (-not $DryRun.IsPresent -and $content -ne $originalContent) {
                 if ($BackupEnabled) {
                     $backupPath = "$($AnalysisResult.FilePath).backup.$(Get-Date -Format 'yyyyMMddHHmmss')"
-                    Copy-Item -Path $AnalysisResult.FilePath -Destination $backupPath -Force
+                    Copy-Item -Path $AnalysisResult.FilePath -Destination $backupPath -Force -ErrorAction Stop
                     Write-Verbose "Backup created: $backupPath"
                 }
 
-                Set-Content -Path $AnalysisResult.FilePath -Value $content -Encoding UTF8
+                Set-Content -Path $AnalysisResult.FilePath -Value $content -Encoding UTF8 -ErrorAction Stop
                 Write-Verbose "Fixes applied to: $($AnalysisResult.FilePath)"
             }
         }
@@ -123,20 +124,20 @@ function Set-SingleFix {
             'PSAvoidUsingCmdletAliases' {
                 # Expand common aliases
                 $aliases = @{
-                    'gci' = 'Get-ChildItem'
-                    'gcm' = 'Get-Command'
-                    'gm' = 'Get-Member'
-                    'iwr' = 'Invoke-WebRequest'
-                    'irm' = 'Invoke-RestMethod'
-                    'select' = 'Select-Object'
-                    'where' = 'Where-Object'
+                    'gci'     = 'Get-ChildItem'
+                    'gcm'     = 'Get-Command'
+                    'gm'      = 'Get-Member'
+                    'iwr'     = 'Invoke-WebRequest'
+                    'irm'     = 'Invoke-RestMethod'
+                    'select'  = 'Select-Object'
+                    'where'   = 'Where-Object'
                     'foreach' = 'ForEach-Object'
-                    'sort' = 'Sort-Object'
-                    'group' = 'Group-Object'
+                    'sort'    = 'Sort-Object'
+                    'group'   = 'Group-Object'
                     'measure' = 'Measure-Object'
-                    'tee' = 'Tee-Object'
-                    '?' = 'Where-Object'
-                    '%' = 'ForEach-Object'
+                    'tee'     = 'Tee-Object'
+                    '?'       = 'Where-Object'
+                    '%'       = 'ForEach-Object'
                 }
 
                 foreach ($alias in $aliases.Keys) {
@@ -153,11 +154,11 @@ function Set-SingleFix {
                 # Note: This is a best-effort fix and may not cover all edge cases.
                 $fixes = @{
                     'Set-Variable\s+([^\s]+)\s+([^\s]+)' = 'Set-Variable -Name $1 -Value $2'
-                    'Join-Path\s+([^\s]+)\s+([^\s]+)' = 'Join-Path -Path $1 -ChildPath $2'
-                    'Get-ChildItem\s+([^\s]+)' = 'Get-ChildItem -Path $1'
-                    'Test-Path\s+([^\s]+)' = 'Test-Path -Path $1'
-                    'Remove-Item\s+([^\s]+)' = 'Remove-Item -Path $1'
-                    'New-Item\s+([^\s]+)' = 'New-Item -Path $1'
+                    'Join-Path\s+([^\s]+)\s+([^\s]+)'    = 'Join-Path -Path $1 -ChildPath $2'
+                    'Get-ChildItem\s+([^\s]+)'           = 'Get-ChildItem -Path $1'
+                    'Test-Path\s+([^\s]+)'               = 'Test-Path -Path $1'
+                    'Remove-Item\s+([^\s]+)'             = 'Remove-Item -Path $1'
+                    'New-Item\s+([^\s]+)'                = 'New-Item -Path $1'
                 }
 
                 foreach ($pattern in $fixes.Keys) {
@@ -176,7 +177,8 @@ function Set-SingleFix {
                         if ($line -match $pattern) {
                             $fixedLines += "# FIXME: Unused variable assignment commented out by PSQA."
                             $fixedLines += "# $line"
-                        } else {
+                        }
+                        else {
                             $fixedLines += $line
                         }
                     }
@@ -191,10 +193,10 @@ function Set-SingleFix {
                     $cleanFunctionName = $functionName -replace '^global:', ''
 
                     # Extract parameter names from the function definition
-                    $funcAst = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null).FindAll({$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $args[0].Name -eq $cleanFunctionName}, $true)[0]
+                    $funcAst = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null).FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $args[0].Name -eq $cleanFunctionName }, $true)[0]
                     $paramBlocks = ""
                     if ($funcAst.Parameters) {
-                        foreach($param in $funcAst.Parameters) {
+                        foreach ($param in $funcAst.Parameters) {
                             $paramBlocks += ".PARAMETER $($param.Name)`n    Specifies the purpose of the `$($param.Name)` parameter.`n`n"
                         }
                     }
@@ -297,7 +299,8 @@ $paramBlocks.EXAMPLE
 
                             $fixedLines += "# FIXME: Unused parameter commented out by PSQA."
                             $fixedLines += $commentedLine
-                        } else {
+                        }
+                        else {
                             $fixedLines += $line
                         }
                     }
@@ -308,14 +311,14 @@ $paramBlocks.EXAMPLE
             'PSUseSingularNouns' {
                 # Fix common plural nouns in function names
                 $pluralFixes = @{
-                    'Variables' = 'Variable'
+                    'Variables'   = 'Variable'
                     'Diagnostics' = 'Diagnostic'
-                    'Parameters' = 'Parameter'
-                    'Properties' = 'Property'
-                    'Settings' = 'Setting'
-                    'Items' = 'Item'
-                    'Files' = 'File'
-                    'Results' = 'Result'
+                    'Parameters'  = 'Parameter'
+                    'Properties'  = 'Property'
+                    'Settings'    = 'Setting'
+                    'Items'       = 'Item'
+                    'Files'       = 'File'
+                    'Results'     = 'Result'
                 }
 
                 foreach ($plural in $pluralFixes.Keys) {

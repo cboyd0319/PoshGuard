@@ -18,8 +18,8 @@ function Get-PSFile {
         $supportedExtensions = $config.FileProcessing.SupportedExtensions
         $excludePatterns = $config.FileProcessing.ExcludePatterns
 
-        Write-Host "Supported Extensions: $($supportedExtensions -join ', ')"
-        Write-Host "Exclude Patterns: $($excludePatterns -join ', ')"
+        Write-Output "Supported Extensions: $($supportedExtensions -join ', ')"
+        Write-Output "Exclude Patterns: $($excludePatterns -join ', ')"
 
         if (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop') {
             # Single file
@@ -30,7 +30,7 @@ function Get-PSFile {
         # Directory - get all PowerShell files
         $files = Get-ChildItem -Path $Path -Recurse -File
 
-        Write-Host "Found $($files.Count) files before filtering"
+        Write-Output "Found $($files.Count) files before filtering"
 
         $files = $files | Where-Object {
             $extension = $_.Extension
@@ -51,7 +51,7 @@ function Get-PSFile {
             return $isSupported -and (-not $isExcluded)
         }
 
-        Write-Host "Found $($files.Count) PowerShell files to analyze"
+        Write-Output "Found $($files.Count) PowerShell files to analyze"
         return $files
     }
 }

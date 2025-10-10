@@ -42,7 +42,7 @@ class PSQALogEntry {
         $this.TraceId = $traceId
         $this.Category = 'General'
         $this.Properties = @{}
-        $this.Code = ''
+        $this.code = ''
         $this.Hint = ''
         $this.Action = ''
     }
@@ -214,7 +214,7 @@ function Write-PSQALog {
         # Create log entry
         $entry = [PSQALogEntry]::new($Level, $Message, $TraceId)
         $entry.Category = $Category
-        $entry.Code = $Code
+        $entry.code = $Code
         $entry.Hint = $Hint
         $entry.Action = $Action
         $entry.Properties = $Properties
@@ -424,7 +424,7 @@ function Write-ConsoleLog {
 
     $msg = "[$timestamp] [$($Entry.Level.ToUpper())] [$($Entry.TraceId.Substring(0, 8))] $($Entry.Message)"
 
-    if ($Entry.Code) {
+    if ($Entry.code) {
         $msg += " [Code: $($Entry.Code)]"
     }
     if ($Entry.Hint) {
@@ -435,7 +435,7 @@ function Write-ConsoleLog {
     }
 
     if ($script:LogConfig.ColorOutput) {
-        Write-Output $msg -ForegroundColor $color
+        Write-Host $msg -ForegroundColor $color
     }
     else {
         Write-Output $msg
@@ -463,7 +463,7 @@ function Write-FileLog {
     $timestamp = $Entry.Timestamp.ToString('yyyy-MM-dd HH:mm:ss.fff')
     $logLine = "[$timestamp] [$($Entry.Level.ToUpper())] [$($Entry.TraceId)] [$($Entry.Category)] $($Entry.Message)"
 
-    if ($Entry.Code) { $logLine += " [Code: $($Entry.Code)]" }
+    if ($Entry.code) { $logLine += " [Code: $($Entry.Code)]" }
     if ($Entry.Hint) { $logLine += " [Hint: $($Entry.Hint)]" }
     if ($Entry.Action) { $logLine += " [Action: $($Entry.Action)]" }
 
@@ -503,7 +503,7 @@ function Write-StructuredLog {
         trace_id   = $Entry.TraceId
         category   = $Entry.Category
         message    = $Entry.Message
-        code       = $Entry.Code
+        code       = $Entry.code
         hint       = $Entry.Hint
         action     = $Entry.Action
         properties = $Entry.Properties
