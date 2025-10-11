@@ -65,8 +65,16 @@ $poshGuardVersion = if (Test-Path $versionFile) {
     "unknown"
 }
 
+# Build dynamic banner with proper padding
+$bannerWidth = 59  # Inner width (excluding box characters)
+$bannerText = "PoshGuard Benchmark Suite - v$poshGuardVersion"
+$paddingTotal = $bannerWidth - $bannerText.Length
+$paddingLeft = [math]::Floor($paddingTotal / 2)
+$paddingRight = $paddingTotal - $paddingLeft
+$bannerLine = "║" + (" " * $paddingLeft) + $bannerText + (" " * $paddingRight) + "║"
+
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         PoshGuard Benchmark Suite - v$poshGuardVersion              ║" -ForegroundColor Cyan
+Write-Host $bannerLine -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 

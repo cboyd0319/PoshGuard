@@ -40,7 +40,25 @@ function Resolve-PoshGuardPath {
 $LibPath = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath (Join-Path 'tools' 'lib')
 
 if (-not $LibPath) {
-    Write-Warning "PoshGuard library path not found. Module may not function correctly."
+    $warningMessage = @"
+PoshGuard library path not found. Module may not function correctly.
+
+Installation Checklist:
+- PowerShell Gallery: Ensure 'lib' directory exists under: $ModuleRoot
+- Repository Clone: Ensure 'tools/lib/' exists relative to the repo root
+- Module Root Detected: $ModuleRoot
+
+Troubleshooting:
+1. Reinstall the module: Install-Module PoshGuard -Force
+2. For repo usage, ensure you're in the repository root directory
+3. Verify directory structure matches documentation at:
+   https://github.com/cboyd0319/PoshGuard#install
+
+Expected Paths Checked:
+- Gallery: $(Join-Path $ModuleRoot 'lib')
+- Dev: $(Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'lib')
+"@
+    Write-Warning $warningMessage
 }
 
 # Import core modules if they exist

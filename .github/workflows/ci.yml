@@ -15,8 +15,7 @@ jobs:
             -Recurse `
             -ReportSummary `
             -Severity Error,Warning `
-            -Settings Default `
-            -ExcludeRule PSAvoidLongLines `
+            -Settings ./config/PSScriptAnalyzerSettings.psd1 `
             -SaveDenyList $null `
             -OutFile PSSA.sarif `
             -Format Sarif

@@ -114,7 +114,10 @@ This document summarizes all high-impact improvements implemented for the v3.0.0
 
 - [ ] **Commit all changes**
   ```bash
-  git add -A
+  # Review staged changes before committing to avoid including sensitive files
+  git status
+  git add .
+  git status  # Verify only intended files are staged
   git commit -m "feat: v3.0.0 production release with CI/CD, samples, and docs"
   git push origin main
   ```

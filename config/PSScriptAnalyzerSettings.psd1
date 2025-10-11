@@ -76,6 +76,11 @@ param()
             Enable = $true              # Enforce PowerShell cmdlet casing standards
         }
 
+        PSAvoidLongLines                               = @{
+            Enable            = $true
+            MaximumLineLength = 120      # Reasonable limit for readability and code review
+        }
+
         # === SECURITY RULES (Critical Enforcement) ===
 
         PSAvoidUsingPlainTextForPassword               = @{

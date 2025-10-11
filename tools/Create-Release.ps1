@@ -7,8 +7,19 @@
     Automates the release process:
     - Validates version format
     - Creates git tag
-    - Generates release package
+    - Generates release package (GitHub release format)
     - Optionally pushes to GitHub (triggers release workflow)
+
+    IMPORTANT: This script creates a GitHub release package, NOT a PowerShell 
+    Gallery package. For PSGallery publication, use Prepare-PSGalleryPackage.ps1 
+    to reorganize the module structure:
+      PoshGuard/
+        PoshGuard.psd1
+        PoshGuard.psm1
+        lib/              <- tools/lib/* files copied here
+        Apply-AutoFix.ps1 <- tools/Apply-AutoFix.ps1 copied here
+    
+    See docs/implementation-summary.md for complete PSGallery publishing instructions.
 
 .PARAMETER Version
     Semantic version string (e.g., "3.0.0")
@@ -21,6 +32,10 @@
 
 .EXAMPLE
     ./tools/Create-Release.ps1 -Version 3.0.0 -Push
+
+.NOTES
+    For PowerShell Gallery publishing, run Prepare-PSGalleryPackage.ps1 after 
+    this script to create the properly structured module package.
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -154,16 +169,8 @@ if (Test-Path $packagePath) {
     Remove-Item $packagePath -Force
 }
 
-# NOTE: This creates a GitHub release package, NOT a PowerShell Gallery package.
-# For PSGallery publication, the module structure needs reorganization:
-#   PoshGuard/
-#     PoshGuard.psd1
-#     PoshGuard.psm1
-#     lib/              <- tools/lib/* files must be copied here
-#     Apply-AutoFix.ps1 <- tools/Apply-AutoFix.ps1 must be copied here
-# See docs/implementation-summary.md for PSGallery publishing instructions.
-
 # Define the list of files and directories to include in the release package
+# NOTE: For PSGallery publishing, use Prepare-PSGalleryPackage.ps1 instead
 $ReleaseFiles = @(
     'PoshGuard'
     'tools'
