@@ -13,9 +13,17 @@
     - Documentation: Comment-based help, OutputType
     - AttributeManagement: SupportsShouldProcess, CmdletBinding, Process blocks
     - ManifestManagement: Module manifest validation, export fields, alias scoping
+    - ShouldProcessTransformation: Full PSShouldProcess body wrapping (HARDEST FIX)
+    - InvokingEmptyMembers: Non-constant member access fixes
+    - OverwritingBuiltInCmdlets: Built-in cmdlet shadowing detection
+    - DefaultValueForMandatoryParameter: Remove default values from mandatory parameters
+    - UTF8EncodingForHelpFile: Convert help files to UTF-8 encoding
+    - CmdletBindingFix: Fix CmdletBinding attribute placement
+    - CompatibleCmdletsWarning: Cross-platform compatibility warnings
+    - DeprecatedManifestFields: Detect deprecated module manifest fields
 
 .NOTES
-    Part of PoshGuard v2.7.0
+    Part of PoshGuard v2.16.0
     This module automatically imports all Advanced submodules for convenience.
 #>
 
@@ -31,7 +39,15 @@ $SubModules = @(
     'CodeAnalysis',
     'Documentation',
     'AttributeManagement',
-    'ManifestManagement'
+    'ManifestManagement',
+    'ShouldProcessTransformation',
+    'InvokingEmptyMembers',
+    'OverwritingBuiltInCmdlets',
+    'DefaultValueForMandatoryParameter',
+    'UTF8EncodingForHelpFile',
+    'CmdletBindingFix',
+    'CompatibleCmdletsWarning',
+    'DeprecatedManifestFields'
 )
 
 foreach ($SubModule in $SubModules) {
@@ -82,7 +98,31 @@ $FunctionsToExport = @(
     # ManifestManagement.psm1
     'Invoke-MissingModuleManifestFieldFix',
     'Invoke-UseToExportFieldsInManifestFix',
-    'Invoke-AvoidGlobalAliasesFix'
+    'Invoke-AvoidGlobalAliasesFix',
+
+    # ShouldProcessTransformation.psm1
+    'Invoke-PSShouldProcessFix',
+
+    # InvokingEmptyMembers.psm1
+    'Invoke-InvokingEmptyMembersFix',
+
+    # OverwritingBuiltInCmdlets.psm1
+    'Invoke-OverwritingBuiltInCmdletsFix',
+    
+    # DefaultValueForMandatoryParameter.psm1
+    'Invoke-DefaultValueForMandatoryParameterFix',
+    
+    # UTF8EncodingForHelpFile.psm1
+    'Invoke-UTF8EncodingForHelpFileFix',
+    
+    # CmdletBindingFix.psm1
+    'Invoke-CmdletBindingFix',
+    
+    # CompatibleCmdletsWarning.psm1
+    'Invoke-CompatibleCmdletsWarningFix',
+    
+    # DeprecatedManifestFields.psm1
+    'Invoke-DeprecatedManifestFieldsFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport

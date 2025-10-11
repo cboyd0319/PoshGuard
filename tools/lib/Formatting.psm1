@@ -37,7 +37,8 @@ $SubModules = @(
     'Casing',
     'Output',
     'Alignment',
-    'Runspaces'
+    'Runspaces',
+    'WriteHostEnhanced'
 )
 
 foreach ($SubModule in $SubModules) {
@@ -66,6 +67,7 @@ $FunctionsToExport = @(
 
     # Output
     'Invoke-WriteHostFix',
+    'Invoke-WriteHostEnhancedFix',
     'Invoke-RedirectionOperatorFix',
 
     # Alignment

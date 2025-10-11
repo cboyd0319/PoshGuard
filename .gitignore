@@ -1,12 +1,13 @@
 # PowerShell QA Engine - Ignore Patterns
 
-# QA Reports
+# QA Reports & Output
 qa-report-*.json
 qa-report-*.html
 qa-report-*.xml
 
 # Backup Files
 .psqa-backup/
+.backup/
 *.bak
 *.backup
 *~
@@ -23,15 +24,20 @@ temp_*.psm1
 
 # Test Output
 TestResults/
+testResults.xml
 *.trx
 
 # Log Files
 *.log
+*.jsonl
 logs/
+qa-engine.log
+qa-engine.jsonl
 
-# Pester Coverage
+# Code Coverage
 coverage.xml
 *.coverage
+*.codecov
 
 # VS Code
 .vscode/
@@ -41,11 +47,13 @@ coverage.xml
 .idea/
 *.swp
 *.swo
+*~
 
 # OS Files
 .DS_Store
 Thumbs.db
 desktop.ini
+*.lnk
 
 # PowerShell Module Cache
 PSGetModuleInfo.xml
@@ -54,7 +62,12 @@ PSGetModuleInfo.xml
 bin/
 obj/
 out/
+publish/
 
-# Clean Files (auto-fix artifacts)
+# Auto-Fix Artifacts
 *.clean
 *.original
+
+# Session State & Archives (internal dev notes - not for commit)
+.claude/
+.archive/

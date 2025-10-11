@@ -16,7 +16,7 @@
     - Generates unified diffs
     - Safe to run multiple times (idempotent)
 
-    MODULAR ARCHITECTURE (v2.7.0):
+    MODULAR ARCHITECTURE (v2.16.0):
     All fix functions have been extracted to 5 specialized modules in ./lib/:
     - Core.psm1: Helper functions (backups, logging, file ops)
     - Formatting.psm1: Code formatting and style
@@ -53,10 +53,10 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 2.6.0
+    Version: 2.16.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
-    Architecture: Modular (5 modules, 2,957 lines extracted)
+    Architecture: Modular (5 modules, 60/60 general PSSA rules - 100% coverage!)
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -176,6 +176,7 @@ function Invoke-FileFix {
             # Manifest fixes (only for .psd1 files)
             $fixedContent = Invoke-MissingModuleManifestFieldFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-UseToExportFieldsInManifestFix -Content $fixedContent -FilePath $File.FullName
+            $fixedContent = Invoke-DeprecatedManifestFieldsFix -Content $fixedContent -FilePath $File.FullName
 
             # Security fixes (HIGH priority) - 100% PSSA security coverage
             $fixedContent = Invoke-PlainTextPasswordFix -Content $fixedContent
@@ -190,6 +191,14 @@ function Invoke-FileFix {
             # Complex analysis fixes (AST-heavy)
             $fixedContent = Invoke-UnusedParameterFix -Content $fixedContent
             $fixedContent = Invoke-LongLinesFix -Content $fixedContent
+            $fixedContent = Invoke-InvokingEmptyMembersFix -Content $fixedContent
+            $fixedContent = Invoke-OverwritingBuiltInCmdletsFix -Content $fixedContent
+            $fixedContent = Invoke-DefaultValueForMandatoryParameterFix -ScriptContent $fixedContent
+
+            # Help file encoding fix (only for help files)
+            if ($File.Name -like '*.help.txt' -or $File.Name -like '*-help.xml' -or $File.Name -like 'about_*.txt') {
+                $fixedContent = Invoke-UTF8EncodingForHelpFileFix -FilePath $File.FullName -ScriptContent $fixedContent
+            }
 
             # Skip auto-generated comment help for module files (they already have proper help)
             if ($File.Extension -ne '.psm1') {
@@ -199,9 +208,13 @@ function Invoke-FileFix {
             $fixedContent = Invoke-SupportsShouldProcessFix -Content $fixedContent
             $fixedContent = Invoke-ShouldProcessForStateChangingFix -Content $fixedContent
             $fixedContent = Invoke-ShouldContinueWithoutForceFix -Content $fixedContent
+            $fixedContent = Invoke-PSShouldProcessFix -Content $fixedContent  # HARDEST FIX - Full ShouldProcess wrapping
             $fixedContent = Invoke-ProcessBlockForPipelineFix -Content $fixedContent
-            $fixedContent = Invoke-CmdletCorrectlyFix -Content $fixedContent
+            $fixedContent = Invoke-CmdletBindingFix -Content $fixedContent  # FIXED VERSION (was CmdletCorrectlyFix)
             $fixedContent = Invoke-WmiToCimFix -Content $fixedContent
+            
+            # Compatibility warnings (cross-platform/version)
+            $fixedContent = Invoke-CompatibleCmdletsWarningFix -ScriptContent $fixedContent
 
             # Formatting fixes
             $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
@@ -210,7 +223,7 @@ function Invoke-FileFix {
             $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-AvoidGlobalAliasesFix -Content $fixedContent
             $fixedContent = Invoke-CasingFix -Content $fixedContent
-            $fixedContent = Invoke-WriteHostFix -Content $fixedContent
+            $fixedContent = Invoke-WriteHostEnhancedFix -Content $fixedContent  # ENHANCED VERSION (was WriteHostFix)
             $fixedContent = Invoke-AlignAssignmentFix -Content $fixedContent
 
             # Best practices fixes
@@ -305,7 +318,7 @@ function Invoke-FileFix {
 
 try {
     Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         PowerShell QA Auto-Fix Engine v2.7.0                  ║" -ForegroundColor Cyan
+    Write-Host "║         PowerShell QA Auto-Fix Engine v2.10.0                 ║" -ForegroundColor Cyan
     Write-Host "║         Idempotent - Safe - Production-Grade - Modular        ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
