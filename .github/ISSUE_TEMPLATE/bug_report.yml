@@ -50,10 +50,10 @@ body:
       label: Environment
       description: Version information
       value: |
-        - PoshGuard Version: 
+        - PoshGuard Version:
         - PowerShell Version: $PSVersionTable.PSVersion
-        - OS: 
-        - PSScriptAnalyzer Version: 
+        - OS:
+        - PSScriptAnalyzer Version:
     validations:
       required: true
 
