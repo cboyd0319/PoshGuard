@@ -1,0 +1,54 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PSScriptAnalyzer
+        run: Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+        shell: pwsh
+      - name: Lint PowerShell & export SARIF
+        run: |
+          Invoke-ScriptAnalyzer `
+            -Path . `
+            -Recurse `
+            -ReportSummary `
+            -Severity Error,Warning `
+            -Settings ./config/PSScriptAnalyzerSettings.psd1 `
+            -SaveDenyList $null `
+            -OutFile PSSA.sarif `
+            -Format Sarif
+        shell: pwsh
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with: { sarif_file: PSSA.sarif }
+
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pester
+        run: Install-Module Pester -Scope CurrentUser -Force
+        shell: pwsh
+      - name: Run Pester
+        run: Invoke-Pester -CI -Output Detailed
+        shell: pwsh
+
+  package:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip tools
+        run: |
+          zip -r poshguard-${{ github.sha }}.zip \
+            tools/ \
+            PoshGuard/ \
+            README.md \
+            LICENSE \
+            docs/CHANGELOG.md \
+            docs/SECURITY.md \
+            docs/CONTRIBUTING.md
+      - uses: actions/upload-artifact@v4
+        with: { name: poshguard, path: poshguard-${{ github.sha }}.zip }

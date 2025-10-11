@@ -1,0 +1,8 @@
+# Ignore benchmark run outputs (except latest.json)
+*.csv
+*.jsonl
+*.svg
+benchmark_*
+
+# Keep latest summary for quick reference
+!latest.json
