@@ -161,7 +161,8 @@ catch {
 }
 
 # Calculate package size
-$packageSize = (Get-ChildItem $OutputPath -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+$sizeSum = (Get-ChildItem $OutputPath -Recurse -File | Measure-Object -Property Length -Sum).Sum
+$packageSize = if ($null -ne $sizeSum) { $sizeSum / 1MB } else { 0 }
 
 Write-Host "`n=== Package Ready for PowerShell Gallery ===" -ForegroundColor Green
 Write-Host "Location: $OutputPath" -ForegroundColor Cyan

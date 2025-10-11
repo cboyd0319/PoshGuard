@@ -53,24 +53,33 @@ if ($existingTag) {
 }
 
 # Validate VERSION.txt matches
-$versionFile = Get-Content "$RepoRoot/VERSION.txt" -Raw
+$versionFilePath = "$RepoRoot/PoshGuard/VERSION.txt"
+$versionFile = Get-Content $versionFilePath -Raw
 if ($versionFile.Trim() -ne $Version) {
     Write-Warning "VERSION.txt contains '$($versionFile.Trim())' but release is '$Version'"
     Write-Host "Updating VERSION.txt to $Version..." -ForegroundColor Yellow
-    Set-Content "$RepoRoot/VERSION.txt" -Value $Version -NoNewline
+    Set-Content $versionFilePath -Value $Version -NoNewline
 }
 
 # Validate module manifest matches
-$manifestPath = "$RepoRoot/PoshGuard.psd1"
+$manifestPath = "$RepoRoot/PoshGuard/PoshGuard.psd1"
 if (Test-Path $manifestPath) {
-    $manifest = Test-ModuleManifest $manifestPath -ErrorAction SilentlyContinue
-    if ($manifest.Version -ne $Version) {
-        Write-Warning "Module manifest version is $($manifest.Version) but release is $Version"
-        # Update manifest
-        $manifestContent = Get-Content $manifestPath -Raw
-        $manifestContent = $manifestContent -replace "ModuleVersion\s*=\s*'[\d.]+'", "ModuleVersion = '$Version'"
-        Set-Content $manifestPath -Value $manifestContent
-        Write-Host "Updated PoshGuard.psd1 to version $Version" -ForegroundColor Green
+    try {
+        $manifest = Test-ModuleManifest $manifestPath -ErrorAction Stop
+        
+        if ($manifest.Version -ne $Version) {
+            Write-Warning "Module manifest version is $($manifest.Version) but release is $Version"
+            
+            # Update manifest
+            $manifestContent = Get-Content $manifestPath -Raw
+            $manifestContent = $manifestContent -replace "ModuleVersion\s*=\s*'[\d.]+'", "ModuleVersion = '$Version'"
+            Set-Content $manifestPath -Value $manifestContent
+            Write-Host "Updated PoshGuard.psd1 to version $Version" -ForegroundColor Green
+        }
+    }
+    catch {
+        Write-Error "Module manifest validation failed: $($_.Exception.Message)"
+        throw
     }
 }
 
@@ -81,7 +90,7 @@ if ($gitStatus) {
     Write-Host $gitStatus
     $commit = Read-Host "Commit changes before creating tag? (y/n)"
     if ($commit -eq 'y') {
-        git add VERSION.txt PoshGuard.psd1 CHANGELOG.md
+        git add PoshGuard/VERSION.txt PoshGuard/PoshGuard.psd1 docs/CHANGELOG.md
         git commit -m "Release $Version"
         Write-Host "Committed version changes" -ForegroundColor Green
     }
@@ -118,13 +127,25 @@ if (Test-Path $packagePath) {
 #     Apply-AutoFix.ps1 <- tools/Apply-AutoFix.ps1 must be copied here
 # See docs/implementation-summary.md for PSGallery publishing instructions.
 
+# Define the list of files and directories to include in the release package
+$ReleaseFiles = @(
+    'PoshGuard'
+    'tools'
+    'README.md'
+    'LICENSE'
+    'docs/CHANGELOG.md'
+    'docs/SECURITY.md'
+    'docs/CONTRIBUTING.md'
+)
+
 # Use Compress-Archive if available, otherwise use zip command
 if (Get-Command Compress-Archive -ErrorAction SilentlyContinue) {
-    Compress-Archive -Path "$RepoRoot/PoshGuard", "$RepoRoot/tools", "$RepoRoot/README.md", "$RepoRoot/LICENSE", "$RepoRoot/docs/CHANGELOG.md", "$RepoRoot/docs/SECURITY.md", "$RepoRoot/docs/CONTRIBUTING.md" -DestinationPath $packagePath
+    $FullPaths = $ReleaseFiles | ForEach-Object { Join-Path $RepoRoot $_ }
+    Compress-Archive -Path $FullPaths -DestinationPath $packagePath
 } else {
     # Fallback to system zip
     Push-Location $RepoRoot
-    & zip -r $packageName PoshGuard/ tools/ README.md LICENSE docs/CHANGELOG.md docs/SECURITY.md docs/CONTRIBUTING.md
+    & zip -r $packageName @ReleaseFiles
     Pop-Location
 }
 

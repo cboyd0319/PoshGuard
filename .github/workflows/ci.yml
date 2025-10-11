@@ -37,6 +37,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Zip tools
-        run: zip -r poshguard-${{ github.sha }}.zip tools PoshGuard README.md LICENSE docs/CHANGELOG.md
+        run: |
+          zip -r poshguard-${{ github.sha }}.zip \
+            tools/ \
+            PoshGuard/ \
+            README.md \
+            LICENSE \
+            docs/CHANGELOG.md \
+            docs/SECURITY.md \
+            docs/CONTRIBUTING.md
       - uses: actions/upload-artifact@v4
         with: { name: poshguard, path: poshguard-${{ github.sha }}.zip }

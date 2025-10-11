@@ -126,11 +126,23 @@ foreach ($file in $testFiles) {
         
         # Import Core module if needed
         if (-not (Get-Module Core)) {
-            Import-Module ./tools/lib/Core.psm1 -ErrorAction SilentlyContinue
+            try {
+                Import-Module ./tools/lib/Core.psm1 -ErrorAction Stop
+            }
+            catch {
+                Write-Error "Failed to import required module 'Core' from ./tools/lib/Core.psm1. Error: $($_.Exception.Message)"
+                exit 1
+            }
         }
         
         # Run fix script
-        $fixResult = & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction SilentlyContinue
+        try {
+            $fixResult = & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "Apply-AutoFix.ps1 failed for $($sample.File): $($_.Exception.Message)"
+            # Continue with benchmark even if fixes fail
+        }
         
         # Record end time
         $endTime = Get-Date
@@ -259,13 +271,40 @@ if ($GenerateChart) {
     $barHeight = 40
     $barSpacing = 20
     
-    # Use max violations as denominator to avoid division by zero and ensure accurate comparison
+    # Handle zero violations case
     $maxViolations = [Math]::Max($totalViolationsBefore, $totalViolationsAfter)
-    if ($maxViolations -eq 0) { $maxViolations = 1 }
-    $beforeBar = ($totalViolationsBefore / $maxViolations) * ($svgWidth - 150)
-    $afterBar = ($totalViolationsAfter / $maxViolations) * ($svgWidth - 150)
     
-    $svg = @"
+    if ($maxViolations -eq 0) {
+        # Special case: No violations detected
+        $svg = @"
+<svg width="$svgWidth" height="$svgHeight" xmlns="http://www.w3.org/2000/svg">
+  <rect width="$svgWidth" height="$svgHeight" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="10" y="25" font-family="Arial" font-size="16" font-weight="bold" fill="#333">
+    PoshGuard Benchmark: No Violations Detected
+  </text>
+  
+  <!-- Success message -->
+  <text x="10" y="80" font-family="Arial" font-size="14" fill="#28a745">
+    ✓ All samples passed PSScriptAnalyzer validation
+  </text>
+  
+  <text x="10" y="110" font-family="Arial" font-size="12" fill="#666">
+    Total files analyzed: $($samples.Count)
+  </text>
+  
+  <text x="10" y="135" font-family="Arial" font-size="12" fill="#666">
+    No fixes required - code is already compliant!
+  </text>
+</svg>
+"@
+    } else {
+        # Normal case: Calculate bar widths proportionally
+        $beforeBar = ($totalViolationsBefore / $maxViolations) * ($svgWidth - 150)
+        $afterBar = ($totalViolationsAfter / $maxViolations) * ($svgWidth - 150)
+        
+        $svg = @"
 <svg width="$svgWidth" height="$svgHeight" xmlns="http://www.w3.org/2000/svg">
   <rect width="$svgWidth" height="$svgHeight" fill="#f8f9fa"/>
   
@@ -294,6 +333,7 @@ if ($GenerateChart) {
   </text>
 </svg>
 "@
+    }
     
     $svg | Set-Content -Path $svgPath
     Write-Host "  ✓ Chart saved: $svgPath" -ForegroundColor Green

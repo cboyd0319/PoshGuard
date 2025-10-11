@@ -90,10 +90,13 @@ function Invoke-PoshGuard {
     )
 
     # Locate Apply-AutoFix.ps1
-    $ScriptPath = if (Test-Path (Join-Path $ModuleRoot '..\tools\Apply-AutoFix.ps1')) {
-        Join-Path $ModuleRoot '..\tools\Apply-AutoFix.ps1'
-    } elseif (Test-Path (Join-Path $ModuleRoot 'Apply-AutoFix.ps1')) {
-        Join-Path $ModuleRoot 'Apply-AutoFix.ps1'
+    $DevScriptPath = Join-Path $ModuleRoot '..\tools\Apply-AutoFix.ps1'
+    $GalleryScriptPath = Join-Path $ModuleRoot 'Apply-AutoFix.ps1'
+    
+    $ScriptPath = if (Test-Path $DevScriptPath) {
+        $DevScriptPath
+    } elseif (Test-Path $GalleryScriptPath) {
+        $GalleryScriptPath
     } else {
         throw "Cannot locate Apply-AutoFix.ps1. Please ensure module installation is complete."
     }
