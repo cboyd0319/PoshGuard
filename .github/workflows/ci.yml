@@ -22,7 +22,8 @@ jobs:
         shell: pwsh
       - name: Upload SARIF to Code Scanning
         uses: github/codeql-action/upload-sarif@v3
-        with: { sarif_file: PSSA.sarif }
+        with:
+          sarif_file: PSSA.sarif
 
   test:
     runs-on: windows-latest
@@ -51,4 +52,6 @@ jobs:
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
       - uses: actions/upload-artifact@v4
-        with: { name: poshguard, path: poshguard-${{ github.sha }}.zip }
+        with:
+          name: poshguard
+          path: poshguard-${{ github.sha }}.zip
