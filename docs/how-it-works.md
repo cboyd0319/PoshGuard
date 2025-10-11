@@ -281,7 +281,7 @@ Where:
 
 To add a new rule fix:
 
-1. **Implement detection** in corresponding module (Security.psm1, BestPractices.psm1, etc.)
+1. **Implement detection** in corresponding module (`tools/lib/Security.psm1`, `tools/lib/BestPractices.psm1`, etc.)
 2. **Define transformation** using AST pattern matching
 3. **Add validation** to ensure fix correctness
 4. **Write tests** with before/after samples

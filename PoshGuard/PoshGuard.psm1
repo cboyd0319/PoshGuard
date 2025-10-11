@@ -22,7 +22,7 @@ $ModuleRoot = $PSScriptRoot
 $LibPath = if (Test-Path (Join-Path $ModuleRoot 'lib')) {
     Join-Path $ModuleRoot 'lib'
 } else {
-    Join-Path (Split-Path $ModuleRoot -Parent) 'tools\lib'
+    Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'lib'
 }
 
 # Import core modules if they exist
@@ -90,7 +90,7 @@ function Invoke-PoshGuard {
     )
 
     # Locate Apply-AutoFix.ps1
-    $DevScriptPath = Join-Path $ModuleRoot '..\tools\Apply-AutoFix.ps1'
+    $DevScriptPath = Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'Apply-AutoFix.ps1'
     $GalleryScriptPath = Join-Path $ModuleRoot 'Apply-AutoFix.ps1'
     
     $ScriptPath = if (Test-Path $DevScriptPath) {

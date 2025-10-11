@@ -98,7 +98,43 @@ if ($gitStatus) {
 
 # Create annotated tag
 Write-Host "Creating annotated tag $TagName..." -ForegroundColor Yellow
-$changelogSnippet = Get-Content "$RepoRoot/CHANGELOG.md" -Raw | Select-String -Pattern "(?s)## \[$Version\].*?(?=## \[|\z)" | ForEach-Object { $_.Matches.Value }
+
+# Extract changelog snippet for this version
+# Expected format: Keep a Changelog (https://keepachangelog.com/)
+# Each version starts with a heading: ## [x.y.z] - YYYY-MM-DD
+$changelogPath = "$RepoRoot/docs/CHANGELOG.md"
+$changelogSnippet = ""
+
+if (Test-Path $changelogPath) {
+    $changelogLines = Get-Content $changelogPath
+    $inSection = $false
+    $snippetLines = @()
+    
+    foreach ($line in $changelogLines) {
+        # Start of target version section
+        if ($line -match "^##\s+\[$([regex]::Escape($Version))\]") {
+            $inSection = $true
+            continue  # Skip the header line itself
+        }
+        
+        # Start of next version section (stop collecting)
+        if ($inSection -and $line -match "^##\s+\[\d+\.\d+\.\d+\]") {
+            break
+        }
+        
+        # Collect lines within the target section
+        if ($inSection) {
+            $snippetLines += $line
+        }
+    }
+    
+    $changelogSnippet = ($snippetLines -join "`n").Trim()
+}
+
+if ([string]::IsNullOrWhiteSpace($changelogSnippet)) {
+    Write-Warning "Could not extract changelog for version $Version"
+    $changelogSnippet = "Release $Version"
+}
 
 if ($PSCmdlet.ShouldProcess($TagName, "Create Git Tag")) {
     git tag -a $TagName -m "Release $Version`n`n$changelogSnippet"
@@ -143,9 +179,9 @@ if (Get-Command Compress-Archive -ErrorAction SilentlyContinue) {
     $FullPaths = $ReleaseFiles | ForEach-Object { Join-Path $RepoRoot $_ }
     Compress-Archive -Path $FullPaths -DestinationPath $packagePath
 } else {
-    # Fallback to system zip
+    # Fallback to system zip (external command requires explicit array expansion)
     Push-Location $RepoRoot
-    & zip -r $packageName @ReleaseFiles
+    & zip -r $packageName $ReleaseFiles
     Pop-Location
 }
 

@@ -101,8 +101,10 @@ $totalFailed = 0
 foreach ($file in $testFiles) {
     Write-Host "→ Processing: $($file.Name)" -ForegroundColor Cyan
     
-    # Create temporary copy for benchmarking
-    $tempFile = Join-Path $env:TEMP "$($file.BaseName)_bench_$timestamp.ps1"
+    # Create secure temporary copy for benchmarking
+    $tempFileObj = New-TemporaryFile
+    $tempFile = "$($tempFileObj.FullName).ps1"
+    Remove-Item $tempFileObj.FullName -Force  # Remove the temp file, keep the unique name
     Copy-Item $file.FullName -Destination $tempFile -Force
     
     try {
@@ -137,7 +139,7 @@ foreach ($file in $testFiles) {
         
         # Run fix script
         try {
-            $fixResult = & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop
+            & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop | Out-Null
         }
         catch {
             Write-Warning "Apply-AutoFix.ps1 failed for $($file.Name): $($_.Exception.Message)"

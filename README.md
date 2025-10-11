@@ -15,8 +15,8 @@
 - **After 1 PoshGuard pass**: **0 remaining** (100% of detected violations auto-fixed)
 - **Caveats**: synthetic corpus; limited rule surface; see [Benchmarks](docs/benchmarks.md) notes
 
-![PoshGuard Demo](docs/demo.gif)
-*Auto-fixing security issues with unified diff output*
+<!--![PoshGuard Demo](docs/demo.gif)-->
+<!--*Auto-fixing security issues with unified diff output*-->
 
 ```powershell
 # Option 1: PowerShell Gallery (recommended)

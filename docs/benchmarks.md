@@ -269,9 +269,8 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
 
 ## Reproducibility
 
-**Link to fixtures**: `samples/` directory in this repository  
-**Commit SHA**: `ae61c9e002de33cfd648f83cdba6c4f7a995d357`  
-**Tag**: `v3.0.0`
+**Fixtures**: `samples/` directory in this repository  
+**Version**: `v3.0.0`
 
 ### To Reproduce
 
