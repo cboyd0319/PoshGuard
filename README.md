@@ -4,7 +4,7 @@
 [![PowerShell](https://img.shields.io/badge/PowerShell-7%2B-blue)](https://github.com/PowerShell/PowerShell)
 [![Benchmark](https://img.shields.io/badge/benchmark-27%E2%86%920%20first%E2%80%91pass-brightgreen)](docs/benchmarks.md)
 [![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
-[![Code Scanning](https://github.com/cboyd0319/PoshGuard/workflows/CodeQL/badge.svg)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
+[![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
 
 **About**: PoshGuard is an AST-aware PowerShell QA and auto-fix engine. It enforces strict PSScriptAnalyzer rules, applies idempotent fixes with unified diffs, and emits JSONL logs + CI-friendly exit codes. In our initial benchmark (3 synthetic fixtures, 27 violations), first-pass auto-fixes removed 100% of detected PSSA violations—see [docs/benchmarks.md](docs/benchmarks.md) for the setup and limitations. Safe by default: dry-run, backups, rollback; runs on Windows/macOS/Linux (PowerShell 7+).
 
