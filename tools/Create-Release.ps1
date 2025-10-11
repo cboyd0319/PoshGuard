@@ -187,8 +187,26 @@ if (Get-Command Compress-Archive -ErrorAction SilentlyContinue) {
     Compress-Archive -Path $FullPaths -DestinationPath $packagePath
 } else {
     # Fallback to system zip (external command requires explicit array expansion)
+    if (-not (Get-Command zip -ErrorAction SilentlyContinue)) {
+        Write-Host "ERROR: Neither 'Compress-Archive' nor 'zip' command is available." -ForegroundColor Red
+        Write-Host "Please install one of the following:" -ForegroundColor Yellow
+        Write-Host "  • PowerShell 5.1+ (includes Compress-Archive)" -ForegroundColor Yellow
+        Write-Host "  • System 'zip' utility (available on most Unix systems)" -ForegroundColor Yellow
+        exit 1
+    }
+    
     Push-Location $RepoRoot
-    & zip -r $packageName $ReleaseFiles
+    try {
+        & zip -r $packageName $ReleaseFiles
+        if ($LASTEXITCODE -ne 0) {
+            throw "zip command failed with exit code $LASTEXITCODE"
+        }
+    }
+    catch {
+        Pop-Location
+        Write-Error "Failed to create release package with zip command: $_"
+        exit 1
+    }
     Pop-Location
 }
 

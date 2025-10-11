@@ -142,13 +142,20 @@ foreach ($file in $testFiles) {
         # Apply PoshGuard fixes
         Write-Host "  • Applying PoshGuard fixes..." -ForegroundColor Gray
         
-        # Import Core module if needed
-        if (-not (Get-Module Core)) {
-            try {
-                Import-Module ./tools/lib/Core.psm1 -ErrorAction Stop
+        # Import Core module if not already loaded
+        $coreModulePath = Join-Path $PSScriptRoot 'lib' 'Core.psm1'
+        if (-not (Get-Module -Name Core)) {
+            if (Test-Path $coreModulePath) {
+                try {
+                    Import-Module $coreModulePath -ErrorAction Stop
+                }
+                catch {
+                    Write-Error "Failed to import required module 'Core' from $coreModulePath. Error: $($_.Exception.Message)"
+                    exit 1
+                }
             }
-            catch {
-                Write-Error "Failed to import required module 'Core' from ./tools/lib/Core.psm1. Error: $($_.Exception.Message)"
+            else {
+                Write-Error "Core module not found at expected path: $coreModulePath"
                 exit 1
             }
         }
