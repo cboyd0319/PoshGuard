@@ -1,6 +1,6 @@
 # Protected Event Logging - PoshGuard
 
-**PoshGuard v2.3.0**
+**PoshGuard v2.4.0**
 
 ## Overview
 
@@ -572,4 +572,4 @@ MIT License - see [LICENSE](../LICENSE) file for details.
 
 ---
 
-**PoshGuard Protected Event Logging v2.3.0**
+**PoshGuard Protected Event Logging v2.4.0**

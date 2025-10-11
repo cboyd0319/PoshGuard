@@ -1,6 +1,6 @@
 # PoshGuard Security Modules - Complete Guide
 
-**PoshGuard v2.3.0**
+**PoshGuard v2.4.0**
 
 ## Overview
 
@@ -601,5 +601,5 @@ MIT License - see [LICENSE](../LICENSE) file for details.
 
 ---
 
-**PoshGuard Security Modules v2.3.0**
+**PoshGuard Security Modules v2.4.0**
 *Author: https://github.com/cboyd0319*

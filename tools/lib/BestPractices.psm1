@@ -15,7 +15,7 @@
     - UsagePatterns: Positional parameters, unused variables, assignment operators
 
 .NOTES
-    Part of PoshGuard v2.3.0
+    Part of PoshGuard v2.4.0
     This facade module maintains backward compatibility while organizing
     functions into logical submodules for better maintainability.
 

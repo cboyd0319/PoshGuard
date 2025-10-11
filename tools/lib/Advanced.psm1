@@ -12,9 +12,10 @@
     - CodeAnalysis: Safety fixes, duplicate lines, cmdlet parameter validation
     - Documentation: Comment-based help, OutputType
     - AttributeManagement: SupportsShouldProcess, CmdletBinding, Process blocks
+    - ManifestManagement: Module manifest validation, export fields, alias scoping
 
 .NOTES
-    Part of PoshGuard v2.3.0
+    Part of PoshGuard v2.7.0
     This module automatically imports all Advanced submodules for convenience.
 #>
 
@@ -29,7 +30,8 @@ $SubModules = @(
     'ParameterManagement',
     'CodeAnalysis',
     'Documentation',
-    'AttributeManagement'
+    'AttributeManagement',
+    'ManifestManagement'
 )
 
 foreach ($SubModule in $SubModules) {
@@ -75,7 +77,12 @@ $FunctionsToExport = @(
     'Invoke-SupportsShouldProcessFix',
     'Invoke-ShouldProcessForStateChangingFix',
     'Invoke-CmdletCorrectlyFix',
-    'Invoke-ProcessBlockForPipelineFix'
+    'Invoke-ProcessBlockForPipelineFix',
+
+    # ManifestManagement.psm1
+    'Invoke-MissingModuleManifestFieldFix',
+    'Invoke-UseToExportFieldsInManifestFix',
+    'Invoke-AvoidGlobalAliasesFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport

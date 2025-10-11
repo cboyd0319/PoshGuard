@@ -1,6 +1,6 @@
 # PowerShell QA & Auto-Fix System - Architecture
 
-**PoshGuard v2.3.0**
+**PoshGuard v2.4.0**
 **Last Updated**: 2025-10-10
 
 Design, components, data flow, contracts, and gaps for PoshGuard.

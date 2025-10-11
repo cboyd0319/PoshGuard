@@ -1,4 +1,4 @@
-# Quick Start - PowerShell QA Engine v2.3.0
+# Quick Start - PowerShell QA Engine v2.4.0
 
 ## Installation
 

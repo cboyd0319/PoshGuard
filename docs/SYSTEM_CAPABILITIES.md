@@ -1,6 +1,6 @@
 # PowerShell QA & Auto-Fix System - Capabilities
 
-**PoshGuard v2.3.0**
+**PoshGuard v2.4.0**
 
 ## Current Capabilities
 

@@ -11,7 +11,7 @@
     Ensures consistent whitespace formatting across codebases.
 
 .NOTES
-    Part of PoshGuard v2.3.0
+    Part of PoshGuard v2.4.0
     Requires PowerShell 5.1 or higher
 #>
 

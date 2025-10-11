@@ -1,4 +1,4 @@
-# PoshGuard Architecture - v2.3.0
+# PoshGuard Architecture - v2.4.0
 
 **Date:** October 10, 2025  
 **Status:** Production  
@@ -147,7 +147,7 @@ All 6 files parsed successfully with **zero errors**:
 $ pwsh -NoProfile -File ./tools/Apply-AutoFix.ps1 -Path ./tools/Apply-AutoFix.ps1 -DryRun -WhatIf
 
 ╔════════════════════════════════════════════════════════════════╗
-║         PowerShell QA Auto-Fix Engine v2.3.0                  ║
+║         PowerShell QA Auto-Fix Engine v2.4.0                  ║
 ║         Idempotent - Safe - Production-Grade - Modular        ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -360,7 +360,7 @@ $ echo '[string]$Password = "test"' | pwsh -NoProfile -File ./tools/Apply-AutoFi
 
 ## Conclusion
 
-The modular refactoring of PoshGuard v2.3.0 has been **successfully completed** with:
+The modular refactoring of PoshGuard v2.4.0 has been **successfully completed** with:
 
 -  **90% reduction** in main script size (3,185 → 333 lines)
 -  **100% functional equivalence** (no behavioral changes)

@@ -16,7 +16,7 @@
     - Generates unified diffs
     - Safe to run multiple times (idempotent)
 
-    MODULAR ARCHITECTURE (v2.3.0):
+    MODULAR ARCHITECTURE (v2.7.0):
     All fix functions have been extracted to 5 specialized modules in ./lib/:
     - Core.psm1: Helper functions (backups, logging, file ops)
     - Formatting.psm1: Code formatting and style
@@ -53,7 +53,7 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 2.3.0
+    Version: 2.6.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
     Architecture: Modular (5 modules, 2,957 lines extracted)
@@ -170,6 +170,12 @@ function Invoke-FileFix {
             # Advanced fixes (parameters, complex AST)
             $fixedContent = Invoke-ReservedParamsFix -Content $fixedContent
             $fixedContent = Invoke-SwitchParameterDefaultFix -Content $fixedContent
+            $fixedContent = Invoke-PSCredentialTypeFix -Content $fixedContent
+            $fixedContent = Invoke-OutputTypeCorrectlyFix -Content $fixedContent
+
+            # Manifest fixes (only for .psd1 files)
+            $fixedContent = Invoke-MissingModuleManifestFieldFix -Content $fixedContent -FilePath $File.FullName
+            $fixedContent = Invoke-UseToExportFieldsInManifestFix -Content $fixedContent -FilePath $File.FullName
 
             # Security fixes (HIGH priority) - 100% PSSA security coverage
             $fixedContent = Invoke-PlainTextPasswordFix -Content $fixedContent
@@ -184,24 +190,53 @@ function Invoke-FileFix {
             # Complex analysis fixes (AST-heavy)
             $fixedContent = Invoke-UnusedParameterFix -Content $fixedContent
             $fixedContent = Invoke-LongLinesFix -Content $fixedContent
-            $fixedContent = Invoke-CommentHelpFix -Content $fixedContent
+
+            # Skip auto-generated comment help for module files (they already have proper help)
+            if ($File.Extension -ne '.psm1') {
+                $fixedContent = Invoke-CommentHelpFix -Content $fixedContent
+            }
+
             $fixedContent = Invoke-SupportsShouldProcessFix -Content $fixedContent
+            $fixedContent = Invoke-ShouldProcessForStateChangingFix -Content $fixedContent
+            $fixedContent = Invoke-ShouldContinueWithoutForceFix -Content $fixedContent
+            $fixedContent = Invoke-ProcessBlockForPipelineFix -Content $fixedContent
+            $fixedContent = Invoke-CmdletCorrectlyFix -Content $fixedContent
             $fixedContent = Invoke-WmiToCimFix -Content $fixedContent
 
             # Formatting fixes
             $fixedContent = Invoke-FormatterFix -Content $fixedContent -FilePath $File.FullName
             $fixedContent = Invoke-WhitespaceFix -Content $fixedContent
+            $fixedContent = Invoke-MisleadingBacktickFix -Content $fixedContent
             $fixedContent = Invoke-AliasFix -Content $fixedContent -FilePath $File.FullName
+            $fixedContent = Invoke-AvoidGlobalAliasesFix -Content $fixedContent
             $fixedContent = Invoke-CasingFix -Content $fixedContent
             $fixedContent = Invoke-WriteHostFix -Content $fixedContent
+            $fixedContent = Invoke-AlignAssignmentFix -Content $fixedContent
 
             # Best practices fixes
             $fixedContent = Invoke-SemicolonFix -Content $fixedContent
+            $fixedContent = Invoke-ExclaimOperatorFix -Content $fixedContent
+            $fixedContent = Invoke-IncorrectAssignmentOperatorFix -Content $fixedContent
             $fixedContent = Invoke-ApprovedVerbFix -Content $fixedContent
             $fixedContent = Invoke-SingularNounFix -Content $fixedContent
+            $fixedContent = Invoke-ReservedCmdletCharFix -Content $fixedContent
             $fixedContent = Invoke-GlobalVarFix -Content $fixedContent
+
+            # Skip global function scoping for module files (modules have their own scope)
+            if ($File.Extension -ne '.psm1') {
+                $fixedContent = Invoke-GlobalFunctionsFix -Content $fixedContent
+            }
+
             $fixedContent = Invoke-DoubleQuoteFix -Content $fixedContent
+            $fixedContent = Invoke-LiteralHashtableFix -Content $fixedContent
             $fixedContent = Invoke-NullComparisonFix -Content $fixedContent
+            $fixedContent = Invoke-RedirectionOperatorFix -Content $fixedContent
+            $fixedContent = Invoke-PositionalParametersFix -Content $fixedContent
+            $fixedContent = Invoke-DeclaredVarsMoreThanAssignmentsFix -Content $fixedContent
+            $fixedContent = Invoke-AutomaticVariableFix -Content $fixedContent
+            $fixedContent = Invoke-MultipleTypeAttributesFix -Content $fixedContent
+            $fixedContent = Invoke-NullHelpMessageFix -Content $fixedContent
+            $fixedContent = Invoke-UsingScopeModifierFix -Content $fixedContent
 
             # Final cleanup fixes
             $fixedContent = Invoke-DuplicateLineFix -Content $fixedContent
@@ -270,7 +305,7 @@ function Invoke-FileFix {
 
 try {
     Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         PowerShell QA Auto-Fix Engine v2.3.0                  ║" -ForegroundColor Cyan
+    Write-Host "║         PowerShell QA Auto-Fix Engine v2.7.0                  ║" -ForegroundColor Cyan
     Write-Host "║         Idempotent - Safe - Production-Grade - Modular        ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
