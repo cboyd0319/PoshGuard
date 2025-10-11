@@ -140,7 +140,7 @@ foreach ($file in $testFiles) {
             $fixResult = & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop
         }
         catch {
-            Write-Warning "Apply-AutoFix.ps1 failed for $($sample.File): $($_.Exception.Message)"
+            Write-Warning "Apply-AutoFix.ps1 failed for $($file.Name): $($_.Exception.Message)"
             # Continue with benchmark even if fixes fail
         }
         
@@ -291,7 +291,7 @@ if ($GenerateChart) {
   </text>
   
   <text x="10" y="110" font-family="Arial" font-size="12" fill="#666">
-    Total files analyzed: $($samples.Count)
+    Total files analyzed: $($testFiles.Count)
   </text>
   
   <text x="10" y="135" font-family="Arial" font-size="12" fill="#666">

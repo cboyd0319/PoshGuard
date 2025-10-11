@@ -275,11 +275,11 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
 
 ### To Reproduce
 
-1. Clone at specific commit:
+1. Clone at specific version:
    ```bash
    git clone https://github.com/cboyd0319/PoshGuard.git
    cd PoshGuard
-   git checkout ae61c9e002de33cfd648f83cdba6c4f7a995d357
+   git checkout v3.0.0
    ```
 
 2. Install exact module versions:
@@ -305,15 +305,15 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
 **Benchmark Version**: 1.0  
 **Next Review**: After v3.1.0 real-world corpus testing
 
-## Commit References
+## Version Reference
 
-| Component | Commit SHA | Date | Branch |
-|-----------|------------|------|--------|
-| PoshGuard Tool | `ae61c9e002de33cfd648f83cdba6c4f7a995d357` | 2025-10-11 | main |
-| Sample Fixtures | `ae61c9e002de33cfd648f83cdba6c4f7a995d357` | 2025-10-11 | main |
-| Test Suite | `ae61c9e002de33cfd648f83cdba6c4f7a995d357` | 2025-10-11 | main |
+| Component | Version | Date | Notes |
+|-----------|---------|------|-------|
+| PoshGuard Tool | `v3.0.0` | 2025-10-11 | 100% PSSA coverage milestone |
+| Sample Fixtures | `v3.0.0` | 2025-10-11 | Synthetic test corpus |
+| Test Suite | `v3.0.0` | 2025-10-11 | Pester 5.x integration |
 
-**Tag**: `v3.0.0` (to be created)
+**Tag**: [`v3.0.0`](https://github.com/cboyd0319/PoshGuard/releases/tag/v3.0.0)
 
 ## Continuous Benchmarking
 
