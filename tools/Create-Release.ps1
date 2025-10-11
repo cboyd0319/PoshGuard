@@ -91,7 +91,7 @@ if ($gitStatus) {
     $commit = Read-Host "Commit changes before creating tag? (y/n)"
     if ($commit -eq 'y') {
         git add PoshGuard/VERSION.txt PoshGuard/PoshGuard.psd1 docs/CHANGELOG.md
-        git commit -m "Release $Version"
+        git commit -m "chore: release v$Version"
         Write-Host "Committed version changes" -ForegroundColor Green
     }
 }

@@ -17,12 +17,30 @@ Set-StrictMode -Version Latest
 # Get the directory where this module resides
 $ModuleRoot = $PSScriptRoot
 
-# For PowerShell Gallery installations, modules are in PoshGuard/lib/
-# For development, they're in ../tools/lib/
-$LibPath = if (Test-Path (Join-Path $ModuleRoot 'lib')) {
-    Join-Path $ModuleRoot 'lib'
-} else {
-    Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'lib'
+# Helper function to resolve paths based on installation location
+function Resolve-PoshGuardPath {
+    param(
+        [string]$GalleryRelativePath,
+        [string]$DevRelativePath
+    )
+    
+    $GalleryPath = Join-Path $ModuleRoot $GalleryRelativePath
+    $DevPath = Join-Path (Split-Path $ModuleRoot -Parent) $DevRelativePath
+    
+    if (Test-Path $GalleryPath) {
+        return $GalleryPath
+    } elseif (Test-Path $DevPath) {
+        return $DevPath
+    } else {
+        return $null
+    }
+}
+
+# Resolve library path (Gallery: PoshGuard/lib/, Dev: tools/lib/)
+$LibPath = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath (Join-Path 'tools' 'lib')
+
+if (-not $LibPath) {
+    Write-Warning "PoshGuard library path not found. Module may not function correctly."
 }
 
 # Import core modules if they exist
@@ -89,15 +107,11 @@ function Invoke-PoshGuard {
         [string[]]$Skip
     )
 
-    # Locate Apply-AutoFix.ps1
-    $DevScriptPath = Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'Apply-AutoFix.ps1'
-    $GalleryScriptPath = Join-Path $ModuleRoot 'Apply-AutoFix.ps1'
+    # Locate Apply-AutoFix.ps1 using helper function
+    $ScriptPath = Resolve-PoshGuardPath -GalleryRelativePath 'Apply-AutoFix.ps1' `
+                                         -DevRelativePath (Join-Path 'tools' 'Apply-AutoFix.ps1')
     
-    $ScriptPath = if (Test-Path $DevScriptPath) {
-        $DevScriptPath
-    } elseif (Test-Path $GalleryScriptPath) {
-        $GalleryScriptPath
-    } else {
+    if (-not $ScriptPath) {
         throw "Cannot locate Apply-AutoFix.ps1. Please ensure module installation is complete."
     }
 

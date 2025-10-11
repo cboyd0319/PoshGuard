@@ -10,11 +10,16 @@ jobs:
         shell: pwsh
       - name: Lint PowerShell & export SARIF
         run: |
-          Invoke-ScriptAnalyzer -Path . -Recurse -ReportSummary -Severity Error,Warning `
+          Invoke-ScriptAnalyzer `
+            -Path . `
+            -Recurse `
+            -ReportSummary `
+            -Severity Error,Warning `
             -Settings Default `
             -ExcludeRule PSAvoidLongLines `
             -SaveDenyList $null `
-            -OutFile PSSA.sarif -Format Sarif
+            -OutFile PSSA.sarif `
+            -Format Sarif
         shell: pwsh
       - name: Upload SARIF to Code Scanning
         uses: github/codeql-action/upload-sarif@v3

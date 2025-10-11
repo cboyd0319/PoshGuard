@@ -37,7 +37,7 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter()]
-    [string]$OutputPath = (Join-Path $PSScriptRoot '..\publish\PoshGuard')
+    [string]$OutputPath = ([System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' 'publish' 'PoshGuard')))
 )
 
 $ErrorActionPreference = 'Stop'

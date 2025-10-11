@@ -57,8 +57,16 @@ if (-not (Test-Path $OutputPath)) {
 $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $runId = "benchmark_$timestamp"
 
+# Read version from VERSION.txt
+$versionFile = Join-Path $PSScriptRoot '..' 'PoshGuard' 'VERSION.txt'
+$poshGuardVersion = if (Test-Path $versionFile) {
+    (Get-Content $versionFile -Raw).Trim()
+} else {
+    "unknown"
+}
+
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         PoshGuard Benchmark Suite - v3.0.0              ║" -ForegroundColor Cyan
+Write-Host "║         PoshGuard Benchmark Suite - v$poshGuardVersion              ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -253,7 +261,7 @@ $summary = [PSCustomObject]@{
     PSScriptAnalyzerVersion = $pssaVersion
     PowerShellVersion = $PSVersionTable.PSVersion.ToString()
     Platform = $PSVersionTable.Platform
-    PoshGuardVersion = "3.0.0"
+    PoshGuardVersion = $poshGuardVersion
 }
 
 $summaryPath = Join-Path $OutputPath "$runId.summary.json"
