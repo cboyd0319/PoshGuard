@@ -109,13 +109,22 @@ if (Test-Path $packagePath) {
     Remove-Item $packagePath -Force
 }
 
+# NOTE: This creates a GitHub release package, NOT a PowerShell Gallery package.
+# For PSGallery publication, the module structure needs reorganization:
+#   PoshGuard/
+#     PoshGuard.psd1
+#     PoshGuard.psm1
+#     lib/              <- tools/lib/* files must be copied here
+#     Apply-AutoFix.ps1 <- tools/Apply-AutoFix.ps1 must be copied here
+# See docs/implementation-summary.md for PSGallery publishing instructions.
+
 # Use Compress-Archive if available, otherwise use zip command
 if (Get-Command Compress-Archive -ErrorAction SilentlyContinue) {
-    Compress-Archive -Path "$RepoRoot/tools", "$RepoRoot/README.md", "$RepoRoot/LICENSE", "$RepoRoot/CHANGELOG.md", "$RepoRoot/SECURITY.md", "$RepoRoot/CONTRIBUTING.md" -DestinationPath $packagePath
+    Compress-Archive -Path "$RepoRoot/PoshGuard", "$RepoRoot/tools", "$RepoRoot/README.md", "$RepoRoot/LICENSE", "$RepoRoot/docs/CHANGELOG.md", "$RepoRoot/docs/SECURITY.md", "$RepoRoot/docs/CONTRIBUTING.md" -DestinationPath $packagePath
 } else {
     # Fallback to system zip
     Push-Location $RepoRoot
-    & zip -r $packageName tools/ README.md LICENSE CHANGELOG.md SECURITY.md CONTRIBUTING.md
+    & zip -r $packageName PoshGuard/ tools/ README.md LICENSE docs/CHANGELOG.md docs/SECURITY.md docs/CONTRIBUTING.md
     Pop-Location
 }
 

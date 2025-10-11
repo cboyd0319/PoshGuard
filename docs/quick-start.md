@@ -93,7 +93,7 @@ function Connect-Service {
 function Connect-Service {
     param([SecureString]$Password)           # ✅ Secure
     Get-ChildItem C:\Logs                    # ✅ Full cmdlet
-    Write-Information "Connecting" -Info...  # ✅ Write-Information
+    Write-Information "Connecting" -InformationAction Continue  # ✅ Write-Information
 }
 ```
 

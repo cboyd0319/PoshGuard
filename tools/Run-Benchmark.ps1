@@ -259,8 +259,11 @@ if ($GenerateChart) {
     $barHeight = 40
     $barSpacing = 20
     
-    $beforeBar = ($totalViolationsBefore / ($totalViolationsBefore + 1)) * ($svgWidth - 150)
-    $afterBar = ($totalViolationsAfter / ($totalViolationsBefore + 1)) * ($svgWidth - 150)
+    # Use max violations as denominator to avoid division by zero and ensure accurate comparison
+    $maxViolations = [Math]::Max($totalViolationsBefore, $totalViolationsAfter)
+    if ($maxViolations -eq 0) { $maxViolations = 1 }
+    $beforeBar = ($totalViolationsBefore / $maxViolations) * ($svgWidth - 150)
+    $afterBar = ($totalViolationsAfter / $maxViolations) * ($svgWidth - 150)
     
     $svg = @"
 <svg width="$svgWidth" height="$svgHeight" xmlns="http://www.w3.org/2000/svg">

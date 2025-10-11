@@ -26,7 +26,7 @@ function Connect-Service {
 $global:ConnectionPool = @{}
 
 # PSAvoidUsingPositionalParameters
-Get-ChildItem "C:\Temp" $true
+Get-ChildItem "C:\Temp" -Recurse
 
 # PSAvoidUsingDoubleQuotesForConstantString
 $message = "Hello World"

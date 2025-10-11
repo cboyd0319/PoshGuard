@@ -20,7 +20,7 @@ This document reports *repeatable* results with exact inputs, versions, and comm
 - **OS**: macOS 15.0 / Windows 11 (PowerShell 7.4.4+)
 - **PSScriptAnalyzer**: 1.22.x - 1.24.x
 - **Pester**: 5.x
-- **PoshGuard**: commit `ae61c9e002de33cfd648f83cdba6c4f7a995d357` / version `v3.0.0`
+- **PoshGuard**: version `v3.0.0`
 
 ## Sample Corpus Details
 
