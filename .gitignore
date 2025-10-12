@@ -75,3 +75,13 @@ publish/
 # Session State & Archives (internal dev notes - not for commit)
 .claude/
 .archive/
+
+# Web Frontend
+web/node_modules/
+web/.next/
+web/out/
+web/.env*.local
+web/.vercel
+web/dist/
+web/.turbo/
+web/storybook-static/
