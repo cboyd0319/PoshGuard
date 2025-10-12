@@ -317,6 +317,9 @@ function Invoke-LongLinesFix {
     )
 
     try {
+        # Detect line ending style from input
+        $lineEnding = if ($Content -match '\r\n') { "`r`n" } else { "`n" }
+        
         $lines = $Content -split '\r?\n'
         $result = [System.Collections.ArrayList]::new()
         $tokens = $null
@@ -468,7 +471,7 @@ function Invoke-LongLinesFix {
             }
         }
 
-        return $result -join "`n"
+        return $result -join $lineEnding
     }
     catch {
         Write-Verbose "Long lines fix failed: $_"
