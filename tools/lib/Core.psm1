@@ -42,29 +42,36 @@ function Write-Log {
     [OutputType([void])]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Info', 'Warn', 'Error', 'Success')]
+        [ValidateSet('Info', 'Warn', 'Error', 'Success', 'Critical', 'Debug')]
         [string]$Level,
 
         [Parameter(Mandatory)]
-        [string]$Message
+        [string]$Message,
+        
+        [Parameter()]
+        [switch]$NoTimestamp,
+        
+        [Parameter()]
+        [switch]$NoIcon
     )
 
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    $color = switch ($Level) {
-        'Info' { 'Cyan' }
-        'Warn' { 'Yellow' }
-        'Error' { 'Red' }
-        'Success' { 'Green' }
+    
+    # Enhanced icons and colors for better visual hierarchy
+    $iconAndColor = switch ($Level) {
+        'Info' { @{ Icon = 'ℹ️'; Color = 'Cyan'; Prefix = 'INFO' } }
+        'Warn' { @{ Icon = '⚠️'; Color = 'Yellow'; Prefix = 'WARN' } }
+        'Error' { @{ Icon = '❌'; Color = 'Red'; Prefix = 'ERROR' } }
+        'Success' { @{ Icon = '✅'; Color = 'Green'; Prefix = 'SUCCESS' } }
+        'Critical' { @{ Icon = '🔴'; Color = 'Red'; Prefix = 'CRITICAL' } }
+        'Debug' { @{ Icon = '🔍'; Color = 'Gray'; Prefix = 'DEBUG' } }
     }
 
-    $prefix = switch ($Level) {
-        'Info' { '[INFO]' }
-        'Warn' { '[WARN]' }
-        'Error' { '[ERROR]' }
-        'Success' { '[OK]' }
-    }
+    $icon = if (-not $NoIcon) { $iconAndColor.Icon + ' ' } else { '' }
+    $timestampStr = if (-not $NoTimestamp) { "$timestamp " } else { '' }
+    $prefix = "[$($iconAndColor.Prefix)]"
 
-    Write-Host "$timestamp $prefix $Message" -ForegroundColor $color
+    Write-Host "${timestampStr}${icon}${prefix} ${Message}" -ForegroundColor $iconAndColor.Color
 }
 
 function Get-PowerShellFiles {

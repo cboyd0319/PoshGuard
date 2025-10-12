@@ -57,15 +57,30 @@ function Write-TutorialHeader {
     
     Clear-Host
     Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║" -ForegroundColor Cyan -NoNewline
-    Write-Host "  🎓 PoshGuard Interactive Tutorial                               " -ForegroundColor White -NoNewline
-    Write-Host "║" -ForegroundColor Cyan
-    Write-Host "╠═══════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║" -ForegroundColor Cyan -NoNewline
-    Write-Host "  $($Title.PadRight(64))" -ForegroundColor Yellow -NoNewline
-    Write-Host "║" -ForegroundColor Cyan
-    Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "  ╔════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "🎓 PoshGuard Interactive Tutorial" -ForegroundColor White -NoNewline
+    Write-Host "                                 ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "Zero Technical Knowledge Required" -ForegroundColor Gray -NoNewline
+    Write-Host "                                 ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+    Write-Host "  ╠════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    
+    # Truncate title if too long and pad to exact width
+    $maxTitleLength = 64
+    $displayTitle = if ($Title.Length -gt $maxTitleLength) { 
+        $Title.Substring(0, $maxTitleLength - 3) + "..." 
+    } else { 
+        $Title.PadRight($maxTitleLength) 
+    }
+    Write-Host $displayTitle -ForegroundColor Yellow -NoNewline
+    Write-Host "  ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+    Write-Host "  ╚════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
 }
 
@@ -76,8 +91,20 @@ function Write-TutorialStep {
     )
     
     Write-Host ""
-    Write-Host "📍 $Step" -ForegroundColor Green
-    Write-Host "   $Description" -ForegroundColor Gray
+    Write-Host "  ┌─────────────────────────────────────────────────────────────────────┐" -ForegroundColor Green
+    Write-Host "  │ " -ForegroundColor Green -NoNewline
+    Write-Host "📍 $Step" -ForegroundColor White -NoNewline
+    $padding = 67 - $Step.Length
+    if ($padding -lt 0) { $padding = 0 }
+    Write-Host (" " * $padding) -NoNewline
+    Write-Host "│" -ForegroundColor Green
+    Write-Host "  │ " -ForegroundColor Green -NoNewline
+    Write-Host "   $Description" -ForegroundColor Gray -NoNewline
+    $padding2 = 64 - $Description.Length
+    if ($padding2 -lt 0) { $padding2 = 0 }
+    Write-Host (" " * $padding2) -NoNewline
+    Write-Host "│" -ForegroundColor Green
+    Write-Host "  └─────────────────────────────────────────────────────────────────────┘" -ForegroundColor Green
     Write-Host ""
 }
 
@@ -85,7 +112,18 @@ function Wait-ForUser {
     param([string]$Message = "Press any key to continue...")
     
     Write-Host ""
-    Write-Host $Message -ForegroundColor Yellow -NoNewline
+    Write-Host "  ╭" -ForegroundColor DarkGray -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkGray -NoNewline
+    Write-Host "╮" -ForegroundColor DarkGray
+    Write-Host "  │  " -ForegroundColor DarkGray -NoNewline
+    Write-Host "⏎  $Message" -ForegroundColor Yellow -NoNewline
+    $padding = 65 - $Message.Length
+    if ($padding -lt 0) { $padding = 0 }
+    Write-Host (" " * $padding) -NoNewline
+    Write-Host "│" -ForegroundColor DarkGray
+    Write-Host "  ╰" -ForegroundColor DarkGray -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkGray -NoNewline
+    Write-Host "╯" -ForegroundColor DarkGray
     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
     Write-Host ""
 }
@@ -97,10 +135,23 @@ function Show-CodeExample {
     )
     
     Write-Host ""
-    Write-Host "💻 Code Example:" -ForegroundColor Cyan
-    Write-Host "   $Description" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "   $Code" -ForegroundColor Green
+    Write-Host "  ╭─ 💻 Code Example " -ForegroundColor Cyan -NoNewline
+    Write-Host ("─" * 53) -ForegroundColor DarkCyan -NoNewline
+    Write-Host "╮" -ForegroundColor Cyan
+    Write-Host "  │" -ForegroundColor Cyan
+    Write-Host "  │  " -ForegroundColor Cyan -NoNewline
+    Write-Host $Description -ForegroundColor Gray
+    Write-Host "  │" -ForegroundColor Cyan
+    Write-Host "  ├" -ForegroundColor DarkCyan -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkCyan -NoNewline
+    Write-Host "┤" -ForegroundColor DarkCyan
+    Write-Host "  │" -ForegroundColor Cyan
+    Write-Host "  │  " -ForegroundColor Cyan -NoNewline
+    Write-Host $Code -ForegroundColor Green
+    Write-Host "  │" -ForegroundColor Cyan
+    Write-Host "  ╰" -ForegroundColor Cyan -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkCyan -NoNewline
+    Write-Host "╯" -ForegroundColor Cyan
     Write-Host ""
 }
 
@@ -112,27 +163,63 @@ function Test-UserKnowledge {
     )
     
     Write-Host ""
-    Write-Host "❓ Quick Check: $Question" -ForegroundColor Yellow
-    Write-Host ""
+    Write-Host "  ╭─ ❓ Quick Check " -ForegroundColor Yellow -NoNewline
+    Write-Host ("─" * 55) -ForegroundColor DarkYellow -NoNewline
+    Write-Host "╮" -ForegroundColor Yellow
+    Write-Host "  │" -ForegroundColor Yellow
+    Write-Host "  │  " -ForegroundColor Yellow -NoNewline
+    Write-Host $Question -ForegroundColor White
+    Write-Host "  │" -ForegroundColor Yellow
+    Write-Host "  ├" -ForegroundColor DarkYellow -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkYellow -NoNewline
+    Write-Host "┤" -ForegroundColor DarkYellow
     
     for ($i = 0; $i -lt $Options.Count; $i++) {
-        Write-Host "   $($i + 1). $($Options[$i])" -ForegroundColor White
+        Write-Host "  │" -ForegroundColor Yellow
+        Write-Host "  │  " -ForegroundColor Yellow -NoNewline
+        $optionNumber = "[" + ($i + 1) + "]"
+        Write-Host $optionNumber -ForegroundColor Cyan -NoNewline
+        Write-Host " $($Options[$i])" -ForegroundColor White
     }
     
+    Write-Host "  │" -ForegroundColor Yellow
+    Write-Host "  ╰" -ForegroundColor Yellow -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkYellow -NoNewline
+    Write-Host "╯" -ForegroundColor Yellow
     Write-Host ""
+    
     do {
-        $answer = Read-Host "Your answer (1-$($Options.Count))"
+        Write-Host "  Your answer (1-$($Options.Count)): " -ForegroundColor Cyan -NoNewline
+        $answer = Read-Host
     } while ($answer -notmatch '^\d+$' -or [int]$answer -lt 1 -or [int]$answer -gt $Options.Count)
     
     if ([int]$answer -eq $CorrectAnswer) {
         Write-Host ""
-        Write-Host "✅ Correct! Great job!" -ForegroundColor Green
+        Write-Host "  ╭" -ForegroundColor Green -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkGreen -NoNewline
+        Write-Host "╮" -ForegroundColor Green
+        Write-Host "  │  " -ForegroundColor Green -NoNewline
+        Write-Host "✅ Correct! Great job! You're learning fast!" -ForegroundColor White -NoNewline
+        Write-Host "                      │" -ForegroundColor Green
+        Write-Host "  ╰" -ForegroundColor Green -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkGreen -NoNewline
+        Write-Host "╯" -ForegroundColor Green
         return $true
     }
     else {
         Write-Host ""
-        Write-Host "❌ Not quite. The correct answer is: $($Options[$CorrectAnswer - 1])" -ForegroundColor Red
-        Write-Host "   Don't worry, learning takes time!" -ForegroundColor Gray
+        Write-Host "  ╭" -ForegroundColor Red -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkRed -NoNewline
+        Write-Host "╮" -ForegroundColor Red
+        Write-Host "  │  " -ForegroundColor Red -NoNewline
+        Write-Host "❌ Not quite. The correct answer is: " -ForegroundColor White -NoNewline
+        Write-Host $Options[$CorrectAnswer - 1] -ForegroundColor Yellow
+        Write-Host "  │  " -ForegroundColor Red -NoNewline
+        Write-Host "   Don't worry, learning takes time! Keep going!" -ForegroundColor Gray -NoNewline
+        Write-Host "                │" -ForegroundColor Red
+        Write-Host "  ╰" -ForegroundColor Red -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkRed -NoNewline
+        Write-Host "╯" -ForegroundColor Red
         return $false
     }
 }
@@ -141,14 +228,104 @@ function Show-Progress {
     param([int]$CurrentLesson, [int]$TotalLessons)
     
     $percentage = [math]::Round(($CurrentLesson / $TotalLessons) * 100)
-    $completed = [math]::Floor(($CurrentLesson / $TotalLessons) * 20)
-    $remaining = 20 - $completed
+    $completed = [math]::Floor(($CurrentLesson / $TotalLessons) * 40)
+    $remaining = 40 - $completed
     
     Write-Host ""
-    Write-Host "Progress: [" -NoNewline -ForegroundColor White
+    Write-Host "  ╭─ 📊 Progress " -ForegroundColor Magenta -NoNewline
+    Write-Host ("─" * 58) -ForegroundColor DarkMagenta -NoNewline
+    Write-Host "╮" -ForegroundColor Magenta
+    Write-Host "  │" -ForegroundColor Magenta
+    Write-Host "  │  Lesson $CurrentLesson of $TotalLessons  " -ForegroundColor White -NoNewline
+    Write-Host "[" -NoNewline -ForegroundColor DarkGray
     Write-Host ("█" * $completed) -NoNewline -ForegroundColor Green
     Write-Host ("░" * $remaining) -NoNewline -ForegroundColor DarkGray
-    Write-Host "] $percentage%" -ForegroundColor White
+    Write-Host "] " -NoNewline -ForegroundColor DarkGray
+    Write-Host "$percentage% Complete" -ForegroundColor Cyan
+    Write-Host "  │" -ForegroundColor Magenta
+    Write-Host "  ╰" -ForegroundColor Magenta -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkMagenta -NoNewline
+    Write-Host "╯" -ForegroundColor Magenta
+    Write-Host ""
+}
+
+function Show-InfoBox {
+    param(
+        [string]$Title,
+        [string[]]$Content,
+        [string]$Icon = "ℹ️",
+        [string]$Color = "Cyan"
+    )
+    
+    Write-Host ""
+    Write-Host "  ╭─ $Icon $Title " -ForegroundColor $Color -NoNewline
+    $titleLen = $Title.Length + 3
+    $dashCount = 70 - $titleLen
+    if ($dashCount -lt 0) { $dashCount = 0 }
+    Write-Host ("─" * $dashCount) -ForegroundColor "Dark$Color" -NoNewline
+    Write-Host "╮" -ForegroundColor $Color
+    Write-Host "  │" -ForegroundColor $Color
+    
+    foreach ($line in $Content) {
+        Write-Host "  │  " -ForegroundColor $Color -NoNewline
+        Write-Host $line -ForegroundColor White
+    }
+    
+    Write-Host "  │" -ForegroundColor $Color
+    Write-Host "  ╰" -ForegroundColor $Color -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor "Dark$Color" -NoNewline
+    Write-Host "╯" -ForegroundColor $Color
+    Write-Host ""
+}
+
+function Show-TipBox {
+    param([string]$Tip)
+    
+    Write-Host ""
+    Write-Host "  ╭─ 💡 Pro Tip " -ForegroundColor Yellow -NoNewline
+    Write-Host ("─" * 58) -ForegroundColor DarkYellow -NoNewline
+    Write-Host "╮" -ForegroundColor Yellow
+    Write-Host "  │" -ForegroundColor Yellow
+    Write-Host "  │  " -ForegroundColor Yellow -NoNewline
+    Write-Host $Tip -ForegroundColor White
+    Write-Host "  │" -ForegroundColor Yellow
+    Write-Host "  ╰" -ForegroundColor Yellow -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkYellow -NoNewline
+    Write-Host "╯" -ForegroundColor Yellow
+    Write-Host ""
+}
+
+function Show-WarningBox {
+    param([string]$Warning)
+    
+    Write-Host ""
+    Write-Host "  ╭─ ⚠️  Important " -ForegroundColor Red -NoNewline
+    Write-Host ("─" * 56) -ForegroundColor DarkRed -NoNewline
+    Write-Host "╮" -ForegroundColor Red
+    Write-Host "  │" -ForegroundColor Red
+    Write-Host "  │  " -ForegroundColor Red -NoNewline
+    Write-Host $Warning -ForegroundColor Yellow
+    Write-Host "  │" -ForegroundColor Red
+    Write-Host "  ╰" -ForegroundColor Red -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkRed -NoNewline
+    Write-Host "╯" -ForegroundColor Red
+    Write-Host ""
+}
+
+function Show-SuccessBox {
+    param([string]$Message)
+    
+    Write-Host ""
+    Write-Host "  ╭─ ✅ Success " -ForegroundColor Green -NoNewline
+    Write-Host ("─" * 58) -ForegroundColor DarkGreen -NoNewline
+    Write-Host "╮" -ForegroundColor Green
+    Write-Host "  │" -ForegroundColor Green
+    Write-Host "  │  " -ForegroundColor Green -NoNewline
+    Write-Host $Message -ForegroundColor White
+    Write-Host "  │" -ForegroundColor Green
+    Write-Host "  ╰" -ForegroundColor Green -NoNewline
+    Write-Host ("─" * 71) -ForegroundColor DarkGreen -NoNewline
+    Write-Host "╯" -ForegroundColor Green
     Write-Host ""
 }
 
@@ -257,10 +434,7 @@ function Start-Lesson3 {
         -Code ".\tools\Apply-AutoFix.ps1 -Path .\MyScript.ps1 -DryRun" `
         -Description "Run PoshGuard directly from the repository"
     
-    Write-Host ""
-    Write-Host "📝 Note: '-DryRun' means 'show me what would change, but don't change anything yet'" -ForegroundColor Yellow
-    Write-Host "   This is a safe way to preview fixes!" -ForegroundColor Yellow
-    Write-Host ""
+    Show-TipBox "Always start with '-DryRun' to preview changes before applying them!"
     
     Show-Progress -CurrentLesson 3 -TotalLessons 10
     Wait-ForUser
@@ -354,12 +528,12 @@ function Start-Lesson5 {
     Write-Host "   Success rate: 100%" -ForegroundColor Gray
     Write-Host ""
     
-    Write-Host "🎨 Color coding:" -ForegroundColor Cyan
-    Write-Host "   🔴 RED = Critical security issue" -ForegroundColor Red
-    Write-Host "   🟡 YELLOW = Warning (should fix)" -ForegroundColor Yellow
-    Write-Host "   🟢 GREEN = Success / Fixed" -ForegroundColor Green
-    Write-Host "   ⚪ GRAY = Information" -ForegroundColor Gray
-    Write-Host ""
+    Show-InfoBox -Title "Color Coding Guide" -Icon "🎨" -Color "Cyan" -Content @(
+        "🔴 RED = Critical security issue - Fix immediately!",
+        "🟡 YELLOW = Warning - Should fix soon",
+        "🟢 GREEN = Success - Fixed successfully",
+        "⚪ GRAY = Information - Just for your reference"
+    )
     
     Show-Progress -CurrentLesson 5 -TotalLessons 10
     Wait-ForUser
@@ -383,19 +557,19 @@ function Start-Lesson6 {
         -Code "Invoke-PoshGuard -Path .\test.ps1" `
         -Description "Apply all fixes to the file"
     
-    Write-Host "✅ What happens:" -ForegroundColor Cyan
-    Write-Host "  1. PoshGuard creates a backup (.psqa-backup folder)" -ForegroundColor White
-    Write-Host "  2. PoshGuard applies all safe fixes" -ForegroundColor White
-    Write-Host "  3. PoshGuard saves the improved file" -ForegroundColor White
-    Write-Host "  4. You can rollback if needed (we'll learn this later)" -ForegroundColor White
-    Write-Host ""
+    Show-InfoBox -Title "What Happens When You Apply Fixes" -Icon "✅" -Color "Green" -Content @(
+        "1. PoshGuard creates a backup in the .psqa-backup folder",
+        "2. PoshGuard applies all safe fixes to your file",
+        "3. PoshGuard saves the improved file",
+        "4. You can rollback if needed (we'll learn this later)"
+    )
     
-    Write-Host "🔒 Safety features:" -ForegroundColor Yellow
-    Write-Host "  • Automatic backups before changes" -ForegroundColor White
-    Write-Host "  • Rollback capability" -ForegroundColor White
-    Write-Host "  • Validation after fixes" -ForegroundColor White
-    Write-Host "  • Confidence scoring" -ForegroundColor White
-    Write-Host ""
+    Show-InfoBox -Title "Safety Features Built-In" -Icon "🔒" -Color "Yellow" -Content @(
+        "• Automatic backups before any changes",
+        "• Rollback capability to undo changes",
+        "• Validation after fixes are applied",
+        "• Confidence scoring for every fix"
+    )
     
     Test-UserKnowledge `
         -Question "What should you do before applying fixes?" `
@@ -573,20 +747,59 @@ function Start-Lesson10 {
     Write-Host "   - Custom rule configuration" -ForegroundColor Gray
     Write-Host ""
     
-    Write-Host "📖 Reference card:" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  Check a file:    Invoke-PoshGuard -Path .\file.ps1 -DryRun" -ForegroundColor Gray
-    Write-Host "  Fix a file:      Invoke-PoshGuard -Path .\file.ps1" -ForegroundColor Gray
-    Write-Host "  Fix a folder:    Invoke-PoshGuard -Path .\src" -ForegroundColor Gray
-    Write-Host "  See changes:     Invoke-PoshGuard -Path .\file.ps1 -ShowDiff" -ForegroundColor Gray
-    Write-Host "  Restore backup:  .\tools\Restore-Backup.ps1 -Path .\file.ps1" -ForegroundColor Gray
+    Write-Host "  ╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "📖 Quick Reference Card" -ForegroundColor White -NoNewline
+    Write-Host "                                                ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "👁️  Preview fixes:                                                      " -ForegroundColor Yellow -NoNewline
+    Write-Host "║" -ForegroundColor Cyan
+    Write-Host "  ║     " -ForegroundColor Cyan -NoNewline
+    Write-Host "Invoke-PoshGuard -Path .\file.ps1 -DryRun" -ForegroundColor White -NoNewline
+    Write-Host "                     ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "🔧 Apply fixes:                                                         " -ForegroundColor Green -NoNewline
+    Write-Host "║" -ForegroundColor Cyan
+    Write-Host "  ║     " -ForegroundColor Cyan -NoNewline
+    Write-Host "Invoke-PoshGuard -Path .\file.ps1" -ForegroundColor White -NoNewline
+    Write-Host "                              ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "📂 Fix entire folder:                                                   " -ForegroundColor Green -NoNewline
+    Write-Host "║" -ForegroundColor Cyan
+    Write-Host "  ║     " -ForegroundColor Cyan -NoNewline
+    Write-Host "Invoke-PoshGuard -Path .\src" -ForegroundColor White -NoNewline
+    Write-Host "                                     ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "🔍 See changes (diff):                                                  " -ForegroundColor Magenta -NoNewline
+    Write-Host "║" -ForegroundColor Cyan
+    Write-Host "  ║     " -ForegroundColor Cyan -NoNewline
+    Write-Host "Invoke-PoshGuard -Path .\file.ps1 -ShowDiff" -ForegroundColor White -NoNewline
+    Write-Host "                     ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+    Write-Host "↩️  Restore backup:                                                      " -ForegroundColor Yellow -NoNewline
+    Write-Host "║" -ForegroundColor Cyan
+    Write-Host "  ║     " -ForegroundColor Cyan -NoNewline
+    Write-Host ".\tools\Restore-Backup.ps1 -Path .\file.ps1" -ForegroundColor White -NoNewline
+    Write-Host "                    ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                                      ║" -ForegroundColor Cyan
+    Write-Host "  ╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
     
-    Write-Host "💬 Need help?" -ForegroundColor Yellow
-    Write-Host "  • GitHub Issues: https://github.com/cboyd0319/PoshGuard/issues" -ForegroundColor White
-    Write-Host "  • Documentation: ./docs/" -ForegroundColor White
-    Write-Host "  • Community: Join discussions on GitHub" -ForegroundColor White
-    Write-Host ""
+    Show-InfoBox -Title "Need Help?" -Icon "💬" -Color "Yellow" -Content @(
+        "📝 GitHub Issues: https://github.com/cboyd0319/PoshGuard/issues",
+        "📚 Documentation: ./docs/ folder in the repository",
+        "👥 Community: Join discussions on GitHub",
+        "🎓 Re-run this tutorial anytime: .\tools\Start-InteractiveTutorial.ps1"
+    )
     
     Write-Host "Thank you for completing the PoshGuard tutorial!" -ForegroundColor Green
     Write-Host "You're now ready to write better PowerShell code! 🎯" -ForegroundColor Green
@@ -602,18 +815,58 @@ function Start-Lesson10 {
 
 function Start-Tutorial {
     if (-not $SkipIntro) {
-        Write-TutorialHeader "Welcome!"
-        
-        Write-Host "Welcome to the PoshGuard Interactive Tutorial! 👋" -ForegroundColor Green
+        Clear-Host
         Write-Host ""
-        Write-Host "This tutorial assumes you have ZERO technical knowledge." -ForegroundColor White
-        Write-Host "We'll teach you everything you need to know, step by step." -ForegroundColor White
         Write-Host ""
-        Write-Host "⏱️  Time: About 30 minutes" -ForegroundColor Cyan
-        Write-Host "📝 Format: 10 interactive lessons" -ForegroundColor Cyan
-        Write-Host "🎯 Goal: Learn how to use PoshGuard confidently" -ForegroundColor Cyan
+        Write-Host "  ╔════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ║           " -ForegroundColor Cyan -NoNewline
+        Write-Host "🎓  Welcome to the PoshGuard Tutorial!" -ForegroundColor White -NoNewline
+        Write-Host "               ║" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ╠════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "✨ This tutorial assumes you have ZERO technical knowledge" -ForegroundColor White -NoNewline
+        Write-Host "         ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "   We'll teach you everything you need, step by step!" -ForegroundColor Gray -NoNewline
+        Write-Host "          ║" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ╠════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "⏱️  Duration:      " -ForegroundColor White -NoNewline
+        Write-Host "~30 minutes (at your own pace)" -ForegroundColor Cyan -NoNewline
+        Write-Host "                   ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "📚 Lessons:       " -ForegroundColor White -NoNewline
+        Write-Host "10 interactive lessons with examples" -ForegroundColor Cyan -NoNewline
+        Write-Host "                ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "🎯 Your Goal:     " -ForegroundColor White -NoNewline
+        Write-Host "Use PoshGuard confidently and safely" -ForegroundColor Cyan -NoNewline
+        Write-Host "                ║" -ForegroundColor Cyan
+        Write-Host "  ║  " -ForegroundColor Cyan -NoNewline
+        Write-Host "✅ What You'll Get: " -ForegroundColor White -NoNewline
+        Write-Host "Skills to improve PowerShell code quality" -ForegroundColor Cyan -NoNewline
+        Write-Host "         ║" -ForegroundColor Cyan
+        Write-Host "  ║                                                                    ║" -ForegroundColor Cyan
+        Write-Host "  ╚════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "Press any key to start..." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  ╭" -ForegroundColor Green -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkGreen -NoNewline
+        Write-Host "╮" -ForegroundColor Green
+        Write-Host "  │  " -ForegroundColor Green -NoNewline
+        Write-Host "🚀 Ready to start your journey? Press any key to begin!" -ForegroundColor Yellow -NoNewline
+        Write-Host "              │" -ForegroundColor Green
+        Write-Host "  ╰" -ForegroundColor Green -NoNewline
+        Write-Host ("─" * 71) -ForegroundColor DarkGreen -NoNewline
+        Write-Host "╯" -ForegroundColor Green
+        Write-Host ""
         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
     }
     
@@ -634,8 +887,47 @@ function Start-Tutorial {
         & $lessons[$i]
     }
     
+    Clear-Host
     Write-Host ""
-    Write-Host "🎓 Tutorial completed! You're ready to use PoshGuard!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  ╔════════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ║                 " -ForegroundColor Green -NoNewline
+    Write-Host "🎉 CONGRATULATIONS! 🎉" -ForegroundColor White -NoNewline
+    Write-Host "                           ║" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ║           " -ForegroundColor Green -NoNewline
+    Write-Host "You've completed the PoshGuard tutorial!" -ForegroundColor Cyan -NoNewline
+    Write-Host "               ║" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ╠════════════════════════════════════════════════════════════════════╣" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ║  " -ForegroundColor Green -NoNewline
+    Write-Host "🏆 You now know how to:" -ForegroundColor Yellow -NoNewline
+    Write-Host "                                           ║" -ForegroundColor Green
+    Write-Host "  ║     " -ForegroundColor Green -NoNewline
+    Write-Host "✓ Run PoshGuard safely with dry-run mode" -ForegroundColor White -NoNewline
+    Write-Host "                       ║" -ForegroundColor Green
+    Write-Host "  ║     " -ForegroundColor Green -NoNewline
+    Write-Host "✓ Understand and interpret the output" -ForegroundColor White -NoNewline
+    Write-Host "                           ║" -ForegroundColor Green
+    Write-Host "  ║     " -ForegroundColor Green -NoNewline
+    Write-Host "✓ Apply fixes to improve your code" -ForegroundColor White -NoNewline
+    Write-Host "                             ║" -ForegroundColor Green
+    Write-Host "  ║     " -ForegroundColor Green -NoNewline
+    Write-Host "✓ Use backups and rollback if needed" -ForegroundColor White -NoNewline
+    Write-Host "                           ║" -ForegroundColor Green
+    Write-Host "  ║     " -ForegroundColor Green -NoNewline
+    Write-Host "✓ Identify and fix security issues" -ForegroundColor White -NoNewline
+    Write-Host "                              ║" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ║  " -ForegroundColor Green -NoNewline
+    Write-Host "🚀 You're ready to write better PowerShell code!" -ForegroundColor White -NoNewline
+    Write-Host "                  ║" -ForegroundColor Green
+    Write-Host "  ║                                                                    ║" -ForegroundColor Green
+    Write-Host "  ╚════════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host ""
     Write-Host ""
 }
 
