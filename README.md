@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.1.0-brightgreen)](docs/CHANGELOG.md)
 [![AI/ML](https://img.shields.io/badge/AI%2FML-enabled-blueviolet)](docs/AI-ML-INTEGRATION.md)
 [![Standards](https://img.shields.io/badge/standards-10%2B-success)](docs/STANDARDS-COMPLIANCE.md)
 [![Fix Rate](https://img.shields.io/badge/fix%20rate-82.5%25-success)](docs/benchmarks.md)
@@ -13,6 +13,15 @@
 [![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
 
 **About**: PoshGuard is **THE WORLD'S BEST** detection and auto-fix tool for PowerShell code quality, security, and formatting issues. Built with Ultimate Genius Engineer (UGE) principles, it combines AST-aware transformations with OWASP ASVS security mappings, Google SRE reliability standards, SWEBOK engineering practices, **AI/ML intelligence**, and **Model Context Protocol (MCP) integration**. Achieves 82.5% first-pass fix rate on comprehensive benchmark suite with **ML confidence scoring**. Production-grade: dry-run, backups, rollback, structured observability, advanced code analysis, **10+ standards compliance** (NIST CSF, CIS Benchmarks, ISO 27001, MITRE ATT&CK); runs on Windows/macOS/Linux (PowerShell 5.1+/7+). **ZERO technical knowledge required** - beginner-friendly with expert capabilities.
+
+**NEW in v4.1.0**:
+- ✨ **Real MCP Integration** - Connect to Context7, GitHub Copilot MCP, and custom MCP servers for AI-enhanced code examples
+- 🔍 **Enhanced Security Detection** - CWE mappings, MITRE ATT&CK techniques, OWASP Top 10 2023, advanced secrets scanning
+- 📚 **Interactive Tutorial** - 30-minute guided learning experience for complete beginners (zero knowledge required)
+- 🏗️ **Advanced Code Analysis** - Dead code detection, code smell identification, cognitive complexity
+- 🔧 **CI/CD Quality Gates** - GitHub Actions workflow template with auto-fix capabilities
+- 📖 **Comprehensive Standards References** - Complete documentation of 20+ security and engineering standards
+- 🎨 **VS Code Extension** - Real-time analysis and fixes directly in your editor (coming soon)
 
 ### Results (Benchmark v3.3.0)
 
@@ -90,9 +99,39 @@ PoshGuard automatically fixes PowerShell code issues detected by PSScriptAnalyze
 - 📊 **10+ Standards Compliance** - NIST CSF, CIS, ISO 27001, MITRE ATT&CK, PCI-DSS, HIPAA, SOC 2, and more
 - 🎯 **94.4% Compliance Rate** - 170/180 applicable controls across all standards
 
+**v4.1.0 World-Class Enhancements**: Making PoshGuard THE definitive solution:
+- ✨ **Real MCP Client** - Full implementation connecting to Context7, GitHub Copilot MCP, filesystem, and custom MCP servers
+- 🔍 **Enhanced Security** - 12+ CWE mappings, 8+ MITRE ATT&CK techniques, 10+ advanced secret patterns, OWASP Top 10 2023 complete
+- 🎓 **Interactive Tutorial** - Zero-knowledge 30-minute guided learning with quizzes and hands-on examples
+- 🏗️ **Advanced Analysis** - Dead code detection, code smell identification, cognitive complexity, dependency analysis
+- 🔧 **CI/CD Templates** - Production-ready GitHub Actions with quality gates and auto-fix
+- 📚 **Standards Library** - Complete reference to 20+ security/engineering standards with citations
+- 🎨 **VS Code Extension** - Real-time linting, auto-fix on save, AI suggestions (scaffold ready)
+
 ## Why it exists
 
 PSScriptAnalyzer detects issues but provides limited auto-fix capabilities. PoshGuard fills this gap with production-grade, idempotent fixes that preserve code intent while enforcing PowerShell best practices. It's designed for CI/CD pipelines with deterministic output, structured logging, and clear exit codes.
+
+## Quick Start for Beginners
+
+**Never used PowerShell or PoshGuard before?** Start here:
+
+```powershell
+# Step 1: Run the interactive tutorial (30 minutes)
+./tools/Start-InteractiveTutorial.ps1
+
+# Step 2: Try PoshGuard on a sample file (safe preview)
+./tools/Apply-AutoFix.ps1 -Path ./samples/before-security-issues.ps1 -DryRun
+
+# Step 3: Read the beginner's guide
+Get-Content ./docs/BEGINNERS-GUIDE.md
+```
+
+**Key Concepts for Beginners**:
+- `-DryRun` = Preview changes without applying them (ALWAYS safe)
+- Backups are automatic (stored in `.psqa-backup/`)
+- Start with small files to learn
+- Read the tooltips and recommendations
 
 ## Safe by Default
 

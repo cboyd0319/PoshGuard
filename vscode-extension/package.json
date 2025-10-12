@@ -1,0 +1,39 @@
+{
+  "name": "poshguard",
+  "displayName": "PoshGuard - PowerShell Quality Guard",
+  "description": "Real-time PowerShell code quality analysis and auto-fix with AI/ML intelligence",
+  "version": "4.1.0",
+  "publisher": "poshguard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cboyd0319/PoshGuard"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Formatters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "powershell",
+    "quality",
+    "security",
+    "linter",
+    "ai"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "poshguard.analyzeFile",
+        "title": "PoshGuard: Analyze Current File"
+      },
+      {
+        "command": "poshguard.fixFile",
+        "title": "PoshGuard: Fix Current File"
+      }
+    ]
+  }
+}
