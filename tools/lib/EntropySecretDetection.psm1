@@ -96,7 +96,7 @@ $script:EntropyConfig = @{
         '(?i)# (TODO|FIXME|NOTE):',
         '(?i)(lorem ipsum|1234567890abcdef)',
         '[Xx]{8,}',  # XXXXXXXX patterns
-        '0{8,}',     # 000000000 patterns
+        '0{8,}'      # 000000000 patterns
     )
     
     # Output
@@ -528,7 +528,7 @@ function Get-SecretScanSummary {
             return @{
                 TotalScans = 0
                 TotalSecrets = 0
-                FilesWith Secrets = 0
+                FilesWithSecrets = 0
             }
         }
         
