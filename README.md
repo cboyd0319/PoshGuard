@@ -352,14 +352,25 @@ See the [samples/](samples/) directory for real-world examples with intentionall
 
 ## Documentation
 
+### Getting Started
 - **[Quick Start](docs/quick-start.md)** — Get started in 5 minutes
-- **[Benchmarks](docs/benchmarks.md)** — Repeatable results with exact inputs, versions, and commands
 - **[How It Works](docs/how-it-works.md)** — Deep dive into AST transformations with before/after examples
-- **[Architecture Overview](README.md#architecture)** — Module structure and data flow
 - **[CI/CD Integration](docs/ci-integration.md)** — GitHub Actions, Azure DevOps, GitLab, Jenkins
-- **[Contributing Guide](docs/CONTRIBUTING.md)** — Local dev setup and PR guidelines
+
+### Quality & Reliability
+- **[Benchmarks](docs/benchmarks.md)** — Repeatable results with exact inputs, versions, and commands
+- **[SRE Principles](docs/SRE-PRINCIPLES.md)** — Service Level Objectives, error budgets, observability
+- **[Engineering Standards](docs/ENGINEERING-STANDARDS.md)** — Code quality, performance budgets, testing requirements
+
+### Architecture & Security
+- **[Architecture Overview](docs/ARCHITECTURE.md)** — Module structure and data flow
+- **[Security Framework](docs/SECURITY-FRAMEWORK.md)** — OWASP ASVS mappings, threat model, security controls
 - **[Security Policy](docs/SECURITY.md)** — Vulnerability disclosure process
+
+### Contributing
+- **[Contributing Guide](docs/CONTRIBUTING.md)** — Local dev setup and PR guidelines
 - **[Changelog](docs/CHANGELOG.md)** — Version history and release notes
+- **[Roadmap](docs/ROADMAP.md)** — Future features and priorities
 - **[Implementation Summary](docs/implementation-summary.md)** — v3.0.0 development details
 
 **Sample Outputs**:

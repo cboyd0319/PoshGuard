@@ -72,12 +72,45 @@ function Invoke-AliasFixAst {
     )
 
     $aliasMap = @{
-        'gci' = 'Get-ChildItem'; 'gcm' = 'Get-Command'; 'gm' = 'Get-Member'; 'iwr' = 'Invoke-WebRequest';
-        'irm' = 'Invoke-RestMethod'; 'cat' = 'Get-Content'; 'cp' = 'Copy-Item'; 'mv' = 'Move-Item';
-        'rm' = 'Remove-Item'; 'ls' = 'Get-ChildItem'; 'pwd' = 'Get-Location'; 'cd' = 'Set-Location';
-        'cls' = 'Clear-Host'; 'echo' = 'Write-Output'; 'kill' = 'Stop-Process'; 'ps' = 'Get-Process';
-        'sleep' = 'Start-Sleep'; 'fl' = 'Format-List'; 'ft' = 'Format-Table'; 'fw' = 'Format-Wide';
-        'tee' = 'Tee-Object'; 'curl' = 'Invoke-WebRequest'; 'wget' = 'Invoke-WebRequest'; 'diff' = 'Compare-Object'
+        # Common file/directory operations
+        'gci' = 'Get-ChildItem'; 'ls' = 'Get-ChildItem'; 'dir' = 'Get-ChildItem'
+        'cat' = 'Get-Content'; 'type' = 'Get-Content'
+        'cp' = 'Copy-Item'; 'copy' = 'Copy-Item'; 'cpi' = 'Copy-Item'
+        'mv' = 'Move-Item'; 'move' = 'Move-Item'; 'mi' = 'Move-Item'
+        'rm' = 'Remove-Item'; 'del' = 'Remove-Item'; 'erase' = 'Remove-Item'; 'ri' = 'Remove-Item'
+        'pwd' = 'Get-Location'; 'gl' = 'Get-Location'
+        'cd' = 'Set-Location'; 'chdir' = 'Set-Location'; 'sl' = 'Set-Location'
+        
+        # Pipeline and filtering
+        '?' = 'Where-Object'; 'where' = 'Where-Object'
+        '%' = 'ForEach-Object'; 'foreach' = 'ForEach-Object'
+        
+        # Output formatting
+        'fl' = 'Format-List'
+        'ft' = 'Format-Table'
+        'fw' = 'Format-Wide'
+        'echo' = 'Write-Output'; 'write' = 'Write-Output'
+        
+        # Process and service management
+        'ps' = 'Get-Process'; 'gps' = 'Get-Process'
+        'kill' = 'Stop-Process'; 'spps' = 'Stop-Process'
+        'gsv' = 'Get-Service'
+        'sasv' = 'Start-Service'
+        'spsv' = 'Stop-Service'
+        
+        # Other common cmdlets
+        'gcm' = 'Get-Command'
+        'gm' = 'Get-Member'
+        'iwr' = 'Invoke-WebRequest'; 'curl' = 'Invoke-WebRequest'; 'wget' = 'Invoke-WebRequest'
+        'irm' = 'Invoke-RestMethod'
+        'cls' = 'Clear-Host'; 'clear' = 'Clear-Host'
+        'sleep' = 'Start-Sleep'
+        'tee' = 'Tee-Object'
+        'diff' = 'Compare-Object'
+        'select' = 'Select-Object'
+        'sort' = 'Sort-Object'
+        'group' = 'Group-Object'
+        'measure' = 'Measure-Object'
     }
 
     $tokens = $null
