@@ -251,6 +251,13 @@ function Invoke-FileFix {
             $fixedContent = Invoke-NullHelpMessageFix -Content $fixedContent
             $fixedContent = Invoke-UsingScopeModifierFix -Content $fixedContent
 
+            # Beyond-PSSA Code Quality Enhancements (v3.2.0)
+            $fixedContent = Invoke-TodoCommentDetectionFix -Content $fixedContent
+            $fixedContent = Invoke-ConvertFromJsonOptimizationFix -Content $fixedContent
+            $fixedContent = Invoke-UnusedNamespaceDetectionFix -Content $fixedContent
+            $fixedContent = Invoke-AsciiCharacterWarningFix -Content $fixedContent
+            $fixedContent = Invoke-SecureStringDisclosureFix -Content $fixedContent
+
             # Final cleanup fixes
             $fixedContent = Invoke-DuplicateLineFix -Content $fixedContent
             $fixedContent = Invoke-CmdletParameterFix -Content $fixedContent

@@ -13,6 +13,7 @@
     - StringHandling: Double quotes, hashtable literals
     - TypeSafety: Automatic variables, type attributes, PSCredential
     - UsagePatterns: Positional parameters, unused variables, assignment operators
+    - CodeQuality: Beyond-PSSA enhancements (TODO tracking, namespace optimization, etc.)
 
 .NOTES
     Part of PoshGuard v2.4.0
@@ -37,7 +38,8 @@ $SubModules = @(
     'Scoping',
     'StringHandling',
     'TypeSafety',
-    'UsagePatterns'
+    'UsagePatterns',
+    'CodeQuality'
 )
 
 foreach ($SubModule in $SubModules) {
@@ -78,7 +80,14 @@ $FunctionsToExport = @(
     # UsagePatterns
     'Invoke-PositionalParametersFix',
     'Invoke-DeclaredVarsMoreThanAssignmentsFix',
-    'Invoke-IncorrectAssignmentOperatorFix'
+    'Invoke-IncorrectAssignmentOperatorFix',
+    
+    # CodeQuality (Beyond-PSSA)
+    'Invoke-TodoCommentDetectionFix',
+    'Invoke-UnusedNamespaceDetectionFix',
+    'Invoke-AsciiCharacterWarningFix',
+    'Invoke-ConvertFromJsonOptimizationFix',
+    'Invoke-SecureStringDisclosureFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport
