@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PoshGuard Configuration",
+  "description": "Unified configuration for PoshGuard - The World's Best PowerShell Security & Quality Tool",
+  "version": "4.3.0",
+  
+  "core": {
+    "maxFileSizeBytes": 10485760,
+    "backupRetentionDays": 7,
+    "encoding": "UTF8BOM",
+    "logLevel": "Info"
+  },
+  
+  "ai": {
+    "enabled": true,
+    "confidenceScoring": true,
+    "patternLearning": true,
+    "minConfidenceThreshold": 0.75
+  },
+  
+  "reinforcementLearning": {
+    "enabled": true,
+    "learningRate": 0.1,
+    "discountFactor": 0.95,
+    "explorationRate": 0.2,
+    "minExplorationRate": 0.01,
+    "explorationDecay": 0.995,
+    "experienceReplaySize": 1000,
+    "batchSize": 32,
+    "modelPath": "./ml/rl-model.jsonl",
+    "metricsPath": "./ml/rl-metrics.jsonl",
+    "autoSaveInterval": 100
+  },
+  
+  "secretDetection": {
+    "enabled": true,
+    "entropyThresholds": {
+      "base64": 4.5,
+      "hex": 3.0,
+      "ascii": 3.5
+    },
+    "minLengths": {
+      "base64": 20,
+      "hex": 20,
+      "ascii": 16
+    },
+    "scanComments": true,
+    "scanStrings": true,
+    "reportFalsePositives": false
+  },
+  
+  "mcp": {
+    "enabled": false,
+    "userConsent": false,
+    "servers": [],
+    "cachePath": "./cache/mcp",
+    "cacheExpirationHours": 24,
+    "timeout": 5000,
+    "retryCount": 2,
+    "comment": "MCP (Model Context Protocol) integration is OPTIONAL and privacy-first. Enable only if you want AI-enhanced code suggestions from external sources."
+  },
+  
+  "observability": {
+    "enabled": true,
+    "structuredLogging": true,
+    "metrics": true,
+    "tracing": true,
+    "exportFormat": "JSONL",
+    "logPath": "./logs",
+    "metricsPath": "./metrics"
+  },
+  
+  "slo": {
+    "availabilityTarget": 99.5,
+    "latencyP95Target": 5000,
+    "qualityTarget": 95.0,
+    "correctnessTarget": 100.0
+  },
+  
+  "security": {
+    "scanForSecrets": true,
+    "enforceSecureStrings": true,
+    "blockDangerousCommands": true,
+    "validateCertificates": true
+  },
+  
+  "performance": {
+    "parallelProcessing": false,
+    "maxParallelFiles": 4,
+    "cacheAST": true,
+    "incrementalAnalysis": false
+  },
+  
+  "standards": {
+    "owaspAsvs": true,
+    "nistSp80053": true,
+    "cis": true,
+    "iso27001": true,
+    "pciDss": true,
+    "hipaa": true,
+    "soc2": true,
+    "fedramp": true,
+    "cmmc": true
+  }
+}
