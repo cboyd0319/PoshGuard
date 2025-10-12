@@ -1,0 +1,14 @@
+{
+  "RunId": "benchmark_20251012_113933",
+  "Timestamp": "20251012_113933",
+  "FilesProcessed": 2,
+  "TotalViolationsBefore": 27,
+  "TotalViolationsAfter": 6,
+  "TotalFixed": 21,
+  "TotalFailed": 0,
+  "SuccessRate": 77.78,
+  "PSScriptAnalyzerVersion": "1.24.0",
+  "PowerShellVersion": "7.4.12",
+  "Platform": "Unix",
+  "PoshGuardVersion": "3.0.0"
+}

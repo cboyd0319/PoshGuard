@@ -466,18 +466,66 @@ function Invoke-EmptyCatchBlockFix {
     )
 
     try {
-        # Match: catch { } or catch { <whitespace> }
-        $pattern = '(catch\s*\{)\s*(\})'
+        # Use AST-based approach for precise catch block detection
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $Content,
+            [ref]$null,
+            [ref]$null
+        )
 
-        if ($Content -match $pattern) {
-            $newline = [Environment]::NewLine
-            $replacement = "catch {${newline}        # TODO: Handle error appropriately (was empty catch block)${newline}        Write-Verbose `"Suppressed error: `$_`"${newline}    }"
+        # Find all try-catch statements
+        $tryCatchAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.TryStatementAst]
+        }, $true)
 
-            $fixed = $Content -replace $pattern, $replacement
-
-            Write-Verbose "Added error handling to empty catch block(s)"
-            return $fixed
+        if ($tryCatchAsts.Count -eq 0) {
+            return $Content
         }
+
+        $replacements = @()
+        foreach ($tryAst in $tryCatchAsts) {
+            foreach ($catch in $tryAst.CatchClauses) {
+                # Check if the catch block body is empty or only whitespace
+                $catchBody = $catch.Body.Extent.Text
+                $catchBodyContent = $catch.Body.Statements
+                
+                if ($null -eq $catchBodyContent -or $catchBodyContent.Count -eq 0) {
+                    # Empty catch block found
+                    $catchExtent = $catch.Extent
+                    $startOffset = $catch.Body.Extent.StartOffset + 1  # After opening brace
+                    $endOffset = $catch.Body.Extent.EndOffset - 1      # Before closing brace
+                    
+                    # Determine indentation from the catch line
+                    $lines = $Content.Substring(0, $catchExtent.StartOffset) -split "`r?`n"
+                    $lastLine = $lines[-1]
+                    $indent = if ($lastLine -match '^(\s*)') { $Matches[1] } else { '' }
+                    
+                    $errorHandling = "`n${indent}    # TODO: Handle error appropriately (was empty catch block)`n${indent}    Write-Verbose `"Suppressed error: `$_`"`n${indent}"
+                    
+                    $replacements += @{
+                        Start = $startOffset
+                        End = $endOffset
+                        Replacement = $errorHandling
+                    }
+                }
+            }
+        }
+
+        if ($replacements.Count -eq 0) {
+            return $Content
+        }
+
+        # Apply replacements in reverse order to maintain offsets
+        $fixed = $Content
+        foreach ($replacement in ($replacements | Sort-Object -Property Start -Descending)) {
+            $before = $fixed.Substring(0, $replacement.Start)
+            $after = $fixed.Substring($replacement.End)
+            $fixed = $before + $replacement.Replacement + $after
+        }
+
+        Write-Verbose "Added error handling to $($replacements.Count) empty catch block(s)"
+        return $fixed
     }
     catch {
         Write-Verbose "Empty catch block fix failed: $_"

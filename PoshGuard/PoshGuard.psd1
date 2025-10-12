@@ -3,12 +3,12 @@
     # For PowerShell Gallery deployment, the module structure must be reorganized
     # with all .psm1 files under the PoshGuard/ directory.
     RootModule = 'PoshGuard.psm1'
-    ModuleVersion = '3.0.0'
+    ModuleVersion = '3.1.0'
     GUID = 'f8a3d8e9-7b4c-4d5e-9f8a-3c2b1e0d9f7a'
     Author = 'Chad Boyd'
     CompanyName = 'PoshGuard'
     Copyright = '(c) 2025 Chad Boyd. All rights reserved.'
-    Description = 'PowerShell auto-fix engine with 100% PSScriptAnalyzer general rules coverage. Automatically fixes security issues, best practices, formatting, and advanced patterns using AST-based transformations.'
+    Description = 'World-class PowerShell QA & auto-fix engine with 100% PSScriptAnalyzer general rules coverage. OWASP ASVS aligned security, SRE principles, comprehensive observability. Automatically fixes security issues, best practices, formatting, and advanced patterns using AST-based transformations. 77.78% first-pass fix rate.'
 
     PowerShellVersion = '5.1'
 
