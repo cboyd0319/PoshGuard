@@ -1,0 +1,328 @@
+name: PoshGuard Quality Gate
+
+# Template for integrating PoshGuard into your CI/CD pipeline
+# This workflow ensures code quality standards are met before merging
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+  push:
+    branches: [ main ]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  security-events: write
+
+env:
+  # Quality gate thresholds
+  MAX_CRITICAL_ISSUES: 0
+  MAX_HIGH_ISSUES: 2
+  MAX_MEDIUM_ISSUES: 10
+  MIN_CONFIDENCE_SCORE: 0.75
+  COVERAGE_THRESHOLD: 70
+
+jobs:
+  poshguard-analysis:
+    name: PoshGuard Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: Setup PowerShell
+        uses: microsoft/setup-powershell@v1
+        with:
+          pwsh: true
+      
+      - name: Install PoshGuard
+        shell: pwsh
+        run: |
+          Write-Host "Installing PoshGuard..." -ForegroundColor Cyan
+          Install-Module -Name PoshGuard -Scope CurrentUser -Force -AllowClobber
+          Import-Module PoshGuard
+          Write-Host "✓ PoshGuard installed successfully" -ForegroundColor Green
+      
+      - name: Run PoshGuard Analysis
+        id: analysis
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Running PoshGuard analysis..." -ForegroundColor Cyan
+          
+          # Run PoshGuard with detailed output
+          $results = @()
+          $exitCode = 0
+          
+          Get-ChildItem -Path . -Include *.ps1,*.psm1,*.psd1 -Recurse | ForEach-Object {
+            $file = $_.FullName
+            Write-Host "`nAnalyzing: $file" -ForegroundColor Yellow
+            
+            try {
+              $output = Invoke-PoshGuard -Path $file -DryRun -Verbose 2>&1
+              $results += @{
+                File = $file
+                Output = $output
+                Status = "Success"
+              }
+            }
+            catch {
+              Write-Warning "Analysis failed for $file : $_"
+              $results += @{
+                File = $file
+                Output = $_.Exception.Message
+                Status = "Failed"
+              }
+              $exitCode = 1
+            }
+          }
+          
+          # Generate summary
+          $totalFiles = $results.Count
+          $successFiles = ($results | Where-Object { $_.Status -eq "Success" }).Count
+          $failedFiles = $totalFiles - $successFiles
+          
+          Write-Host "`n📊 Analysis Summary:" -ForegroundColor Cyan
+          Write-Host "  Total files: $totalFiles" -ForegroundColor White
+          Write-Host "  Successful: $successFiles" -ForegroundColor Green
+          Write-Host "  Failed: $failedFiles" -ForegroundColor Red
+          
+          # Set outputs for quality gate
+          echo "total_files=$totalFiles" >> $GITHUB_OUTPUT
+          echo "success_files=$successFiles" >> $GITHUB_OUTPUT
+          echo "failed_files=$failedFiles" >> $GITHUB_OUTPUT
+          echo "exit_code=$exitCode" >> $GITHUB_OUTPUT
+      
+      - name: Security Scan
+        id: security
+        shell: pwsh
+        run: |
+          Write-Host "🔒 Running security scan..." -ForegroundColor Cyan
+          
+          $criticalIssues = 0
+          $highIssues = 0
+          $mediumIssues = 0
+          $lowIssues = 0
+          
+          Get-ChildItem -Path . -Include *.ps1,*.psm1 -Recurse | ForEach-Object {
+            $file = $_.FullName
+            $content = Get-Content $file -Raw
+            
+            # Check for hard-coded secrets (simplified for demo)
+            if ($content -match '(?i)(password|secret|apikey|token)\s*=\s*[''"][^''"]{8,}[''"]') {
+              Write-Warning "⚠️ Potential hard-coded secret in $file"
+              $criticalIssues++
+            }
+            
+            # Check for weak cryptography
+            if ($content -match '(?i)(MD5|SHA1|DES|RC4)') {
+              Write-Warning "⚠️ Weak cryptography detected in $file"
+              $highIssues++
+            }
+            
+            # Check for Invoke-Expression with variables
+            if ($content -match 'Invoke-Expression\s+\$|iex\s+\$') {
+              Write-Warning "⚠️ Code injection risk in $file"
+              $criticalIssues++
+            }
+          }
+          
+          Write-Host "`n📋 Security Summary:" -ForegroundColor Cyan
+          Write-Host "  Critical: $criticalIssues" -ForegroundColor Red
+          Write-Host "  High: $highIssues" -ForegroundColor DarkYellow
+          Write-Host "  Medium: $mediumIssues" -ForegroundColor Yellow
+          Write-Host "  Low: $lowIssues" -ForegroundColor Gray
+          
+          echo "critical_issues=$criticalIssues" >> $GITHUB_OUTPUT
+          echo "high_issues=$highIssues" >> $GITHUB_OUTPUT
+          echo "medium_issues=$mediumIssues" >> $GITHUB_OUTPUT
+          echo "low_issues=$lowIssues" >> $GITHUB_OUTPUT
+      
+      - name: Quality Gate Evaluation
+        id: quality_gate
+        shell: pwsh
+        run: |
+          Write-Host "🎯 Evaluating quality gates..." -ForegroundColor Cyan
+          
+          $passed = $true
+          $reasons = @()
+          
+          # Check critical issues
+          if ([int]"${{ steps.security.outputs.critical_issues }}" -gt ${{ env.MAX_CRITICAL_ISSUES }}) {
+            $passed = $false
+            $reasons += "Too many critical security issues (${{ steps.security.outputs.critical_issues }} > ${{ env.MAX_CRITICAL_ISSUES }})"
+          }
+          
+          # Check high issues
+          if ([int]"${{ steps.security.outputs.high_issues }}" -gt ${{ env.MAX_HIGH_ISSUES }}) {
+            $passed = $false
+            $reasons += "Too many high severity issues (${{ steps.security.outputs.high_issues }} > ${{ env.MAX_HIGH_ISSUES }})"
+          }
+          
+          # Check failed files
+          if ([int]"${{ steps.analysis.outputs.failed_files }}" -gt 0) {
+            $passed = $false
+            $reasons += "Some files failed analysis (${{ steps.analysis.outputs.failed_files }} files)"
+          }
+          
+          Write-Host "`n" -NoNewline
+          if ($passed) {
+            Write-Host "✅ Quality gate: PASSED" -ForegroundColor Green
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "result=✅ Quality gate passed" >> $GITHUB_OUTPUT
+            exit 0
+          }
+          else {
+            Write-Host "❌ Quality gate: FAILED" -ForegroundColor Red
+            Write-Host "`nReasons:" -ForegroundColor Yellow
+            $reasons | ForEach-Object { Write-Host "  • $_" -ForegroundColor Red }
+            
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "result=❌ Quality gate failed: $($reasons -join '; ')" >> $GITHUB_OUTPUT
+            exit 1
+          }
+      
+      - name: Generate Report
+        if: always()
+        shell: pwsh
+        run: |
+          $report = @"
+# PoshGuard Quality Report
+          
+## Summary
+- **Total Files Analyzed**: ${{ steps.analysis.outputs.total_files }}
+- **Successful**: ${{ steps.analysis.outputs.success_files }}
+- **Failed**: ${{ steps.analysis.outputs.failed_files }}
+          
+## Security Issues
+- **Critical**: ${{ steps.security.outputs.critical_issues }} (Max: ${{ env.MAX_CRITICAL_ISSUES }})
+- **High**: ${{ steps.security.outputs.high_issues }} (Max: ${{ env.MAX_HIGH_ISSUES }})
+- **Medium**: ${{ steps.security.outputs.medium_issues }} (Max: ${{ env.MAX_MEDIUM_ISSUES }})
+- **Low**: ${{ steps.security.outputs.low_issues }}
+          
+## Quality Gate
+${{ steps.quality_gate.outputs.result }}
+          
+---
+Generated by [PoshGuard](https://github.com/cboyd0319/PoshGuard) v4.1.0
+"@
+          
+          $report | Out-File -FilePath quality-report.md
+          Write-Host "📄 Report saved to quality-report.md"
+      
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poshguard-quality-report
+          path: quality-report.md
+          retention-days: 30
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('quality-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+      
+      - name: Set Check Status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const status = '${{ steps.quality_gate.outputs.status }}';
+            const conclusion = status === 'passed' ? 'success' : 'failure';
+            
+            github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'PoshGuard Quality Gate',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: 'PoshGuard Quality Gate',
+                summary: '${{ steps.quality_gate.outputs.result }}',
+                text: `See the full report in the workflow artifacts.`
+              }
+            });
+
+  auto-fix:
+    name: Auto-fix Issues (Optional)
+    needs: poshguard-analysis
+    if: github.event_name == 'pull_request' && needs.poshguard-analysis.result == 'failure'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        uses: microsoft/setup-powershell@v1
+        with:
+          pwsh: true
+      
+      - name: Install PoshGuard
+        shell: pwsh
+        run: |
+          Install-Module -Name PoshGuard -Scope CurrentUser -Force
+          Import-Module PoshGuard
+      
+      - name: Apply Auto-fixes
+        shell: pwsh
+        run: |
+          Write-Host "🔧 Applying auto-fixes..." -ForegroundColor Cyan
+          
+          Get-ChildItem -Path . -Include *.ps1,*.psm1,*.psd1 -Recurse | ForEach-Object {
+            $file = $_.FullName
+            Write-Host "Fixing: $file" -ForegroundColor Yellow
+            
+            try {
+              Invoke-PoshGuard -Path $file -Verbose
+              Write-Host "✓ Fixed: $file" -ForegroundColor Green
+            }
+            catch {
+              Write-Warning "Could not fix $file : $_"
+            }
+          }
+      
+      - name: Commit fixes
+        run: |
+          git config --global user.name 'PoshGuard Bot'
+          git config --global user.email 'poshguard@users.noreply.github.com'
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: auto-fix code quality issues with PoshGuard"
+          git push
+      
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 PoshGuard has automatically fixed some code quality issues. Please review the changes.'
+            });
