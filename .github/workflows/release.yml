@@ -3,8 +3,31 @@ on:
   push:
     tags:
       - 'v*'
+
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract and Validate Version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Validate semver format
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "Error: Invalid version format: $VERSION"
+            exit 1
+          fi
+          
+          echo "Valid version: $VERSION"
+
   release:
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -12,14 +35,13 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Create release package
+      - name: Create Release Package
         run: |
-          zip -r poshguard-${{ steps.version.outputs.VERSION }}.zip \
+          VERSION="${{ needs.validate.outputs.version }}"
+          zip -r poshguard-$VERSION.zip \
             tools/ \
             PoshGuard/ \
             README.md \
@@ -27,27 +49,47 @@ jobs:
             docs/CHANGELOG.md \
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
+          
+          # Create checksums
+          sha256sum poshguard-$VERSION.zip > poshguard-$VERSION.zip.sha256
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
-          artifact-name: poshguard-${{ steps.version.outputs.VERSION }}.spdx.json
-          output-file: poshguard-${{ steps.version.outputs.VERSION }}.spdx.json
+          artifact-name: poshguard-${{ needs.validate.outputs.version }}.spdx.json
+          output-file: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           format: spdx-json
 
-      - name: Attest artifact
+      - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: poshguard-${{ steps.version.outputs.VERSION }}.zip
+          subject-path: poshguard-${{ needs.validate.outputs.version }}.zip
 
-      - name: Create Release
+      - name: Extract Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          
+          # Try to extract version-specific notes from CHANGELOG
+          if grep -q "## \[$VERSION\]" docs/CHANGELOG.md; then
+            awk "/## \[$VERSION\]/,/## \[/{if (/## \[/ && !/## \[$VERSION\]/) exit; print}" docs/CHANGELOG.md > release-notes.md
+          else
+            # Fallback to latest section
+            echo "Release v$VERSION" > release-notes.md
+            echo "" >> release-notes.md
+            echo "See [CHANGELOG](docs/CHANGELOG.md) for details." >> release-notes.md
+          fi
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            poshguard-${{ steps.version.outputs.VERSION }}.zip
-            poshguard-${{ steps.version.outputs.VERSION }}.spdx.json
-          body_path: docs/CHANGELOG.md
+            poshguard-${{ needs.validate.outputs.version }}.zip
+            poshguard-${{ needs.validate.outputs.version }}.zip.sha256
+            poshguard-${{ needs.validate.outputs.version }}.spdx.json
+          body_path: release-notes.md
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

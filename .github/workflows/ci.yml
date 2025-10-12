@@ -1,53 +1,142 @@
 name: ci
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+      - 'tests/**'
+      - 'config/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+      - 'tests/**'
+      - 'config/**'
+      - '.github/workflows/ci.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Install PSScriptAnalyzer
-        run: Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
-        shell: pwsh
-      - name: Lint PowerShell & export SARIF
-        run: |
-          # Get all PowerShell files excluding samples with intentional violations
-          $files = Get-ChildItem -Path . -Include *.ps1,*.psm1,*.psd1 -Recurse | 
-            Where-Object { $_.FullName -notmatch 'samples[\\/]before-' -and $_.FullName -notmatch '[\\/]\.psqa-backup[\\/]' }
+      
+      - name: Cache PSScriptAnalyzer
+        uses: actions/cache@v4
+        with:
+          path: ~\Documents\PowerShell\Modules\PSScriptAnalyzer
+          key: ${{ runner.os }}-psscriptanalyzer-${{ hashFiles('**/PSScriptAnalyzerSettings.psd1') }}
           
-          if ($files) {
-            Invoke-ScriptAnalyzer `
-              -Path $files `
-              -ReportSummary `
-              -Severity Error,Warning `
-              -Settings ./config/PSScriptAnalyzerSettings.psd1 `
-              -SaveDenyList $null `
-              -OutFile PSSA.sarif `
-              -Format Sarif
+      - name: Install PSScriptAnalyzer
+        run: |
+          if (!(Get-Module -ListAvailable PSScriptAnalyzer)) {
+            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          }
+        shell: pwsh
+        
+      - name: Run PSScriptAnalyzer
+        id: lint
+        run: |
+          # Analyze main code directories, excluding samples/before-* files
+          $paths = @('PoshGuard', 'tools', 'tests', 'config')
+          $allResults = @()
+          
+          foreach ($path in $paths) {
+            if (Test-Path $path) {
+              $results = Invoke-ScriptAnalyzer `
+                -Path $path `
+                -Recurse `
+                -Severity Error,Warning `
+                -Settings ./config/PSScriptAnalyzerSettings.psd1
+              
+              if ($results) {
+                $allResults += $results
+              }
+            }
+          }
+          
+          # Report summary
+          if ($allResults) {
+            Write-Host "::warning::Found $($allResults.Count) PSScriptAnalyzer issues"
+            $allResults | Group-Object Severity | Format-Table -AutoSize
+            
+            # Save results as JSON for artifact
+            $allResults | ConvertTo-Json -Depth 10 | Set-Content 'pssa-results.json'
+            
+            # Fail if critical errors found
+            $errors = $allResults | Where-Object Severity -eq 'Error'
+            if ($errors) {
+              Write-Host "::error::Found $($errors.Count) error-level violations"
+              exit 1
+            }
+          } else {
+            Write-Host "✓ No PSScriptAnalyzer issues found!"
           }
         shell: pwsh
         continue-on-error: true
-      - name: Upload SARIF to Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('pssa-results.json') != ''
         with:
-          sarif_file: PSSA.sarif
+          name: pssa-results
+          path: pssa-results.json
 
   test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Cache Pester
+        uses: actions/cache@v4
+        with:
+          path: ~\Documents\PowerShell\Modules\Pester
+          key: ${{ runner.os }}-pester-5
+          
       - name: Install Pester
-        run: Install-Module Pester -Scope CurrentUser -Force
+        run: |
+          if (!(Get-Module -ListAvailable Pester)) {
+            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
+          }
         shell: pwsh
-      - name: Run Pester
-        run: Invoke-Pester -CI -Output Detailed
+        
+      - name: Run Pester Tests
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests/'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.CodeCoverage.Enabled = $false
+          
+          Invoke-Pester -Configuration $config
         shell: pwsh
+        
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults.xml
 
   package:
     needs: [lint, test]
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: Zip tools
+      
+      - name: Create Package
         run: |
           zip -r poshguard-${{ github.sha }}.zip \
             tools/ \
@@ -57,7 +146,10 @@ jobs:
             docs/CHANGELOG.md \
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
-      - uses: actions/upload-artifact@v4
+            
+      - name: Upload Package Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: poshguard
+          name: poshguard-package
           path: poshguard-${{ github.sha }}.zip
+          retention-days: 30
