@@ -108,7 +108,7 @@ if ($PSCmdlet.ShouldProcess($SourceScriptPath, "Copy to $OutputPath")) {
 Write-Host "`nCopying library modules..." -ForegroundColor Yellow
 if ($PSCmdlet.ShouldProcess($SourceLibPath, "Copy to $OutputLibPath")) {
     Copy-Item "$SourceLibPath\*" -Destination $OutputLibPath -Recurse -Force
-    
+
     # Count modules
     $moduleCount = (Get-ChildItem $OutputLibPath -Filter *.psm1 -Recurse).Count
     Write-Host "  ✓ Copied $moduleCount module files" -ForegroundColor Green

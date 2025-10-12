@@ -1,0 +1,14 @@
+# PSScriptAnalyzer Suppression File
+# 
+# This file lists paths that should be excluded from PSScriptAnalyzer scanning.
+# These are intentional exclusions for demonstration or test purposes.
+
+# Sample scripts - intentionally contain violations for demonstration
+samples/before-*.ps1
+
+# Backup directories - generated files
+.psqa-backup/
+.backup/
+
+# Test artifacts
+TestResults/

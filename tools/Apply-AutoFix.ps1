@@ -212,7 +212,7 @@ function Invoke-FileFix {
             $fixedContent = Invoke-ProcessBlockForPipelineFix -Content $fixedContent
             $fixedContent = Invoke-CmdletBindingFix -Content $fixedContent  # FIXED VERSION (was CmdletCorrectlyFix)
             $fixedContent = Invoke-WmiToCimFix -Content $fixedContent
-            
+
             # Compatibility warnings (cross-platform/version)
             $fixedContent = Invoke-CompatibleCmdletsWarningFix -ScriptContent $fixedContent
 

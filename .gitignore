@@ -26,6 +26,7 @@ temp_*.psm1
 TestResults/
 testResults.xml
 *.trx
+*TestResults*.xml
 
 # Log Files
 *.log
@@ -33,6 +34,7 @@ testResults.xml
 logs/
 qa-engine.log
 qa-engine.jsonl
+PSSA.sarif
 
 # Code Coverage
 coverage.xml
