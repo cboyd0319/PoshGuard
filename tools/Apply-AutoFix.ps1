@@ -98,6 +98,9 @@ $script:Config = @{
     BackupRetentionDays = 1
 }
 
+# Initialize RL episode counter (used for tracking learning progress)
+$script:EpisodeCount = 0
+
 #endregion
 
 #region Module Imports
@@ -136,8 +139,9 @@ try {
     
     # Initialize observability
     if ($script:GlobalConfig.Observability.Enabled) {
-        Initialize-Observability -TraceId $script:Config.TraceId
-        Write-Verbose "Observability initialized with TraceId: $($script:Config.TraceId)"
+        $traceId = Initialize-Observability
+        $script:Config.TraceId = $traceId
+        Write-Verbose "Observability initialized with TraceId: $traceId"
     }
     
     # Initialize MCP if enabled and user consented
@@ -198,22 +202,27 @@ function Invoke-FileFix {
             
             # Phase 0: Secret Detection (CRITICAL - run first before any modifications)
             if ($script:GlobalConfig.SecretDetection.Enabled) {
-                Write-Verbose "Running entropy-based secret detection..."
-                $secretScanResult = Invoke-SecretScan -Content $originalContent -FilePath $File.FullName
-                if ($secretScanResult.SecretsFound -gt 0) {
-                    Write-Warning "⚠️  SECRETS DETECTED in $($File.Name): $($secretScanResult.SecretsFound) potential secrets found"
-                    foreach ($secret in $secretScanResult.Secrets) {
-                        Write-Warning "  - Line $($secret.LineNumber): $($secret.Type) (entropy: $($secret.Entropy), confidence: $($secret.Confidence))"
-                    }
-                    Write-Warning "  Please review and remove these secrets before proceeding!"
-                    # Log for metrics
-                    if ($script:GlobalConfig.Observability.Enabled) {
-                        Write-StructuredLog -Level WARN -Message "Secrets detected" -Properties @{
-                            file = $File.Name
-                            secret_count = $secretScanResult.SecretsFound
-                            secret_types = ($secretScanResult.Secrets | Select-Object -ExpandProperty Type -Unique)
+                try {
+                    Write-Verbose "Running entropy-based secret detection..."
+                    $secretScanResult = Invoke-SecretScan -Content $originalContent -FilePath $File.FullName
+                    if ($secretScanResult -and $secretScanResult.SecretsFound -gt 0) {
+                        Write-Warning "⚠️  SECRETS DETECTED in $($File.Name): $($secretScanResult.SecretsFound) potential secrets found"
+                        foreach ($secret in $secretScanResult.Secrets) {
+                            Write-Warning "  - Line $($secret.LineNumber): $($secret.Type) (entropy: $([Math]::Round($secret.Entropy, 2)), confidence: $([Math]::Round($secret.Confidence, 2)))"
+                        }
+                        Write-Warning "  Please review and remove these secrets before proceeding!"
+                        # Log for metrics
+                        if ($script:GlobalConfig.Observability.Enabled) {
+                            Write-StructuredLog -Level WARN -Message "Secrets detected" -Properties @{
+                                file = $File.Name
+                                secret_count = $secretScanResult.SecretsFound
+                                secret_types = ($secretScanResult.Secrets | Select-Object -ExpandProperty Type -Unique)
+                            }
                         }
                     }
+                }
+                catch {
+                    Write-Verbose "Secret detection error (non-critical): $_"
                 }
             }
             
@@ -227,15 +236,21 @@ function Invoke-FileFix {
                 $violations = @()
                 try {
                     if (Get-Command Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue) {
-                        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $fixedContent -ErrorAction SilentlyContinue
+                        $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $fixedContent -ErrorAction SilentlyContinue)
                     }
                 }
                 catch {
                     Write-Verbose "Could not run PSScriptAnalyzer for RL state: $_"
                 }
                 
-                $rlState = Get-CodeState -Content $fixedContent -Violations $violations
-                Write-Verbose "RL state initialized: Complexity=$($rlState.CyclomaticComplexity), Violations=$($rlState.ViolationCount)"
+                try {
+                    $rlState = Get-CodeState -Content $fixedContent -Violations $violations
+                    Write-Verbose "RL state initialized: Complexity=$($rlState.CyclomaticComplexity), Violations=$($rlState.ViolationCount)"
+                }
+                catch {
+                    Write-Verbose "Could not initialize RL state: $_"
+                    $rlEnabled = $false
+                }
             }
 
             # Phase 2: Advanced fixes (parameters, complex AST)
@@ -500,7 +515,7 @@ try {
     # Save RL model if enabled and episodes completed
     if ($script:GlobalConfig.ReinforcementLearning.Enabled -and $script:EpisodeCount -gt 0) {
         try {
-            Save-RLModel -ModelPath $script:GlobalConfig.ReinforcementLearning.ModelPath
+            Export-RLModel -OutputPath $script:GlobalConfig.ReinforcementLearning.ModelPath
             Write-Verbose "RL model saved ($script:EpisodeCount episodes)"
         }
         catch {
@@ -556,7 +571,7 @@ finally {
     # Cleanup: Always save RL state on exit
     if ($script:GlobalConfig.ReinforcementLearning.Enabled) {
         try {
-            Save-RLModel -ModelPath $script:GlobalConfig.ReinforcementLearning.ModelPath
+            Export-RLModel -OutputPath $script:GlobalConfig.ReinforcementLearning.ModelPath
         }
         catch {
             # Silently fail - don't disrupt main execution
