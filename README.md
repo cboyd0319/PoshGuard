@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Version](https://img.shields.io/badge/version-3.1.0-brightgreen)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.2.0-brightgreen)](docs/CHANGELOG.md)
 [![Fix Rate](https://img.shields.io/badge/fix%20rate-77.78%25-success)](docs/benchmarks.md)
 [![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
 [![OWASP ASVS](https://img.shields.io/badge/OWASP%20ASVS-Level%201-success)](docs/SECURITY-FRAMEWORK.md)
@@ -70,6 +70,8 @@ PoshGuard automatically fixes PowerShell code issues detected by PSScriptAnalyze
 - ✅ **Deterministic runs**: pinned ruleset, reproducible output
 
 **v3.0.0 Milestone**: 60/60 general-purpose PSSA rules implemented (100% general rule coverage).
+
+**v3.2.0 Innovation**: Beyond-PSSA code quality enhancements - 5 community-requested features for superior code quality.
 
 ## Why it exists
 
@@ -199,11 +201,47 @@ Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1
 
 ## Coverage
 
-**General Rules: 60/60 (100%)** | **Total PSSA Rules: 60/72 (83.3%)**
+**General Rules: 60/60 (100%)** | **Total PSSA Rules: 60/72 (83.3%)** | **Beyond-PSSA: 5 enhancements**
 
-PoshGuard implements 100% of PSScriptAnalyzer's general-purpose rules. The 12 excluded rules fall into specialized categories (DSC-only, complex compatibility requiring 200+ MB profiles, and internal PSSA utilities).
+PoshGuard implements 100% of PSScriptAnalyzer's general-purpose rules PLUS 5 community-requested code quality enhancements that go beyond PSScriptAnalyzer's capabilities. The 12 excluded PSSA rules fall into specialized categories (DSC-only, complex compatibility requiring 200+ MB profiles, and internal PSSA utilities).
 
 For complete rule documentation, see the [PSScriptAnalyzer Rules Catalog](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules).
+
+### Beyond-PSSA Enhancements (v3.2.0)
+
+**Innovation Leadership** - PoshGuard extends PowerShell tooling with community-requested features:
+
+1. **TODO/FIXME Comment Standardization** - Ensures consistent technical debt tracking
+   ```powershell
+   # BEFORE: # todo fix this later
+   # AFTER:  # TODO: Fix this later
+   ```
+
+2. **Unused Namespace Detection** - Identifies potentially unused `using namespace` imports for performance optimization
+   ```powershell
+   # Adds warnings for namespaces that appear unused
+   # REVIEW: Namespace may be unused - using namespace System.Net
+   ```
+
+3. **ASCII Character Warnings** - Detects non-ASCII characters that cause cross-platform encoding issues
+   ```powershell
+   # Warns about smart quotes, em dashes, and other Unicode characters
+   Write-Host "Hello—world"  # WARNING: Non-ASCII character detected (U+2014)
+   ```
+
+4. **ConvertFrom-Json Optimization** - Automatically adds `-Raw` parameter for better performance
+   ```powershell
+   # BEFORE: Get-Content "config.json" | ConvertFrom-Json
+   # AFTER:  Get-Content "config.json" -Raw | ConvertFrom-Json
+   ```
+
+5. **SecureString Disclosure Detection** - Identifies potential credential leaks in logging/output
+   ```powershell
+   # Warns about potential SecureString exposure
+   Write-Host "Password: $securePassword"  # SECURITY WARNING: Potential SecureString disclosure
+   ```
+
+These enhancements align with **v3.1.0 roadmap goals** and demonstrate PoshGuard's commitment to innovation in PowerShell tooling.
 
 ### Implemented (60 rules)
 
