@@ -3,6 +3,10 @@
 .SYNOPSIS
     Creates a new PoshGuard release with proper tagging and asset generation.
 
+.NOTES
+    PSScriptAnalyzer Suppressions:
+    - PSAvoidUsingWriteHost: This is an interactive script for developers, Write-Host is appropriate for user feedback
+
 .DESCRIPTION
     Automates the release process:
     - Validates version format
@@ -10,15 +14,15 @@
     - Generates release package (GitHub release format)
     - Optionally pushes to GitHub (triggers release workflow)
 
-    IMPORTANT: This script creates a GitHub release package, NOT a PowerShell 
-    Gallery package. For PSGallery publication, use Prepare-PSGalleryPackage.ps1 
+    IMPORTANT: This script creates a GitHub release package, NOT a PowerShell
+    Gallery package. For PSGallery publication, use Prepare-PSGalleryPackage.ps1
     to reorganize the module structure:
       PoshGuard/
         PoshGuard.psd1
         PoshGuard.psm1
         lib/              <- tools/lib/* files copied here
         Apply-AutoFix.ps1 <- tools/Apply-AutoFix.ps1 copied here
-    
+
     See docs/implementation-summary.md for complete PSGallery publishing instructions.
 
 .PARAMETER Version
@@ -34,7 +38,7 @@
     ./tools/Create-Release.ps1 -Version 3.0.0 -Push
 
 .NOTES
-    For PowerShell Gallery publishing, run Prepare-PSGalleryPackage.ps1 after 
+    For PowerShell Gallery publishing, run Prepare-PSGalleryPackage.ps1 after
     this script to create the properly structured module package.
 #>
 
@@ -81,10 +85,10 @@ $manifestPath = "$RepoRoot/PoshGuard/PoshGuard.psd1"
 if (Test-Path $manifestPath) {
     try {
         $manifest = Test-ModuleManifest $manifestPath -ErrorAction Stop
-        
+
         if ($manifest.Version -ne $Version) {
             Write-Warning "Module manifest version is $($manifest.Version) but release is $Version"
-            
+
             # Update manifest
             $manifestContent = Get-Content $manifestPath -Raw
             $manifestContent = $manifestContent -replace "ModuleVersion\s*=\s*'[\d.]+'", "ModuleVersion = '$Version'"
@@ -124,25 +128,25 @@ if (Test-Path $changelogPath) {
     $changelogLines = Get-Content $changelogPath
     $inSection = $false
     $snippetLines = @()
-    
+
     foreach ($line in $changelogLines) {
         # Start of target version section
         if ($line -match "^##\s+\[$([regex]::Escape($Version))\]") {
             $inSection = $true
             continue  # Skip the header line itself
         }
-        
+
         # Start of next version section (stop collecting)
         if ($inSection -and $line -match "^##\s+\[\d+\.\d+\.\d+\]") {
             break
         }
-        
+
         # Collect lines within the target section
         if ($inSection) {
             $snippetLines += $line
         }
     }
-    
+
     $changelogSnippet = ($snippetLines -join "`n").Trim()
 }
 
@@ -194,7 +198,7 @@ if (Get-Command Compress-Archive -ErrorAction SilentlyContinue) {
         Write-Host "  • System 'zip' utility (available on most Unix systems)" -ForegroundColor Yellow
         exit 1
     }
-    
+
     Push-Location $RepoRoot
     try {
         & zip -r $packageName $ReleaseFiles

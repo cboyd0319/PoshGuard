@@ -9,25 +9,25 @@
     CompanyName = 'PoshGuard'
     Copyright = '(c) 2025 Chad Boyd. All rights reserved.'
     Description = 'PowerShell auto-fix engine with 100% PSScriptAnalyzer general rules coverage. Automatically fixes security issues, best practices, formatting, and advanced patterns using AST-based transformations.'
-    
+
     PowerShellVersion = '5.1'
-    
+
     RequiredModules = @(
-        @{ModuleName='PSScriptAnalyzer'; MinimumVersion='1.21.0'}
+        @{ ModuleName = 'PSScriptAnalyzer'; ModuleVersion = '1.21.0' }
     )
-    
+
     # Note: Module loading is handled dynamically in PoshGuard.psm1
     # This allows the module to work both in development (with tools/lib/)
     # and when installed via PowerShell Gallery (with PoshGuard/lib/)
-    
+
     FunctionsToExport = @(
         'Invoke-PoshGuard'
     )
-    
+
     CmdletsToExport = @()
     VariablesToExport = @()
     AliasesToExport = @()
-    
+
     PrivateData = @{
         PSData = @{
             Tags = @(
@@ -51,6 +51,6 @@
             ReleaseNotes = 'https://github.com/cboyd0319/PoshGuard/blob/main/CHANGELOG.md'
         }
     }
-    
+
     HelpInfoURI = 'https://github.com/cboyd0319/PoshGuard/blob/main/README.md'
 }

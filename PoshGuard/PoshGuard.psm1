@@ -17,16 +17,25 @@ Set-StrictMode -Version Latest
 # Get the directory where this module resides
 $ModuleRoot = $PSScriptRoot
 
-# Helper function to resolve paths based on installation location
+<#
+.SYNOPSIS
+    Helper function to resolve paths based on installation location
+
+.PARAMETER GalleryRelativePath
+    Relative path for PowerShell Gallery installation
+
+.PARAMETER DevRelativePath
+    Relative path for development/repository installation
+#>
 function Resolve-PoshGuardPath {
     param(
         [string]$GalleryRelativePath,
         [string]$DevRelativePath
     )
-    
+
     $GalleryPath = Join-Path $ModuleRoot $GalleryRelativePath
     $DevPath = Join-Path (Split-Path $ModuleRoot -Parent) $DevRelativePath
-    
+
     if (Test-Path $GalleryPath) {
         return $GalleryPath
     } elseif (Test-Path $DevPath) {
@@ -55,8 +64,8 @@ Troubleshooting:
    https://github.com/cboyd0319/PoshGuard#install
 
 Expected Paths Checked:
-- Gallery: $(Join-Path $ModuleRoot 'lib')
-- Dev: $(Join-Path (Split-Path $ModuleRoot -Parent) 'tools' 'lib')
+- Gallery: $(Join-Path -Path $ModuleRoot -ChildPath 'lib')
+- Dev: $(Join-Path -Path (Split-Path -Path $ModuleRoot -Parent) -ChildPath 'tools/lib')
 "@
     Write-Warning $warningMessage
 }
@@ -69,8 +78,7 @@ foreach ($Module in $CoreModules) {
         try {
             Import-Module $ModulePath -Force -ErrorAction Stop
             Write-Verbose "Loaded PoshGuard module: $Module"
-        }
-        catch {
+        } catch {
             Write-Warning "Failed to load PoshGuard module $Module : $_"
         }
     }
@@ -109,7 +117,7 @@ function Invoke-PoshGuard {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory, Position=0)]
+        [Parameter(Mandatory, Position = 0)]
         [string]$Path,
 
         [Parameter()]
@@ -126,9 +134,10 @@ function Invoke-PoshGuard {
     )
 
     # Locate Apply-AutoFix.ps1 using helper function
-    $ScriptPath = Resolve-PoshGuardPath -GalleryRelativePath 'Apply-AutoFix.ps1' `
-                                         -DevRelativePath (Join-Path 'tools' 'Apply-AutoFix.ps1')
-    
+    $ScriptPath = Resolve-PoshGuardPath `
+        -GalleryRelativePath 'Apply-AutoFix.ps1' `
+        -DevRelativePath (Join-Path 'tools' 'Apply-AutoFix.ps1')
+
     if (-not $ScriptPath) {
         throw "Cannot locate Apply-AutoFix.ps1. Please ensure module installation is complete."
     }
@@ -137,7 +146,7 @@ function Invoke-PoshGuard {
     $params = @{
         Path = $Path
     }
-    
+
     if ($DryRun) { $params['DryRun'] = $true }
     if ($ShowDiff) { $params['ShowDiff'] = $true }
     if ($Recurse) { $params['Recurse'] = $true }
