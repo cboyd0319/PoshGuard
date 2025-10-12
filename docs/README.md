@@ -20,6 +20,13 @@ Complete documentation for PoshGuard - PowerShell auto-fix engine with 100% PSSc
 - **[Implementation Summary](implementation-summary.md)** - Technical implementation details
 - **[Roadmap](ROADMAP.md)** - Future plans and upcoming features
 
+## 🎨 UI/UX Design
+
+- **[UX Design Specification](UX-DESIGN-SPECIFICATION.md)** - Complete UI/UX design system and specifications
+- **[UI Design Principles](UI-DESIGN-PRINCIPLES.md)** - Core design philosophy and patterns
+- **[UI Improvements](UI-IMPROVEMENTS.md)** - Before/after showcase and impact metrics
+- **[UI Transformation Summary](UI-TRANSFORMATION-SUMMARY.md)** - Complete UI transformation documentation
+
 ## 🔧 CI/CD Integration
 
 - **[CI Integration Guide](ci-integration.md)** - Integrate PoshGuard into your CI/CD pipeline
