@@ -53,10 +53,10 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 3.2.0
+    Version: 3.3.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
-    Architecture: Modular (5 modules, 60/60 PSSA rules + 5 Beyond-PSSA enhancements)
+    Architecture: Modular (7 modules, 60/60 PSSA rules + 5 Beyond-PSSA + 50+ advanced detection)
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
