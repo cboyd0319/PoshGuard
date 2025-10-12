@@ -529,7 +529,43 @@ try {
     Write-Host ""
 
     if ($files.Count -eq 0) {
-        Write-Log -Level Warn -Message "No PowerShell files found"
+        Write-Host ""
+        Write-Host "  ╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ║  " -ForegroundColor Yellow -NoNewline
+        Write-Host "⚠️  No PowerShell Files Found" -ForegroundColor White -NoNewline
+        Write-Host "                                          ║" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ║  " -ForegroundColor Yellow -NoNewline
+        Write-Host "PoshGuard couldn't find any PowerShell files (.ps1, .psm1, .psd1)" -ForegroundColor White -NoNewline
+        Write-Host "     ║" -ForegroundColor Yellow
+        Write-Host "  ║  " -ForegroundColor Yellow -NoNewline
+        Write-Host "in the path: " -ForegroundColor White -NoNewline
+        Write-Host $Path -ForegroundColor Cyan -NoNewline
+        $padding = 52 - $Path.Length
+        if ($padding -lt 0) { $padding = 0 }
+        Write-Host (" " * $padding) -NoNewline
+        Write-Host "║" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ║  " -ForegroundColor Yellow -NoNewline
+        Write-Host "💡 Tips:" -ForegroundColor White -NoNewline
+        Write-Host "                                                                 ║" -ForegroundColor Yellow
+        Write-Host "  ║     " -ForegroundColor Yellow -NoNewline
+        Write-Host "• Make sure the path points to a PowerShell file or folder" -ForegroundColor White -NoNewline
+        Write-Host "           ║" -ForegroundColor Yellow
+        Write-Host "  ║     " -ForegroundColor Yellow -NoNewline
+        Write-Host "• Check that files have .ps1, .psm1, or .psd1 extensions" -ForegroundColor White -NoNewline
+        Write-Host "          ║" -ForegroundColor Yellow
+        Write-Host "  ║     " -ForegroundColor Yellow -NoNewline
+        Write-Host "• Verify the path exists and is accessible" -ForegroundColor White -NoNewline
+        Write-Host "                        ║" -ForegroundColor Yellow
+        Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+        Write-Host "  ╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-Host ""
         exit 0
     }
 
@@ -642,10 +678,42 @@ try {
         Write-Host ""
     }
     else {
-        Write-Host "`n[SUCCESS] Auto-fix complete! 🎉`n" -ForegroundColor Green
-        if ($script:GlobalConfig.ReinforcementLearning.Enabled) {
-            Write-Host "🤖 RL episodes: $script:EpisodeCount (self-improving with every run)" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "  ╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
+        Write-Host "  ║                                                                      ║" -ForegroundColor Green
+        Write-Host "  ║  " -ForegroundColor Green -NoNewline
+        Write-Host "✨ SUCCESS! Auto-fix complete! 🎉" -ForegroundColor White -NoNewline
+        Write-Host "                                  ║" -ForegroundColor Green
+        Write-Host "  ║                                                                      ║" -ForegroundColor Green
+        Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Green
+        Write-Host "  ║                                                                      ║" -ForegroundColor Green
+        Write-Host "  ║  " -ForegroundColor Green -NoNewline
+        Write-Host "Your PowerShell code has been improved!" -ForegroundColor White -NoNewline
+        Write-Host "                             ║" -ForegroundColor Green
+        Write-Host "  ║                                                                      ║" -ForegroundColor Green
+        if ($script:GlobalConfig.ReinforcementLearning.Enabled -and $script:EpisodeCount -gt 0) {
+            Write-Host "  ║  " -ForegroundColor Green -NoNewline
+            Write-Host "🤖 AI Learning: " -ForegroundColor Cyan -NoNewline
+            Write-Host "$script:EpisodeCount episodes completed" -ForegroundColor White -NoNewline
+            $rlPadding = 38 - $script:EpisodeCount.ToString().Length
+            if ($rlPadding -lt 0) { $rlPadding = 0 }
+            Write-Host (" " * $rlPadding) -NoNewline
+            Write-Host "║" -ForegroundColor Green
+            Write-Host "  ║     " -ForegroundColor Green -NoNewline
+            Write-Host "(PoshGuard gets smarter with every run!)" -ForegroundColor Gray -NoNewline
+            Write-Host "                      ║" -ForegroundColor Green
+            Write-Host "  ║                                                                      ║" -ForegroundColor Green
         }
+        Write-Host "  ║  " -ForegroundColor Green -NoNewline
+        Write-Host "💾 Backups saved to: " -ForegroundColor Cyan -NoNewline
+        Write-Host ".psqa-backup/" -ForegroundColor White -NoNewline
+        Write-Host "                                ║" -ForegroundColor Green
+        Write-Host "  ║     " -ForegroundColor Green -NoNewline
+        Write-Host "(Use Restore-Backup.ps1 if you need to rollback)" -ForegroundColor Gray -NoNewline
+        Write-Host "               ║" -ForegroundColor Green
+        Write-Host "  ║                                                                      ║" -ForegroundColor Green
+        Write-Host "  ╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        Write-Host ""
     }
 
     if ($CleanBackups) {
@@ -656,9 +724,52 @@ try {
 
 }
 catch {
-    Write-Log -Level Error -Message "Fatal error: $_ "
-    Write-Host "`nStack Trace:" -ForegroundColor Red
-    Write-Host $_.ScriptStackTrace -ForegroundColor Red
+    Write-Host ""
+    Write-Host "  ╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ║  " -ForegroundColor Red -NoNewline
+    Write-Host "❌ ERROR: PoshGuard encountered a problem" -ForegroundColor White -NoNewline
+    Write-Host "                          ║" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ║  " -ForegroundColor Red -NoNewline
+    Write-Host "Error Message:" -ForegroundColor Yellow -NoNewline
+    Write-Host "                                                         ║" -ForegroundColor Red
+    Write-Host "  ║  " -ForegroundColor Red -NoNewline
+    Write-Host $_.Exception.Message -ForegroundColor White
+    $msgLength = $_.Exception.Message.Length
+    $padding = 68 - $msgLength
+    if ($padding -lt 0) { $padding = 0 }
+    Write-Host (" " * $padding) -NoNewline
+    Write-Host "║" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ╠══════════════════════════════════════════════════════════════════════╣" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ║  " -ForegroundColor Red -NoNewline
+    Write-Host "💡 What to do:" -ForegroundColor White -NoNewline
+    Write-Host "                                                         ║" -ForegroundColor Red
+    Write-Host "  ║     " -ForegroundColor Red -NoNewline
+    Write-Host "• Check that the path exists and is accessible" -ForegroundColor White -NoNewline
+    Write-Host "                        ║" -ForegroundColor Red
+    Write-Host "  ║     " -ForegroundColor Red -NoNewline
+    Write-Host "• Ensure you have permission to read/write the files" -ForegroundColor White -NoNewline
+    Write-Host "                ║" -ForegroundColor Red
+    Write-Host "  ║     " -ForegroundColor Red -NoNewline
+    Write-Host "• Try running with -Verbose for more details" -ForegroundColor White -NoNewline
+    Write-Host "                        ║" -ForegroundColor Red
+    Write-Host "  ║     " -ForegroundColor Red -NoNewline
+    Write-Host "• Report issues at: https://github.com/cboyd0319/PoshGuard/issues" -ForegroundColor Cyan -NoNewline
+    Write-Host "  ║" -ForegroundColor Red
+    Write-Host "  ║                                                                      ║" -ForegroundColor Red
+    Write-Host "  ╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    
+    if ($VerbosePreference -eq 'Continue') {
+        Write-Host "  Stack Trace:" -ForegroundColor DarkRed
+        Write-Host "  $($_.ScriptStackTrace)" -ForegroundColor DarkGray
+        Write-Host ""
+    }
     exit 1
 }
 finally {
