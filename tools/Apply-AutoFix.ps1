@@ -53,10 +53,10 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 2.16.0
+    Version: 3.2.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
-    Architecture: Modular (5 modules, 60/60 general PSSA rules - 100% coverage!)
+    Architecture: Modular (5 modules, 60/60 PSSA rules + 5 Beyond-PSSA enhancements)
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -325,8 +325,8 @@ function Invoke-FileFix {
 
 try {
     Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         PowerShell QA Auto-Fix Engine v2.10.0                 ║" -ForegroundColor Cyan
-    Write-Host "║         Idempotent - Safe - Production-Grade - Modular        ║" -ForegroundColor Cyan
+    Write-Host "║         PowerShell QA Auto-Fix Engine v3.2.0                  ║" -ForegroundColor Cyan
+    Write-Host "║      Beyond-PSSA - World's Best PowerShell QA Tool           ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
     Write-Log -Level Info -Message "Trace ID: $($script:Config.TraceId)"
