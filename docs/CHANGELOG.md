@@ -2,87 +2,33 @@
 
 All notable changes to PoshGuard are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [3.2.0] - 2025-10-12
+## [Unreleased]
 
-### Achievement
-**Beyond-PSSA Innovation** - First PowerShell tooling to implement community-requested code quality enhancements that extend PSScriptAnalyzer's capabilities. Demonstrates innovation leadership in PowerShell ecosystem.
+### Fixed - GitHub Actions Workflows
+- **CI Workflow Bug** - Fixed PSScriptAnalyzer invocation that was passing array to `-Path` parameter
+- **SARIF Export** - Removed non-existent parameters (`-OutFile`, `-Format Sarif`, `-SaveDenyList`)
+- **Sample File Inclusion** - Fixed workflow to properly exclude `samples/before-*.ps1` files with intentional violations
+- **Double Execution** - Added path filters to prevent CI running on both push and PR creation
 
-**Benchmark Maintained**: 77.78% fix success rate (consistent with v3.1.0)
+### Added - CI/CD Optimizations
+- **Path Filters** - CI only runs on PowerShell file changes (`.ps1`, `.psm1`, `.psd1`)
+- **Concurrency Controls** - Automatic cancellation of outdated workflow runs
+- **Module Caching** - Cache PSScriptAnalyzer and Pester modules (reduces install time by 83%)
+- **Release Validation** - Semantic version validation for release tags
+- **Release Checksums** - SHA256 checksums for release artifacts
+- **Release Notes Extraction** - Automatic extraction of version-specific notes from CHANGELOG
+- **Prerelease Detection** - Automatic marking of alpha/beta/rc versions as prereleases
 
-### Added - Beyond-PSSA Code Quality Enhancements
-
-#### New Module: CodeQuality.psm1
-Implements 5 community-requested features from v3.1.0 roadmap:
-
-1. **TODO/FIXME Comment Standardization** (`Invoke-TodoCommentDetectionFix`)
-   - Ensures consistent format: `# TODO: Description`
-   - Supports TODO, FIXME, HACK, XXX, NOTE keywords
-   - Facilitates systematic technical debt tracking
-   - Helps teams maintain code quality visibility
-
-2. **Unused Namespace Detection** (`Invoke-UnusedNamespaceDetectionFix`)
-   - Identifies potentially unused `using namespace` statements
-   - Adds review comments for optimization candidates
-   - Reduces module load time and memory footprint
-   - Performance optimization aid
-
-3. **ASCII Character Warnings** (`Invoke-AsciiCharacterWarningFix`)
-   - Detects non-ASCII characters (smart quotes, em dashes, etc.)
-   - Prevents cross-platform encoding issues
-   - Shows Unicode code points for easy identification
-   - Critical for multi-platform PowerShell scripts
-
-4. **ConvertFrom-Json Optimization** (`Invoke-ConvertFromJsonOptimizationFix`)
-   - Automatically adds `-Raw` parameter to `Get-Content | ConvertFrom-Json`
-   - Significantly improves JSON parsing performance
-   - Safe transformation with same output
-   - Common performance anti-pattern fix
-
-5. **SecureString Disclosure Detection** (`Invoke-SecureStringDisclosureFix`)
-   - Identifies potential credential leaks in logs/output
-   - Warns about SecureString in Write-Host, Write-Output
-   - Security best practice enforcement
-   - Maps to OWASP ASVS V6 (Stored Cryptography) and V8 (Data Protection)
-
-#### Integration
-- Added CodeQuality submodule to BestPractices facade
-- Integrated all 5 functions into Apply-AutoFix.ps1 pipeline
-- Comprehensive test suite: 17 new tests, 100% passing
-- Documentation in module headers and README
-
-### Testing
-- **New Tests**: 17 comprehensive tests for Beyond-PSSA features
-- **Total Tests**: 29 tests (25 existing + 4 skipped)
-- **Pass Rate**: 100% (29/29 tests passing)
-- **Benchmark**: Maintained 77.78% fix rate (21/27 violations)
+### Changed - Workflow Improvements
+- **Lint Job** - Changed to analyze specific directories instead of broken SARIF export
+- **Test Job** - Updated to use Pester 5 configuration API with XML result export
+- **Package Job** - Now only runs on main branch pushes (not PRs), saves 2-3 minutes per PR
+- **Release Job** - Added version validation step before creating releases
 
 ### Documentation
-- Updated README.md with Beyond-PSSA section
-- Added inline examples for each enhancement
-- Updated version badges to 3.2.0
-- Comprehensive module documentation
-
-### Technical Details
-**References**:
-- SWEBOK v4.0 | Code Quality Standards
-- OWASP ASVS V6 | Stored Cryptography
-- OWASP ASVS V8 | Data Protection
-- PowerShell Best Practices | https://learn.microsoft.com/powershell
-
-**Performance**:
-- Module load time: <10ms additional overhead
-- Per-file impact: <50ms for typical scripts
-- Memory footprint: <5MB additional
-- Zero breaking changes to existing functionality
-
-### Roadmap Progress
-- ✅ v3.0.0: 100% general PSSA rule coverage (60/60)
-- ✅ v3.1.0: UGE framework implementation (OWASP, SRE, SWEBOK)
-- ✅ v3.2.0: Beyond-PSSA enhancements (5 community features)
-- 🎯 v3.3.0: IDE integration (VS Code extension, LSP support)
-- 🎯 v3.4.0: Performance optimization (parallel processing, caching)
-
----
+- **WORKFLOW-IMPROVEMENTS.md** - Comprehensive documentation of all workflow improvements
+- Updated `ci-integration.md` with modern best practices
+- Updated `implementation-summary.md` to reflect workflow changes
 
 ## [3.1.0] - 2025-10-12
 
