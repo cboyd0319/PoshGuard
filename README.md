@@ -689,6 +689,11 @@ See the [samples/](samples/) directory for real-world examples with intentionall
 - **[UGE Compliance](docs/UGE-COMPLIANCE.md)** — Ultimate Genius Engineer framework adherence
 - **[Security Policy](docs/SECURITY.md)** — Vulnerability disclosure process
 
+### UI/UX Design (World-Class)
+- **[UX Design Specification](docs/UX-DESIGN-SPECIFICATION.md)** 🎨 — Professional UI/UX design system, WCAG 2.2 AA compliant
+- **[UI Design Principles](docs/UI-DESIGN-PRINCIPLES.md)** — Zero-knowledge friendly design patterns
+- **[UI Transformation Summary](docs/UI-TRANSFORMATION-SUMMARY.md)** — Complete UI improvement metrics and impact
+
 ### Contributing & Roadmap
 - **[Contributing Guide](docs/CONTRIBUTING.md)** — Local dev setup and PR guidelines
 - **[Changelog](docs/CHANGELOG.md)** — Version history and release notes
