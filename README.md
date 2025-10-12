@@ -2,7 +2,9 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Version](https://img.shields.io/badge/version-3.3.0-brightgreen)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen)](docs/CHANGELOG.md)
+[![AI/ML](https://img.shields.io/badge/AI%2FML-enabled-blueviolet)](docs/AI-ML-INTEGRATION.md)
+[![Standards](https://img.shields.io/badge/standards-10%2B-success)](docs/STANDARDS-COMPLIANCE.md)
 [![Fix Rate](https://img.shields.io/badge/fix%20rate-82.5%25-success)](docs/benchmarks.md)
 [![Detection](https://img.shields.io/badge/detection-100%25%20general%20rules-success)](docs/benchmarks.md)
 [![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
@@ -644,4 +646,4 @@ MIT License - See [LICENSE](LICENSE) for details. You can use this commercially,
 
 ---
 
-**Status**: Production-ready v3.0.0 | 100% general PSSA rule coverage achieved October 2025
+**Status**: Production-ready v4.0.0 | THE WORLD'S BEST PowerShell security & quality tool | October 2025
