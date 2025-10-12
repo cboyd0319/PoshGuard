@@ -53,10 +53,11 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 3.3.0
+    Version: 4.0.0
     Idempotent: Safe to run multiple times
     Compatible: PowerShell 5.1+, PowerShell 7.x
-    Architecture: Modular (7 modules, 60/60 PSSA rules + 5 Beyond-PSSA + 50+ advanced detection)
+    Architecture: Modular (9 modules, 107+ detection rules, AI/ML integration, 10+ standards compliance)
+    AI: ML confidence scoring, pattern learning, MCP integration (optional)
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
