@@ -1,9 +1,12 @@
 # PoshGuard — PowerShell QA & Auto-Fix Engine
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![PowerShell](https://img.shields.io/badge/PowerShell-7%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Benchmark](https://img.shields.io/badge/benchmark-27%E2%86%920%20first%E2%80%91pass-brightgreen)](docs/benchmarks.md)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
+[![Version](https://img.shields.io/badge/version-3.1.0-brightgreen)](docs/CHANGELOG.md)
+[![Fix Rate](https://img.shields.io/badge/fix%20rate-77.78%25-success)](docs/benchmarks.md)
 [![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
+[![OWASP ASVS](https://img.shields.io/badge/OWASP%20ASVS-Level%201-success)](docs/SECURITY-FRAMEWORK.md)
+[![SRE](https://img.shields.io/badge/SRE-99.5%25%20SLO-success)](docs/SRE-PRINCIPLES.md)
 [![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
 
 **About**: PoshGuard is THE WORLD'S BEST detection and auto-fix tool for PowerShell code quality, security, and formatting issues. Built with Ultimate Genius Engineer (UGE) principles, it combines AST-aware transformations with OWASP ASVS security mappings, Google SRE reliability standards, and SWEBOK engineering practices. Achieves 77.78% first-pass fix rate on comprehensive benchmark suite. Production-grade: dry-run, backups, rollback, structured observability; runs on Windows/macOS/Linux (PowerShell 5.1+/7+).
