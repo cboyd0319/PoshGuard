@@ -18,7 +18,22 @@ PoshGuard uses standard exit codes for pipeline automation:
 
 ```yaml
 name: PowerShell Lint
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+  pull_request:
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -26,23 +41,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install PoshGuard
+      - name: Cache PSScriptAnalyzer
+        uses: actions/cache@v4
+        with:
+          path: ~\Documents\PowerShell\Modules\PSScriptAnalyzer
+          key: ${{ runner.os }}-psscriptanalyzer
+      
+      - name: Install Dependencies
         run: |
-          Install-Module PoshGuard -Scope CurrentUser -Force
-          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          if (!(Get-Module -ListAvailable PSScriptAnalyzer)) {
+            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          }
         shell: pwsh
       
-      - name: Run PoshGuard
+      - name: Run PSScriptAnalyzer
         run: |
-          Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive
-        shell: pwsh
-      
-      - name: Check for violations
-        run: |
-          $result = Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive -OutputFormat jsonl -OutFile violations.jsonl
-          if ($LASTEXITCODE -eq 1) {
-            Write-Warning "Code quality issues detected"
-            Get-Content violations.jsonl
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning
+          if ($results) {
+            $results | Format-Table -AutoSize
             exit 1
           }
         shell: pwsh

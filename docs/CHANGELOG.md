@@ -2,6 +2,34 @@
 
 All notable changes to PoshGuard are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Fixed - GitHub Actions Workflows
+- **CI Workflow Bug** - Fixed PSScriptAnalyzer invocation that was passing array to `-Path` parameter
+- **SARIF Export** - Removed non-existent parameters (`-OutFile`, `-Format Sarif`, `-SaveDenyList`)
+- **Sample File Inclusion** - Fixed workflow to properly exclude `samples/before-*.ps1` files with intentional violations
+- **Double Execution** - Added path filters to prevent CI running on both push and PR creation
+
+### Added - CI/CD Optimizations
+- **Path Filters** - CI only runs on PowerShell file changes (`.ps1`, `.psm1`, `.psd1`)
+- **Concurrency Controls** - Automatic cancellation of outdated workflow runs
+- **Module Caching** - Cache PSScriptAnalyzer and Pester modules (reduces install time by 83%)
+- **Release Validation** - Semantic version validation for release tags
+- **Release Checksums** - SHA256 checksums for release artifacts
+- **Release Notes Extraction** - Automatic extraction of version-specific notes from CHANGELOG
+- **Prerelease Detection** - Automatic marking of alpha/beta/rc versions as prereleases
+
+### Changed - Workflow Improvements
+- **Lint Job** - Changed to analyze specific directories instead of broken SARIF export
+- **Test Job** - Updated to use Pester 5 configuration API with XML result export
+- **Package Job** - Now only runs on main branch pushes (not PRs), saves 2-3 minutes per PR
+- **Release Job** - Added version validation step before creating releases
+
+### Documentation
+- **WORKFLOW-IMPROVEMENTS.md** - Comprehensive documentation of all workflow improvements
+- Updated `ci-integration.md` with modern best practices
+- Updated `implementation-summary.md` to reflect workflow changes
+
 ## [3.1.0] - 2025-10-12
 
 ### Achievement

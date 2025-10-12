@@ -11,12 +11,16 @@ This document summarizes all high-impact improvements implemented for the v3.0.0
 - `.github/workflows/release.yml` - Automated release workflow with SBOM
 
 **Features:**
-- PSScriptAnalyzer linting with SARIF upload to Code Scanning
-- Pester test execution
-- Artifact packaging with attestation
-- Automated releases on tag push
+- PSScriptAnalyzer linting with JSON artifact upload
+- Path filters to skip unnecessary runs (only on .ps1/.psm1/.psd1 changes)
+- Concurrency controls to cancel outdated runs
+- Module caching for faster builds (PSScriptAnalyzer, Pester)
+- Pester test execution with XML results upload
+- Artifact packaging with attestation (main branch only)
+- Automated releases on tag push with version validation
 - SBOM generation (SPDX format)
 - Build provenance attestation
+- SHA256 checksums for release artifacts
 
 ### 2. PowerShell Module Manifest ✓
 

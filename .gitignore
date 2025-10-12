@@ -35,6 +35,8 @@ logs/
 qa-engine.log
 qa-engine.jsonl
 PSSA.sarif
+pssa-results.json
+temp-results.json
 
 # Code Coverage
 coverage.xml
