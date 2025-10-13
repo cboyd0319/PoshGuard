@@ -19,6 +19,7 @@
 - Reinforcement learning with Q-learning and Markov Decision Process for self-improving fixes
 - Secret detection via Shannon entropy analysis: 20+ patterns (AWS, Azure, GitHub, RSA keys, JWT, connection strings)
 - ML confidence scoring for every fix (syntax validation, AST preservation, minimal changes, safety checks)
+- **SARIF export for GitHub Code Scanning** - Upload results to Security tab
 - Single JSON config (config/poshguard.json) with environment overrides
 - SBOM generation (CycloneDX 1.5, SPDX 2.3) for supply chain security
 - NIST SP 800-53 Rev 5 compliance with FedRAMP baselines

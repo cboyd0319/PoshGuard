@@ -375,6 +375,56 @@ Complete report as single JSON object:
 }
 ```
 
+## GitHub Code Scanning with SARIF
+
+For GitHub repositories, you can upload analysis results to the Security tab using SARIF format:
+
+```yaml
+name: Code Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 0'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  poshguard-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        uses: microsoft/setup-powershell@v1
+      
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force
+          Install-Module ConvertToSARIF -Force -AcceptLicense
+      
+      - name: Analyze with PoshGuard
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning
+          if ($results) {
+            $results | ConvertTo-SARIF -FilePath results.sarif
+          }
+      
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results.sarif
+```
+
+See [GitHub SARIF Integration Guide](./GITHUB-SARIF-INTEGRATION.md) for complete documentation.
+
 ## Best Practices
 
 1. **Start with DryRun** - Preview changes before applying in CI
@@ -384,6 +434,7 @@ Complete report as single JSON object:
 5. **Incremental adoption** - Start with warnings, gradually enforce
 6. **Cache dependencies** - Cache PSScriptAnalyzer installation
 7. **Parallel execution** - Run on changed files only for speed
+8. **SARIF for GitHub** - Upload SARIF to Security tab for centralized tracking
 
 ## Troubleshooting
 
