@@ -8,6 +8,7 @@
 [![Fix Rate](https://img.shields.io/badge/fix%20rate-98%2B%25-success)](docs/benchmarks.md)
 [![Detection](https://img.shields.io/badge/detection-100%25%20general%20rules-success)](docs/benchmarks.md)
 [![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
+[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-success)](.github/DEPENDABOT-SETUP.md)
 [![OWASP ASVS](https://img.shields.io/badge/OWASP%20ASVS-Level%201-success)](docs/SECURITY-FRAMEWORK.md)
 [![SRE](https://img.shields.io/badge/SRE-99.5%25%20SLO-success)](docs/SRE-PRINCIPLES.md)
 [![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
