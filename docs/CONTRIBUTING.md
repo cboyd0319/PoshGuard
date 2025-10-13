@@ -1,102 +1,65 @@
-# Contributing to PoshGuard
+# Contributing
 
-We welcome contributions. Follow these guidelines to ensure quality and consistency.
+## Prereqs
 
-## Local Development Setup
+| Item | Version | Why |
+|------|---------|-----|
+| PowerShell | ≥5.1 or ≥7.0 | Runtime |
+| PSScriptAnalyzer | ≥1.21.0 | Detection |
+| Pester | ≥5.0 | Tests |
 
-### Prerequisites
-- PowerShell ≥5.1 or ≥7.0
-- PSScriptAnalyzer ≥1.21.0
-- Pester ≥5.0 (for tests)
+## Setup
 
-### Clone and Verify
 ```powershell
 git clone https://github.com/cboyd0319/PoshGuard.git
 cd PoshGuard
-
-# Load modules
 Import-Module ./tools/lib/Core.psm1 -Force
-Get-Command -Module Core
-
-# Run tests
 Invoke-Pester ./tests/
 ```
 
-## Adding New Auto-Fixes
+## Adding Auto-Fixes
 
-### Structure
-1. Create submodule: `./tools/lib/{Category}/{RuleName}.psm1`
-2. Implement function: `Invoke-{RuleName}Fix`
-3. Import in category facade: `./tools/lib/{Category}.psm1`
-4. Add call in main script: `./tools/Apply-AutoFix.ps1`
+Steps:
+1. Create `./tools/lib/{Category}/{RuleName}.psm1`
+2. Implement `Invoke-{RuleName}Fix`
+3. Import in `./tools/lib/{Category}.psm1`
+4. Call in `./tools/Apply-AutoFix.ps1`
 
-### Template
+Template:
 ```powershell
 function Invoke-MyRuleFix {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$FilePath
-    )
-    
-    # Parse AST
-    $ast = [System.Management.Automation.Language.Parser]::ParseFile(
-        $FilePath, [ref]$null, [ref]$null
-    )
-    
-    # Find matches
+    param([Parameter(Mandatory)][string]$FilePath)
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($FilePath, [ref]$null, [ref]$null)
     $matches = $ast.FindAll({ $args[0] -is [YourAstType] }, $true)
-    
     # Apply transformations
-    foreach ($match in $matches) {
-        # Your fix logic here
-    }
-    
-    # Return modified content
     return $modifiedContent
 }
-
 Export-ModuleMember -Function Invoke-MyRuleFix
 ```
 
-## Testing Requirements
+## Tests
 
-### Unit Tests
-Test each fix function with:
-- Valid input (should transform correctly)
-- Already-fixed input (should be idempotent)
-- Edge cases (complex syntax, nested structures)
-- Invalid input (should handle gracefully)
+Required:
+- Valid input (transforms correctly)
+- Already-fixed input (idempotent)
+- Edge cases (complex syntax, nested)
+- Invalid input (graceful handling)
 
-### Integration Tests
-Run full auto-fix pipeline on sample scripts:
+Run:
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path ./tests/samples/test.ps1 -DryRun
-```
-
-### Test Coverage
-Aim for >85% coverage on new functions. Run:
-```powershell
 Invoke-Pester -CodeCoverage './tools/lib/**/*.psm1'
 ```
 
-## Code Style
+Target: >85% coverage
 
-### Formatting
-- Indentation: 4 spaces (no tabs)
-- Line length: <120 characters
-- Opening brace: Same line for functions/statements
-- Cmdlet casing: PascalCase (Get-Content, not get-content)
+## Style
 
-### Naming
-- Functions: Verb-Noun (Invoke-MyFix, not Fix-My)
-- Variables: camelCase ($filePath, not $file_path)
-- Parameters: PascalCase ($FilePath, not $filepath)
+**Formatting**: 4 spaces, <120 chars, opening brace same line, PascalCase cmdlets
 
-### Documentation
-- Comment-based help for all exported functions
-- Inline comments for complex logic only
-- Examples in help showing actual usage
+**Naming**: Functions (Verb-Noun), Variables (camelCase), Parameters (PascalCase)
+
+**Docs**: Comment-based help for exported functions, inline comments for complex logic only
 
 ## Pull Request Process
 
@@ -135,100 +98,53 @@ YES | NO - If yes, describe migration path
 - Address feedback in new commits (don't force-push)
 - Squash-merge after approval
 
-## Commit Guidelines
+## Commits
 
-### Format
-```
-<type>(<scope>): <subject>
+Format: `<type>(<scope>): <subject>`
 
-<body>
+Types: feat, fix, docs, test, refactor, perf, chore
 
-<footer>
-```
-
-### Types
-- `feat`: New auto-fix or feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `test`: Test additions/changes
-- `refactor`: Code restructuring
-- `perf`: Performance improvement
-- `chore`: Maintenance tasks
-
-### Examples
+Example:
 ```
 feat(Advanced): Add PSAvoidUsingDeprecatedManifestFields fix
 
-Implements Test-ModuleManifest integration to detect deprecated
-manifest fields and adds warning comments.
-
-Closes #123
+Implements Test-ModuleManifest integration. Closes #123
 ```
 
-```
-fix(Security): Correct PSCredential parameter detection
+## Docs
 
-Fixed regex to properly detect variations of PSCredential type
-declarations including [pscredential] and [PSCredential].
-```
-
-## Documentation Standards
-
-### README Updates
-- Keep under 5 minutes read time
+- Keep README <5 min read time
 - Update coverage stats when adding fixes
-- Add troubleshooting entries for new issues
+- Explain WHY, not WHAT in comments
+- No redundant comments
 
-### Code Comments
-- Explain WHY, not WHAT
-- Complex AST parsing needs brief explanation
-- No redundant comments (`$x = 1 # Set x to 1`)
+## Performance
 
-## Performance Guidelines
+- Use `FindAll()` with specific predicates
+- Cache cmdlet lists
+- Prefer AST over regex on large files
+- Dispose large objects
+- Stream large files
 
-### AST Parsing
-- Use `FindAll()` with specific predicates (not entire tree)
-- Cache cmdlet lists (don't re-fetch built-in cmdlets)
-- Avoid regex on large files (use AST where possible)
+## Security
 
-### Memory Management
-- Dispose large objects after use
-- Don't hold entire file content in memory unnecessarily
-- Stream processing for very large files
+Required:
+- No secrets in code/logs
+- Validate all external inputs
+- No Invoke-Expression
+- Safe file paths (no traversal)
+- No sensitive data in errors
 
-## Security Checklist
+## Issues
 
-- [ ] No secrets or credentials in code/logs
-- [ ] Input validation on all external data
-- [ ] No arbitrary code execution (Invoke-Expression)
-- [ ] File operations use safe paths (no path traversal)
-- [ ] Error messages don't leak sensitive data
+**Bug reports**: PowerShell version, PSScriptAnalyzer version, minimal repro, expected vs actual, error messages
 
-## Issue Reporting
-
-### Bug Reports
-Include:
-- PowerShell version (`$PSVersionTable`)
-- PSScriptAnalyzer version
-- Input script (or minimal reproducible example)
-- Expected vs actual behavior
-- Error messages/stack traces
-
-### Feature Requests
-Include:
-- Use case (what problem are you solving?)
-- Example code (before/after)
-- Any workarounds you've tried
-- Priority/impact (LOW | MEDIUM | HIGH)
+**Feature requests**: Use case, before/after code, priority (LOW/MEDIUM/HIGH)
 
 ## Code of Conduct
 
-Be professional, respectful, and constructive. We don't tolerate harassment, discrimination, or unconstructive criticism. Focus on technical merit.
+See [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md). Be professional.
 
-## Questions?
+## Questions
 
-Open a discussion issue with the `question` label or contact maintainers directly.
-
----
-
-**Maintainers**: See `.github/MAINTAINERS.md` for release process and additional responsibilities.
+Open issue with `question` label or contact maintainers.
