@@ -171,12 +171,24 @@ PoshGuard integrates with MCP servers for enhanced AI capabilities:
 - **playwright:** Browser automation for testing (local/npx, ready)
   - Test PowerShell web interactions, validate auto-fix results
 
-**Config:** `.github/copilot-mcp.json` (HTTP and local command servers)  
-**Important:** GitHub MCP tools are built-in to Copilot. Do NOT add GitHub server to copilot-mcp.json. Personal Access Tokens (PAT) are NOT supported for GitHub MCP - it uses OAuth automatically.
+**Configuration:** `.github/copilot-mcp.json` (HTTP and local command servers)
+
+### ⚠️ IMPORTANT: GitHub MCP Authentication
+
+**DO NOT configure GitHub MCP server manually.** GitHub Copilot has built-in GitHub integration.
+
+**❌ Personal Access Tokens (PAT) are NOT supported** for GitHub MCP endpoints.
+
+If you encounter the error `"Personal Access Tokens are not supported for this endpoint"`:
+1. Remove any `github` server entry from `.github/copilot-mcp.json`
+2. GitHub Copilot uses OAuth automatically - no configuration needed
+3. See [MCP-TROUBLESHOOTING.md](.github/MCP-TROUBLESHOOTING.md) for detailed help
 
 **Environment Variables Required:**
 - `COPILOT_MCP_CONTEXT7_API_KEY` — For Context7 documentation access
 - `COPILOT_MCP_OPENAI_API_KEY` — For OpenAI web search capabilities
+
+**Troubleshooting:** See [`.github/MCP-TROUBLESHOOTING.md`](.github/MCP-TROUBLESHOOTING.md) for common issues and solutions
 
 ## Key Features and Implementation Details
 
@@ -385,16 +397,21 @@ return $modified
 4. **Validation**: Validate ML outputs before applying
 5. **Privacy**: Never send sensitive data to external services without explicit consent
 
-## MCP Integration
+## MCP Server Usage
 
 Model Context Protocol (MCP) servers provide enhanced capabilities:
 
-- **Context7**: Up-to-date documentation and examples
-- **OpenAI Web Search**: Web search capabilities
-- **Fetch**: Web content retrieval
-- **Playwright**: Browser automation
+- **Context7**: Up-to-date PowerShell documentation and examples (version-specific)
+- **OpenAI Web Search**: Web search for current PowerShell best practices
+- **Fetch**: Web content retrieval for module research and advisories
+- **Playwright**: Browser automation for testing and validation
 
-MCP is opt-in and requires explicit user consent. See `.github/MCP_SETUP.md` for details.
+**Important:** MCP is opt-in and requires explicit user consent. GitHub MCP is built-in and uses OAuth automatically.
+
+**Setup & Troubleshooting:**
+- Configuration: See [MCP Integration](#mcp-integration-model-context-protocol) section above
+- Troubleshooting: See [`.github/MCP-TROUBLESHOOTING.md`](.github/MCP-TROUBLESHOOTING.md)
+- Full Guide: See [`docs/MCP-GUIDE.md`](../docs/MCP-GUIDE.md)
 
 ## Documentation
 
