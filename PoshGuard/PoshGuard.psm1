@@ -109,11 +109,21 @@ function Invoke-PoshGuard {
     .PARAMETER Skip
         Array of rule names to skip.
 
+    .PARAMETER ExportSarif
+        Export analysis results in SARIF format for GitHub Code Scanning.
+
+    .PARAMETER SarifOutputPath
+        Path where SARIF file should be saved (default: ./poshguard-results.sarif).
+
     .EXAMPLE
         Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
 
     .EXAMPLE
         Invoke-PoshGuard -Path ./src -Recurse -ShowDiff
+
+    .EXAMPLE
+        Invoke-PoshGuard -Path ./src -DryRun -ExportSarif -SarifOutputPath ./results.sarif
+        Analyze code and export results in SARIF format for GitHub Security tab
     #>
     [CmdletBinding()]
     param(
@@ -130,7 +140,13 @@ function Invoke-PoshGuard {
         [switch]$Recurse,
 
         [Parameter()]
-        [string[]]$Skip
+        [string[]]$Skip,
+
+        [Parameter()]
+        [switch]$ExportSarif,
+
+        [Parameter()]
+        [string]$SarifOutputPath = './poshguard-results.sarif'
     )
 
     # Locate Apply-AutoFix.ps1 using helper function
@@ -151,6 +167,8 @@ function Invoke-PoshGuard {
     if ($ShowDiff) { $params['ShowDiff'] = $true }
     if ($Recurse) { $params['Recurse'] = $true }
     if ($Skip) { $params['Skip'] = $Skip }
+    if ($ExportSarif) { $params['ExportSarif'] = $true }
+    if ($SarifOutputPath) { $params['SarifOutputPath'] = $SarifOutputPath }
 
     # Execute the script
     & $ScriptPath @params

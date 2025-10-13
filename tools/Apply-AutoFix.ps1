@@ -39,6 +39,12 @@
 .PARAMETER Verbose
     Enable verbose output
 
+.PARAMETER ExportSarif
+    Export analysis results in SARIF format for GitHub Code Scanning
+
+.PARAMETER SarifOutputPath
+    Path where SARIF file should be saved (default: ./poshguard-results.sarif)
+
 .EXAMPLE
     .\Apply-AutoFix.ps1 -Path ./src -DryRun
     Preview fixes without applying
@@ -50,6 +56,10 @@
 .EXAMPLE
     .\Apply-AutoFix.ps1 -Path ./src
     Apply all safe fixes to directory
+
+.EXAMPLE
+    .\Apply-AutoFix.ps1 -Path ./src -DryRun -ExportSarif -SarifOutputPath ./results.sarif
+    Analyze code and export results in SARIF format for GitHub Security tab
 
 .NOTES
     Author: https://github.com/cboyd0319
@@ -81,7 +91,13 @@ param(
 
     [Parameter()]
     [ValidateSet('Default', 'UTF8', 'UTF8BOM')]
-    [string]$Encoding = 'Default'
+    [string]$Encoding = 'Default',
+
+    [Parameter()]
+    [switch]$ExportSarif,
+
+    [Parameter()]
+    [string]$SarifOutputPath = './poshguard-results.sarif'
 )
 
 Set-StrictMode -Version Latest
@@ -579,6 +595,56 @@ try {
             if ($result.Changed) {
                 $fixedCount++
             }
+        }
+    }
+
+    # Export SARIF if requested
+    if ($ExportSarif) {
+        Write-Verbose "Exporting results to SARIF format..."
+        try {
+            # Try to import ConvertToSARIF module
+            if (Get-Module -ListAvailable ConvertToSARIF) {
+                Import-Module ConvertToSARIF -ErrorAction Stop
+                Write-Verbose "ConvertToSARIF module loaded"
+            }
+            else {
+                Write-Warning "ConvertToSARIF module not found. Install with: Install-Module ConvertToSARIF -Force -AcceptLicense"
+                continue
+            }
+
+            # Collect all PSScriptAnalyzer violations from results
+            $allViolations = @()
+            foreach ($result in $results) {
+                if ($result.PSObject.Properties['Violations'] -and $result.Violations) {
+                    $allViolations += $result.Violations
+                }
+            }
+
+            # Run PSScriptAnalyzer on all files to get comprehensive results
+            if (Get-Command Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue) {
+                foreach ($file in $files) {
+                    $fileViolations = Invoke-ScriptAnalyzer -Path $file.FullName -ErrorAction SilentlyContinue
+                    if ($fileViolations) {
+                        $allViolations += $fileViolations
+                    }
+                }
+            }
+
+            # Convert to SARIF
+            if ($allViolations.Count -gt 0) {
+                $allViolations | ConvertTo-SARIF -FilePath $SarifOutputPath
+                Write-Host "  ✓ SARIF results exported to: $SarifOutputPath" -ForegroundColor Green
+                Write-Verbose "  Exported $($allViolations.Count) violation(s) to SARIF"
+            }
+            else {
+                Write-Verbose "No violations to export to SARIF"
+                # Create empty SARIF file
+                @() | ConvertTo-SARIF -FilePath $SarifOutputPath
+                Write-Host "  ✓ Empty SARIF file created: $SarifOutputPath" -ForegroundColor Green
+            }
+        }
+        catch {
+            Write-Warning "Failed to export SARIF: $_"
         }
     }
 
