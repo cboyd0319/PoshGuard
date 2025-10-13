@@ -1,77 +1,63 @@
-# PoshGuard Quick Start
+# Quick Start
 
-Get up and running with PoshGuard in under 5 minutes.
+5-minute setup.
 
-## 🚀 Installation
+## Install
 
-### Option 1: PowerShell Gallery (Fastest)
+PowerShell Gallery:
 ```powershell
-Install-Module PoshGuard -Scope CurrentUser -Force
+Install-Module PoshGuard -Scope CurrentUser
 Import-Module PoshGuard
 ```
 
-### Option 2: Git Clone
+From source:
 ```powershell
 git clone https://github.com/cboyd0319/PoshGuard.git
 cd PoshGuard
 Import-Module ./tools/lib/Core.psm1
 ```
 
-## ⚡ Quick Commands
+## Usage
 
-### Check Your Code (Safe - No Changes)
+Preview (safe):
 ```powershell
-# Preview what would be fixed
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
-
-# See unified diff
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -ShowDiff
 ```
 
-### Fix Your Code
+Apply fixes:
 ```powershell
-# Apply fixes (creates automatic backup)
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1
-
-# Fix entire directory
 ./tools/Apply-AutoFix.ps1 -Path ./src/ -Recurse
 ```
 
-### Rollback If Needed
+Rollback:
 ```powershell
-# Restore from backup
 ./tools/Restore-Backup.ps1 -BackupPath .backup/MyScript.ps1.20251011_140523.bak
 ```
 
-## 🎯 Common Use Cases
+## Common Scenarios
 
-### Before Committing Code
+Pre-commit:
 ```powershell
-# Check files you're about to commit
 ./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse
 ```
 
-### In CI/CD Pipeline
+CI/CD:
 ```powershell
-# Non-interactive mode for automation
 ./tools/Apply-AutoFix.ps1 -Path . -NonInteractive -OutputFormat jsonl
 ```
 
-### Skip Specific Rules
+Skip rules:
 ```powershell
-# Exclude certain fixes
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Skip @('PSAvoidUsingWriteHost')
 ```
 
-## 📊 What Gets Fixed?
+## Coverage
 
-PoshGuard automatically fixes **60 types** of PowerShell issues:
+60+ rules: Security (8), Best Practices (28), Formatting (24)
 
-- 🔒 **Security** (8 rules) - Plain text passwords, hardcoded servers, unsafe cmdlets
-- ✅ **Best Practices** (28 rules) - Global vars, empty catch blocks, positional params
-- 🎨 **Formatting** (24 rules) - Brace placement, indentation, casing
-
-## 🔍 Try the Samples
+## Samples
 
 ```powershell
 # See fixes in action
@@ -79,61 +65,47 @@ cd samples/
 ../tools/Apply-AutoFix.ps1 -Path ./before-security-issues.ps1 -ShowDiff
 ```
 
-**Before:**
+Before:
 ```powershell
 function Connect-Service {
-    param([string]$Password)  # ❌ Plain text
-    gci C:\Logs                # ❌ Alias
-    Write-Host "Connecting"    # ❌ Write-Host
+    param([string]$Password)
+    gci C:\Logs
+    Write-Host "Connecting"
 }
 ```
 
-**After:**
+After:
 ```powershell
 function Connect-Service {
-    param([SecureString]$Password)           # ✅ Secure
-    Get-ChildItem C:\Logs                    # ✅ Full cmdlet
-    Write-Information "Connecting" -InformationAction Continue  # ✅ Write-Information
+    param([SecureString]$Password)
+    Get-ChildItem C:\Logs
+    Write-Information "Connecting" -InformationAction Continue
 }
 ```
 
-## 📝 Exit Codes
+## Exit Codes
 
-- `0` = Success (no issues or all fixed)
-- `1` = Issues found (DryRun mode)
-- `2` = Error (parse failure, permissions, etc.)
+- `0` = Success
+- `1` = Issues found (DryRun)
+- `2` = Error
 
-## 🆘 Help
+## Help
 
 ```powershell
-# Get help
 Get-Help ./tools/Apply-AutoFix.ps1 -Full
-
-# Verbose output for troubleshooting
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Verbose
 ```
 
-## 🔗 Learn More
+## Learn More
 
-- **Full Documentation**: [README.md](README.md)
-- **How It Works**: [docs/how-it-works.md](docs/how-it-works.md)
-- **CI Integration**: [docs/ci-integration.md](docs/ci-integration.md)
-- **GitHub Setup**: [docs/github-setup.md](docs/github-setup.md)
+- [README](../README.md)
+- [How It Works](how-it-works.md)
+- [CI Integration](ci-integration.md)
 
-## 💡 Pro Tips
+## Tips
 
-1. **Always DryRun first** - See what changes before applying
-2. **Backups are automatic** - Check `.backup/` folder if you need to rollback
-3. **Use -Verbose** - See detailed information about what's being fixed
-4. **Check samples/** - Real examples show exactly what gets fixed
-5. **CI/CD ready** - Use `-NonInteractive` for pipelines
-
-## 🎉 You're Ready!
-
-Start fixing your PowerShell code:
-
-```powershell
-./tools/Apply-AutoFix.ps1 -Path ./your-script.ps1 -DryRun
-```
-
-Questions? Open an issue: https://github.com/cboyd0319/PoshGuard/issues
+- Always DryRun first
+- Backups in `.backup/` folder
+- Use `-Verbose` for debugging
+- Check `samples/` for examples
+- Use `-NonInteractive` for CI/CD
