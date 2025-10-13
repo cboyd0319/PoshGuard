@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Version](https://img.shields.io/badge/version-4.3.0-brightgreen)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.3.0-brightgreen)](CHANGELOG.md)
 [![AI/ML](https://img.shields.io/badge/AI%2FML-enabled-blueviolet)](docs/AI-ML-INTEGRATION.md)
 [![Standards](https://img.shields.io/badge/standards-25%2B-success)](docs/STANDARDS-COMPLIANCE.md)
 [![Fix Rate](https://img.shields.io/badge/fix%20rate-98%2B%25-success)](docs/benchmarks.md)
@@ -290,9 +290,9 @@ See [samples/](samples/) for broken scripts and expected fixes:
 
 **Reference**:
 - [Architecture](docs/ARCHITECTURE.md) — Module structure
-- [Security Policy](docs/SECURITY.md) — Disclosure process
-- [Contributing](docs/CONTRIBUTING.md) — Dev setup, PR guidelines
-- [Changelog](docs/CHANGELOG.md) — Version history
+- [Security Policy](SECURITY.md) — Disclosure process
+- [Contributing](CONTRIBUTING.md) — Dev setup, PR guidelines
+- [Changelog](CHANGELOG.md) — Version history
 - [Roadmap](docs/ROADMAP.md) — Future features
 
 **Developer Experience**:
@@ -324,7 +324,7 @@ See [samples/](samples/) for broken scripts and expected fixes:
 
 ## Contributing
 
-See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for dev setup, tests, and PR guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, tests, and PR guidelines.
 
 ## License
 
