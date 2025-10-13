@@ -3,7 +3,7 @@
     # For PowerShell Gallery deployment, the module structure must be reorganized
     # with all .psm1 files under the PoshGuard/ directory.
     RootModule = 'PoshGuard.psm1'
-    ModuleVersion = '4.2.0'
+    ModuleVersion = '4.3.0'
     GUID = 'f8a3d8e9-7b4c-4d5e-9f8a-3c2b1e0d9f7a'
     Author = 'Chad Boyd'
     CompanyName = 'PoshGuard'

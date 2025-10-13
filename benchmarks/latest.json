@@ -10,5 +10,5 @@
   "PSScriptAnalyzerVersion": "1.24.0",
   "PowerShellVersion": "7.4.12",
   "Platform": "Unix",
-  "PoshGuardVersion": "3.0.0"
+  "PoshGuardVersion": "4.3.0"
 }

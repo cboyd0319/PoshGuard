@@ -31,7 +31,7 @@
     Jump to lesson 5
 
 .NOTES
-    Version: 4.1.0
+    Version: 4.3.0
     Audience: Complete beginners
     Duration: ~30 minutes
     Prerequisites: NONE - We'll teach you everything!

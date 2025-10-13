@@ -2,7 +2,7 @@
   "name": "poshguard",
   "displayName": "PoshGuard - PowerShell Quality Guard",
   "description": "Real-time PowerShell code quality analysis and auto-fix with AI/ML intelligence",
-  "version": "4.1.0",
+  "version": "4.3.0",
   "publisher": "poshguard",
   "repository": {
     "type": "git",
