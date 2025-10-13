@@ -81,4 +81,4 @@ Vote on features by commenting with 👍 on issue threads.
 
 ---
 
-**Status**: Actively maintained | v3.0.0 production-ready
+**Status**: Actively maintained | v4.3.0 production-ready

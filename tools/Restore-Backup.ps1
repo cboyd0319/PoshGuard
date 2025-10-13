@@ -44,7 +44,7 @@
 
 .NOTES
     Author: https://github.com/cboyd0319
-    Version: 3.0.0
+    Version: 4.3.0
     Safe: Confirms before restore, keeps backup history
 #>
 
@@ -287,7 +287,7 @@ function Restore-BackupFile {
 
 try {
     Write-Host "`n╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║      PowerShell QA Rollback System v3.0.0                     ║" -ForegroundColor Cyan
+    Write-Host "║      PowerShell QA Rollback System v4.3.0                     ║" -ForegroundColor Cyan
     Write-Host "║      Safe Restore from .psqa-backup                           ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
