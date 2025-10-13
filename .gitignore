@@ -91,3 +91,6 @@ web/.vercel
 web/dist/
 web/.turbo/
 web/storybook-static/
+
+# Tool binaries
+actionlint

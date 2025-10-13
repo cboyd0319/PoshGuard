@@ -1,336 +1,148 @@
-# PoshGuard — PowerShell QA & Auto-Fix Engine
+actionlint
+==========
+[![CI Status][ci-badge]][ci]
+[![API Document][apidoc-badge]][apidoc]
 
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue)](https://github.com/PowerShell/PowerShell)
-[![Version](https://img.shields.io/badge/version-4.3.0-brightgreen)](CHANGELOG.md)
-[![AI/ML](https://img.shields.io/badge/AI%2FML-enabled-blueviolet)](docs/AI-ML-INTEGRATION.md)
-[![Standards](https://img.shields.io/badge/standards-25%2B-success)](docs/STANDARDS-COMPLIANCE.md)
-[![Fix Rate](https://img.shields.io/badge/fix%20rate-98%2B%25-success)](docs/benchmarks.md)
-[![Detection](https://img.shields.io/badge/detection-100%25%20general%20rules-success)](docs/benchmarks.md)
-[![CI](https://github.com/cboyd0319/PoshGuard/workflows/ci/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
-[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-success)](.github/DEPENDABOT-SETUP.md)
-[![OWASP ASVS](https://img.shields.io/badge/OWASP%20ASVS-Level%201-success)](docs/SECURITY-FRAMEWORK.md)
-[![SRE](https://img.shields.io/badge/SRE-99.5%25%20SLO-success)](docs/SRE-PRINCIPLES.md)
-[![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
+[actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
-**TL;DR**: PoshGuard auto-fixes PowerShell code issues. Detects 107+ rules, fixes 98%+ of violations. AST-based transformations preserve code intent. Dry-run mode, automatic backups, instant rollback. Runs on Windows/macOS/Linux with PowerShell 5.1+/7+.
+Features:
 
-**Features in v4.3.0**:
-- Reinforcement learning with Q-learning and Markov Decision Process for self-improving fixes
-- Secret detection via Shannon entropy analysis: 20+ patterns (AWS, Azure, GitHub, RSA keys, JWT, connection strings)
-- ML confidence scoring for every fix (syntax validation, AST preservation, minimal changes, safety checks)
-- **SARIF export for GitHub Code Scanning** - Upload results to Security tab
-- Single JSON config (config/poshguard.json) with environment overrides
-- SBOM generation (CycloneDX 1.5, SPDX 2.3) for supply chain security
-- NIST SP 800-53 Rev 5 compliance with FedRAMP baselines
-- OpenTelemetry tracing with W3C Trace Context
-- 98%+ fix rate vs 82.5% baseline
-- MCP integration ready (Context7, GitHub Copilot MCP) - opt-in
-- 25+ standards compliance (NIST, FedRAMP, CMMC, OWASP, MITRE, CIS, ISO, HIPAA, SOC 2, PCI-DSS)
+- **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
+- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
+  type mismatches, ...
+- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
+- **Reusable workflow check** to check inputs/outputs/secrets of reusable workflows and workflow calls
+- **[shellcheck][] and [pyflakes][] integrations** for scripts at `run:`
+- **Security checks**; [script injection][script-injection-doc] by untrusted inputs, hard-coded credentials
+- **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
+  runner label validation, cron syntax validation, ...
 
-## Quickstart
+See the [full list][checks] of checks done by actionlint.
 
-```powershell
-# Install from PowerShell Gallery
-Install-Module PoshGuard -Scope CurrentUser
-Import-Module PoshGuard
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
-# Preview fixes (safe)
-Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
+**Example of broken workflow:**
 
-# Apply fixes
-Invoke-PoshGuard -Path ./MyScript.ps1
-
-# Rollback if needed
-Restore-PoshGuardBackup -BackupPath .backup/MyScript.ps1.20251013_120000.bak
+```yaml
+on:
+  push:
+    branch: main
+    tags:
+      - 'v\d+'
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, linux-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node_version: 18.x
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+        if: ${{ github.repository.permissions.admin == true }}
+      - run: npm install && npm test
 ```
 
-## Benchmark Results (v4.3.0)
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Corpus | 3 fixtures | Comprehensive violations |
-| Baseline violations | 40 | PSScriptAnalyzer |
-| Fixed | 39+ | 98%+ success rate |
-| Remaining | <1 | Intentional edge cases |
-| Total rules | 107+ | 60 PSSA + 47 beyond-PSSA |
-| Secret detection | 30+ patterns | 100% detection, <0.5% false positives |
-| Confidence | 95%+ average | ML-based scoring |
-
-See [Benchmarks](docs/benchmarks.md) for methodology.
-
-
-
-## Table of Contents
-- [What it is](#what-it-is)
-- [Why it exists](#why-it-exists)
-- [Safe by Default](#safe-by-default)
-- [AI/ML Features (NEW!)](#aiml-features)
-- [Standards Compliance](#standards-compliance)
-- [Prerequisites](#prerequisites)
-- [Install](#install)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Coverage](#coverage)
-- [Architecture](#architecture)
-- [Security](#security)
-- [Examples](#examples)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-
-## Prereqs
-
-| Item | Version | Why |
-|------|---------|-----|
-| PowerShell | ≥5.1 or ≥7.0 | Runtime |
-| PSScriptAnalyzer | ≥1.21.0 | Detection engine |
-
-## Why it exists
-
-PSScriptAnalyzer detects issues but doesn't fix them. PoshGuard applies AST-based transformations that preserve code intent. Designed for CI/CD: deterministic output, structured logs, clear exit codes. Safe by default: dry-run mode, automatic backups, instant rollback.
-
-
-
-
-
-
-
-
-
-
-
-## Install
-
-### PowerShell Gallery (recommended)
-```powershell
-Install-Module PoshGuard -Scope CurrentUser
-Import-Module PoshGuard
-Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
-```
-
-### From Source
-```powershell
-git clone https://github.com/cboyd0319/PoshGuard.git
-cd PoshGuard
-./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
-```
-
-### Release Download
-Download from [releases](https://github.com/cboyd0319/PoshGuard/releases), extract, then:
-```powershell
-Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1
-```
-
-## Usage
-
-### Basic
-```powershell
-# Preview changes
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -DryRun
-
-# Apply fixes
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1
-
-# Process directory
-./tools/Apply-AutoFix.ps1 -Path ./src/ -Recurse
-```
-
-### Advanced
-```powershell
-# Show unified diff
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
-
-# Skip rules
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Skip @('PSAvoidUsingPlainTextForPassword')
-
-# CI/CD mode
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -NonInteractive
-
-# JSON Lines output
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -OutputFormat jsonl -OutFile fixes.jsonl
-```
-
-**Exit codes**: `0` = success or no issues, `1` = issues found (DryRun), `2` = fatal error
-
-## Configuration
-
-| Parameter | Type | Default | Example | Notes |
-|-----------|------|---------|---------|-------|
-| Path | string | required | `./script.ps1` | File or directory |
-| DryRun | switch | false | `-DryRun` | Preview only |
-| ShowDiff | switch | false | `-ShowDiff` | Unified diff |
-| Recurse | switch | false | `-Recurse` | Process subdirs |
-| Skip | string[] | @() | `@('RuleName')` | Exclude rules |
-| NonInteractive | switch | false | `-NonInteractive` | CI mode |
-| OutputFormat | string | text | `jsonl` | text, json, jsonl |
-| Verbose | switch | false | `-Verbose` | Debug logging |
-
-## Coverage
-
-60/60 general PSSA rules (100%) + 47 beyond-PSSA rules = 107 total.
-
-12 excluded PSSA rules: 6 DSC-only, 3 complex compatibility (require 200+ MB profiles), 2 internal utilities, 1 duplicate.
-
-See [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules) for details.
-
-### Beyond-PSSA (v3.2.0+)
-
-Community-requested enhancements:
-1. **TODO/FIXME standardization** - Consistent technical debt tracking
-2. **Unused namespace detection** - Performance optimization warnings
-3. **Non-ASCII character warnings** - Cross-platform encoding issues
-4. **ConvertFrom-Json optimization** - Auto-add `-Raw` for performance
-5. **SecureString disclosure detection** - Prevent credential leaks in logs
-
-### Advanced Detection (v3.3.0)
-
-50+ detection rules across 4 categories:
-
-**Code Complexity**: cyclomatic complexity >10, nesting depth >4, function length >50 lines, parameter count >7
-
-**Performance**: string concatenation in loops, array += in loops, inefficient pipeline order, N+1 patterns
-
-**Security**: command injection, path traversal, insecure deserialization, missing error logs
-
-**Maintainability**: magic numbers, unclear variable names, missing docs, duplicated code
-
-Usage:
-```powershell
-Import-Module ./tools/lib/AdvancedDetection.psm1
-$result = Invoke-AdvancedDetection -Content $scriptContent -FilePath "script.ps1"
-$result.Issues | Format-Table Rule, Severity, Line, Message
-```
-
-### Metrics & Observability (v3.3.0)
-
-Per-rule tracking:
-- Fix confidence (0.0-1.0): syntax 50%, AST preservation 20%, minimal changes 20%, safety 10%
-- Success/failure rates per rule
-- Performance profiling (min/max/avg duration)
-- Detailed diagnostics
-
-```powershell
-Import-Module ./tools/lib/EnhancedMetrics.psm1
-Initialize-MetricsTracking
-Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' -Success $true -DurationMs 45 -ConfidenceScore 0.95
-Export-MetricsReport -OutputPath "./metrics/session.json"
-```
-
-### Implemented Rules
-
-**Security**: 8/8 (plaintext passwords, hardcoded computers, aliases, invoke-expression)
-
-**Best Practices**: 28/28 (approved verbs, formatting, naming, parameters, scope)
-
-**Advanced**: 24/24 (manifests, encoding, compatibility, pipelines, DSC functions)
-
-### Excluded Rules
-
-**DSC-only**: 6 rules (not applicable to general scripts)
-
-**Complex compatibility**: 3 rules (require 200+ MB profiles; simplified version covers 80% of cases)
-
-**Utility**: 2 rules (duplicates or internal PSSA tools)
-
-Total excluded: 12 rules
-
-## Architecture
+**actionlint reports 7 errors:**
 
 ```
-tools/Apply-AutoFix.ps1  # Entry point
-tools/lib/               # Modular fixes (Core, Security, BestPractices, Formatting, Advanced)
-docs/                    # Documentation
+test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
+  |
+3 |     branch: main
+  |     ^~~~~~~
+test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \, ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+  |
+5 |       - 'v\d+'
+  |           ^~~~
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2022", "windows-11-arm", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xl", "macos-latest-xlarge", "macos-latest-large", "macos-26-xlarge", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xl", "macos-14-xlarge", "macos-14-large", "macos-14", "macos-13-xl", "macos-13-xlarge", "macos-13-large", "macos-13", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+   |
+10 |         os: [macos-latest, linux-latest]
+   |                            ^~~~~~~~~~~~~
+test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
+   |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v4". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
+   |
+17 |           node_version: 18.x
+   |           ^~~~~~~~~~~~~
+test.yaml:21:20: property "platform" is not defined in object type {os: string} [expression]
+   |
+21 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+   |                    ^~~~~~~~~~~~~~~
+test.yaml:22:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+   |
+22 |         if: ${{ github.repository.permissions.admin == true }}
+   |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-**Flow**: Script → PSScriptAnalyzer → AST Parse → Transform → Validate → Output
+## Quick start
 
-**Trust**: File ops use -WhatIf; rollback via timestamped backups in `.backup/`
+Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
+[the installation document][install] for more details like how to manage the command with several package managers
+or run via Docker container.
 
-## Security
-
-- **Secrets**: None stored. Detects plaintext passwords, suggests SecureString
-- **Least privilege**: Read-only by default (-DryRun). Writes only when approved
-- **Supply chain**: Dependencies pinned. No external API calls. SBOM in releases
-- **Signing**: Authenticode supported for enterprise deployment
-- **Disclosure**: security@poshguard via [GitHub Security Advisories](https://github.com/cboyd0319/PoshGuard/security/advisories)
-
-## Performance
-
-- Throughput: ~50 files/min
-- Latency: 1-3 sec/file
-- Memory: <100 MB
-- Files >10K lines may be slower
-
-## Examples
-
-See [samples/](samples/) for broken scripts and expected fixes:
-- `before-security-issues.ps1` — 12 security violations
-- `after-security-issues.ps1` — Fixed output
-- `before-formatting.ps1` — Formatting violations
-
-```powershell
-./tools/Apply-AutoFix.ps1 -Path ./samples/before-security-issues.ps1 -ShowDiff
+```sh
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
 ```
 
-## Documentation
+Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows and
+checks errors. actionlint focuses on finding out mistakes. It tries to catch errors as much as possible and make false positives
+as minimal as possible.
 
-**Getting Started**:
-- [Quick Start](docs/quick-start.md) — 5-minute setup
-- [How It Works](docs/how-it-works.md) — AST transformations
-- [CI/CD Integration](docs/ci-integration.md) — GitHub Actions, Azure DevOps, GitLab, Jenkins
+```sh
+actionlint
+```
 
-**AI/ML Features**:
-- [AI/ML Integration](docs/AI-ML-INTEGRATION.md) — ML confidence scoring, MCP integration
-- [Advanced Detection](docs/ADVANCED-DETECTION.md) — 50+ beyond-PSSA rules
-- [Enhanced Metrics](docs/ENHANCED-METRICS.md) — Per-rule performance tracking
+Another option to try actionlint is [the online playground][playground]. Your browser can run actionlint through WebAssembly.
 
-**Standards**:
-- [Standards Compliance](docs/STANDARDS-COMPLIANCE.md) — NIST, CIS, ISO, MITRE, PCI-DSS, HIPAA, SOC 2
-- [Security Framework](docs/SECURITY-FRAMEWORK.md) — OWASP ASVS 5.0
-- [Benchmarks](docs/benchmarks.md) — Repeatable results (98%+ success rate)
+See [the usage document][usage] for more details.
 
-**Reference**:
-- [Architecture](docs/ARCHITECTURE.md) — Module structure
-- [Security Policy](SECURITY.md) — Disclosure process
-- [Contributing](CONTRIBUTING.md) — Dev setup, PR guidelines
-- [Changelog](CHANGELOG.md) — Version history
-- [Roadmap](docs/ROADMAP.md) — Future features
+## Documents
 
-**Developer Experience**:
-- [GitHub Copilot Setup](.github/copilot-instructions.md) — AI-assisted development with comprehensive workspace context
-- [MCP Integration](.github/MCP_SETUP.md) — Model Context Protocol for enhanced Copilot capabilities
-- [VS Code Settings](.vscode.recommended/) — Recommended editor configuration
+- [Checks][checks]: Full list of all checks done by actionlint with example inputs, outputs, and playground links.
+- [Installation][install]: Installation instructions. Prebuilt binaries, a Docker image, building from source, a download script
+  (for CI), supports by several package managers are available.
+- [Usage][usage]: How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker image,
+  and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
+- [Configuration][config]: How to configure actionlint behavior. Currently, the labels of self-hosted runners, the configuration
+  variables, and ignore patterns of errors for each file paths can be set.
+- [Go API][api]: How to use actionlint as Go library.
+- [References][refs]: Links to resources.
 
-## Troubleshooting
+## Bug reporting
 
-| Error | Fix |
-|-------|-----|
-| `PSScriptAnalyzer module not found` | `Install-Module PSScriptAnalyzer -Scope CurrentUser` |
-| `Access denied writing file` | Use `-DryRun` or run with elevated permissions |
-| `Cannot parse script` | Fix syntax errors first with `Test-ScriptFileInfo` |
-| Some rules not applied | Check `-Skip` parameter; DSC rules excluded by design |
-| Performance issues on large files | Split files <5K lines or use `-Verbose` to identify slow rules |
-| CI/CD integration | Use `-NonInteractive` and check exit codes |
+When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
+of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
-## Roadmap
-
-- [x] 100% general PSSA rule coverage (v3.0.0)
-- [x] GitHub Actions CI/CD
-- [x] SBOM generation
-- [ ] PowerShell Gallery publication
-- [ ] VS Code extension
-- [ ] Azure DevOps templates
-- [ ] Custom rule framework
-- [ ] Parallel file processing
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, tests, and PR guidelines.
+See the [contribution guide](./CONTRIBUTING.md) for more details.
 
 ## License
 
-MIT — See [LICENSE](LICENSE). Use commercially, modify, distribute. Attribution appreciated but not required.
+actionlint is distributed under [the MIT license](./LICENSE.txt).
 
----
-
-**Status**: Production-ready v4.3.0 | October 2025
+[ci-badge]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg
+[ci]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml
+[apidoc-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
+[apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
+[repo]: https://github.com/rhysd/actionlint
+[playground]: https://rhysd.github.io/actionlint/
+[shellcheck]: https://github.com/koalaman/shellcheck
+[pyflakes]: https://github.com/PyCQA/pyflakes
+[syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+[filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+[script-injection-doc]: https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks
+[releases]: https://github.com/rhysd/actionlint/releases
+[checks]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/checks.md
+[install]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/install.md
+[usage]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/usage.md
+[config]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/config.md
+[api]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/api.md
+[refs]: https://github.com/rhysd/actionlint/blob/v1.7.8/docs/reference.md
+[issue-form]: https://github.com/rhysd/actionlint/issues/new

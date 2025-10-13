@@ -220,6 +220,60 @@ If you're using the example workflows from `docs/ci-integration.md`:
    - Best done manually for v3.0.0
    - Can be automated in future release
 
+### PoshGuard Quality Gate Workflow (`.github/workflows/poshguard-quality-gate.yml`)
+
+#### Issues Fixed (October 2025)
+
+1. **Unsupported API Endpoint** - Workflow failed with "Personal Access Tokens are not supported for this endpoint"
+2. **YAML Syntax Error** - PowerShell here-string with markdown lists caused YAML parser errors
+
+#### Root Cause
+
+The workflow used `github.rest.checks.create()` API to create check runs. This API endpoint does not support Personal Access Tokens (PATs), including the `GITHUB_TOKEN` secret provided by GitHub Actions in certain contexts.
+
+#### Improvements Made
+
+**Removed Redundant Check Creation:**
+```yaml
+# REMOVED - This step is not needed and causes failures
+- name: Set Check Status
+  uses: actions/github-script@v7
+  with:
+    github-token: ${{secrets.GITHUB_TOKEN}}
+    script: |
+      github.rest.checks.create({...})  # Not supported with GITHUB_TOKEN
+```
+
+**Why This Fix Works:**
+- Workflow status is automatically reported via job success/failure
+- PR comments already provide detailed quality reports
+- Artifacts contain comprehensive analysis results
+- The explicit check creation was redundant and caused failures
+
+**Fixed YAML Syntax:**
+```powershell
+# BEFORE - Caused YAML parser errors
+$report = @"
+# PoshGuard Quality Report
+- **Total Files**: ${{ steps.analysis.outputs.total_files }}
+"@
+
+# AFTER - Uses string concatenation instead
+$report = "# PoshGuard Quality Report`n"
+$report += "- **Total Files**: ${{ steps.analysis.outputs.total_files }}`n"
+```
+
+**Why This Fix Was Needed:**
+- YAML parsers interpret `-` at start of lines as list items
+- PowerShell here-strings in `run: |` blocks can confuse YAML parsers
+- String concatenation avoids ambiguity and passes validation
+
+**Benefits:**
+- ✅ Workflow passes GitHub Actions validation (actionlint)
+- ✅ No more "Personal Access Tokens not supported" errors
+- ✅ Maintains all reporting functionality
+- ✅ Cleaner, more maintainable code
+
 ## Testing Performed
 
 - ✅ Lint job runs successfully with correct exclusions
@@ -230,6 +284,9 @@ If you're using the example workflows from `docs/ci-integration.md`:
 - ✅ Cache hits reduce module installation time
 - ✅ Release validation rejects invalid versions
 - ✅ Checksums generate correctly
+- ✅ Quality gate workflow passes actionlint validation
+- ✅ No unsupported API endpoints used
+- ✅ YAML syntax is valid for all workflows
 
 ## References
 
