@@ -37,6 +37,10 @@ qa-engine.jsonl
 PSSA.sarif
 pssa-results.json
 temp-results.json
+# PoshGuard SARIF output
+*.sarif
+poshguard-results.sarif
+results.sarif
 
 # Code Coverage
 coverage.xml
