@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "ms-vscode.powershell",
+    "github.copilot",
+    "github.copilot-chat",
+    "davidanson.vscode-markdownlint",
+    "editorconfig.editorconfig",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.test-adapter-converter",
+    "hbenl.vscode-test-explorer"
+  ]
+}
