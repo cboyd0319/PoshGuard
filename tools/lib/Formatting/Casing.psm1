@@ -66,6 +66,7 @@ function Invoke-CasingFix {
                     }
                     catch {
                         # Ignore - not a valid cmdlet
+                        Write-Verbose "Token '$($token.Text)' is not a recognized cmdlet: $_"
                     }
                 }
                 elseif ($token.Kind -eq 'Parameter') {

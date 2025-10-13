@@ -780,6 +780,8 @@ finally {
         }
         catch {
             # Silently fail - don't disrupt main execution
+            # Log for debugging if verbose logging is enabled
+            Write-Verbose "Failed to export RL model during cleanup: $_"
         }
     }
 }
