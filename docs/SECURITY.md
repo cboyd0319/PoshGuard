@@ -2,100 +2,53 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-|---------|--------------------|
-| 3.x     | :white_check_mark: |
-| 2.16.x  | :white_check_mark: |
-| 2.15.x  | :x:                |
-| < 2.15  | :x:                |
+| Version | Supported |
+|---------|-----------|
+| 4.x     | ✅ |
+| 3.x     | ✅ |
+| < 3.0   | ❌ |
 
-## Reporting a Vulnerability
+## Reporting
 
-**Do NOT open public issues for security vulnerabilities.**
+**Don't open public issues for security vulnerabilities.**
 
-### Contact
-Email: https://github.com/cboyd0319
+Contact: security@poshguard via [GitHub Security Advisories](https://github.com/cboyd0319/PoshGuard/security/advisories)
 
-Include:
-- Description of vulnerability
-- Steps to reproduce
-- Impact assessment
-- Suggested fix (if any)
+Include: description, repro steps, impact, suggested fix
 
-### Response Timeline
-- **Acknowledgment**: Within 48 hours
-- **Initial Assessment**: Within 5 business days
-- **Fix Timeline**: Depends on severity
-  - Critical: 7 days
-  - High: 14 days
-  - Medium: 30 days
-  - Low: Next minor release
+Response:
+- Ack: 48 hours
+- Assessment: 5 business days
+- Fix: 7 days (critical), 14 days (high), 30 days (medium), next release (low)
 
-### Disclosure Policy
-We follow responsible disclosure:
-1. Vulnerability confirmed and fix developed
-2. Patch released to supported versions
-3. Security advisory published (90 days after patch or sooner if actively exploited)
-4. Credit given to reporter (if desired)
+Disclosure: 90 days after patch or sooner if exploited
 
-## Security Best Practices
+## Best Practices
 
-### For Users
-
-**Least Privilege**
-- Run with `-DryRun` first to preview changes
-- Don't run with elevated privileges unless necessary
-- Review diffs before applying fixes
-
-**Secrets Management**
-- Never commit credentials to repos
-- Use environment variables or secure vaults
-- Don't log sensitive data
-
-**Supply Chain**
-- Verify module signatures (when available)
+**Users**:
+- Run `-DryRun` first
+- Don't use elevated privileges unless needed
+- Never commit credentials
+- Use env vars or secure vaults
 - Pin PSScriptAnalyzer versions in CI
-- Review third-party dependencies
 
-### For Contributors
-
-**Input Validation**
-- Validate all external inputs (file paths, parameters)
-- Use `-WhatIf` for destructive operations
-- Don't trust user-supplied AST without validation
-
-**Code Execution**
-- Avoid `Invoke-Expression` (blocked by our own security rules)
-- Don't evaluate arbitrary expressions
-- Use AST parsing instead of string manipulation
-
-**File Operations**
-- Validate file paths (prevent traversal attacks)
-- Check permissions before writing
-- Create backups before modifying files
-
-**Error Handling**
-- Don't expose sensitive data in error messages
-- Log errors without credentials/secrets
+**Contributors**:
+- Validate all inputs
+- Use `-WhatIf` for destructive ops
+- No `Invoke-Expression`
+- Validate file paths (prevent traversal)
+- No sensitive data in errors
 - Fail securely (deny by default)
 
-## Known Security Considerations
+## Known Considerations
 
-### AST Parsing
-- Malicious scripts could trigger parser bugs
-- Mitigation: Run in isolated environment, use `-DryRun`
+**AST parsing**: Malicious scripts could trigger parser bugs. Mitigation: isolated environment, `-DryRun`
 
-### File System Access
-- Tool requires read/write access to target files
-- Mitigation: Explicit `-Path` parameter, `.backup/` rollback available
+**File access**: Requires read/write. Mitigation: explicit `-Path`, `.backup/` rollback
 
-### No Network Access
-- PoshGuard doesn't make external network calls
-- All operations are local file system only
+**Network**: None. All operations local.
 
-### Dependencies
-- PSScriptAnalyzer is required dependency
-- Regularly update to latest version for security patches
+**Dependencies**: PSScriptAnalyzer required. Update regularly for patches.
 
 ## Disclosure History
 

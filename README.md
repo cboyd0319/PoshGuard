@@ -12,48 +12,52 @@
 [![SRE](https://img.shields.io/badge/SRE-99.5%25%20SLO-success)](docs/SRE-PRINCIPLES.md)
 [![Code Scanning](https://img.shields.io/badge/code%20scanning-active-success)](https://github.com/cboyd0319/PoshGuard/security/code-scanning)
 
-**About**: PoshGuard is **THE WORLD'S BEST** detection and auto-fix tool for PowerShell code quality, security, and formatting issues. Built with Ultimate Genius Engineer (UGE) principles, it combines AST-aware transformations with OWASP ASVS security mappings, Google SRE reliability standards, SWEBOK engineering practices, **reinforcement learning**, **entropy-based secret detection**, **SBOM generation**, **NIST SP 800-53 compliance**, **OpenTelemetry distributed tracing**, and **Model Context Protocol (MCP) integration**. Achieves **98%+ fix rate** (highest in industry) with **self-improving ML confidence scoring** and **Q-learning optimization**. Production-grade: dry-run, backups, rollback, structured observability, supply chain security, **25+ standards compliance** (NIST SP 800-53, FedRAMP, CMMC 2.0, CIS, ISO 27001/27017/27018, MITRE ATT&CK, CISA SBOM, PCI-DSS v4.0, NIST 800-171); runs on Windows/macOS/Linux (PowerShell 5.1+/7+). **ZERO technical knowledge required** - beginner-friendly with expert capabilities. **NO OTHER TOOL COMES CLOSE**.
+**TL;DR**: PoshGuard auto-fixes PowerShell code issues. Detects 107+ rules, fixes 98%+ of violations. AST-based transformations preserve code intent. Dry-run mode, automatic backups, instant rollback. Runs on Windows/macOS/Linux with PowerShell 5.1+/7+.
 
-**REVOLUTIONARY in v4.3.0** - **FAR EXCEEDS ALL COMPETITORS**:
-- 🤖 **Reinforcement Learning (ACTIVE)** - THE FIRST PowerShell tool with self-improving fixes using Q-learning and Markov Decision Process - NOW FULLY INTEGRATED into main pipeline
-- 🔐 **Entropy-Based Secret Detection (ACTIVE)** - Shannon entropy analysis with 20+ patterns (AWS, Azure, GitHub, private keys, JWT, connection strings) - scans BEFORE fixes with 100% detection, <0.5% false positives
-- 🎯 **AI Confidence Scoring (ACTIVE)** - ML-based quality scoring for every fix with multi-factor analysis (syntax, AST preservation, minimal changes, safety)
-- ⚙️ **Unified Configuration** - Single JSON config file (config/poshguard.json) with environment variable overrides and runtime updates
-- 🔗 **Supply Chain Security** - Full SBOM generation (CycloneDX 1.5 & SPDX 2.3), vulnerability scanning, license compliance - CISA 2025 ready
-- 🏛️ **NIST SP 800-53 Compliance** - Complete Rev 5 control assessment with FedRAMP baselines - federal grade security
-- 📊 **OpenTelemetry Tracing** - Enterprise distributed tracing with W3C Trace Context - production observability
-- 🎯 **98%+ Fix Rate** - Reinforcement learning continuously improves quality (vs 82.5% baseline, 60% for competitors) - target achieved
-- ✨ **MCP Integration (Ready)** - Context7, GitHub Copilot MCP, Microsoft Learn, Stack Overflow - AI-enhanced code examples (opt-in)
-- 🔍 **25+ Standards** - NIST SP 800-53, FedRAMP, CMMC 2.0, OWASP ASVS 5.0, MITRE ATT&CK, CIS, ISO 27001/27017/27018, HIPAA, SOC 2, PCI-DSS v4.0, NIST 800-171
-- 📚 **Zero-Knowledge Friendly** - Interactive tutorial, comprehensive docs, assumes ZERO technical knowledge
-- 🚀 **Self-Improving** - Every run makes the tool smarter through experience replay and Q-learning updates
+**Features in v4.3.0**:
+- Reinforcement learning with Q-learning and Markov Decision Process for self-improving fixes
+- Secret detection via Shannon entropy analysis: 20+ patterns (AWS, Azure, GitHub, RSA keys, JWT, connection strings)
+- ML confidence scoring for every fix (syntax validation, AST preservation, minimal changes, safety checks)
+- Single JSON config (config/poshguard.json) with environment overrides
+- SBOM generation (CycloneDX 1.5, SPDX 2.3) for supply chain security
+- NIST SP 800-53 Rev 5 compliance with FedRAMP baselines
+- OpenTelemetry tracing with W3C Trace Context
+- 98%+ fix rate vs 82.5% baseline
+- MCP integration ready (Context7, GitHub Copilot MCP) - opt-in
+- 25+ standards compliance (NIST, FedRAMP, CMMC, OWASP, MITRE, CIS, ISO, HIPAA, SOC 2, PCI-DSS)
 
-### Results (Benchmark v4.3.0) - **INDUSTRY LEADING**
-
-- **Corpus**: 3 synthetic fixtures with comprehensive violations
-- **Baseline**: 40 total PSScriptAnalyzer violations
-- **After 1 PoshGuard pass**: **39+ fixed** (98%+ success rate) ⬆️ +15.5% improvement via RL
-- **Remaining**: <1 violations (by design: intentional edge cases with warnings)
-- **Advanced Detection**: 107+ rules (60 PSSA + 47 beyond-PSSA innovations)
-- **Secret Detection**: 30+ patterns with Shannon entropy analysis (100% detection, <0.5% false positives)
-- **Self-Improvement**: Active Q-learning with experience replay - improves with every execution
-- **Confidence Scoring**: 95%+ average confidence on applied fixes
-- **See**: [Benchmarks](docs/benchmarks.md) for detailed methodology and results
-
-<!--![PoshGuard Demo](docs/demo.gif)-->
-<!--*Auto-fixing security issues with unified diff output*-->
+## Quickstart
 
 ```powershell
-# Option 1: PowerShell Gallery (recommended)
+# Install from PowerShell Gallery
 Install-Module PoshGuard -Scope CurrentUser
 Import-Module PoshGuard
+
+# Preview fixes (safe)
 Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
 
-# Option 2: Direct from repository
-git clone https://github.com/cboyd0319/PoshGuard.git
-cd PoshGuard
-./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
+# Apply fixes
+Invoke-PoshGuard -Path ./MyScript.ps1
+
+# Rollback if needed
+Restore-PoshGuardBackup -BackupPath .backup/MyScript.ps1.20251013_120000.bak
 ```
+
+## Benchmark Results (v4.3.0)
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Corpus | 3 fixtures | Comprehensive violations |
+| Baseline violations | 40 | PSScriptAnalyzer |
+| Fixed | 39+ | 98%+ success rate |
+| Remaining | <1 | Intentional edge cases |
+| Total rules | 107+ | 60 PSSA + 47 beyond-PSSA |
+| Secret detection | 30+ patterns | 100% detection, <0.5% false positives |
+| Confidence | 95%+ average | ML-based scoring |
+
+See [Benchmarks](docs/benchmarks.md) for methodology.
+
+
 
 ## Table of Contents
 - [What it is](#what-it-is)
@@ -72,269 +76,54 @@ cd PoshGuard
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 
-## What it is
+## Prereqs
 
-PoshGuard automatically fixes PowerShell code issues detected by PSScriptAnalyzer using AST-based transformations.
-
-**World-Class Engineering Standards** (**NO OTHER TOOL COMES CLOSE**):
-- ✅ **25+ Standards Compliance** - NIST SP 800-53 Rev 5, NIST 800-171, FedRAMP, CMMC 2.0, OWASP ASVS 5.0, NIST CSF 2.0, CIS Benchmarks, ISO 27001/27017/27018:2022, MITRE ATT&CK, CWE, CISA SBOM, PCI-DSS v4.0, HIPAA, SOC 2, FISMA
-- ✅ **Reinforcement Learning (ACTIVE)** - THE FIRST PowerShell tool with Q-learning for self-improving fixes and adaptive rule tuning - NOW FULLY INTEGRATED
-- ✅ **Entropy Secret Detection (ACTIVE)** - Shannon entropy analysis + 30+ regex patterns (AWS, Azure, GitHub, RSA keys, JWT, connection strings) - SCANS BEFORE EVERY FIX
-- ✅ **AI Confidence Scoring (ACTIVE)** - ML-based quality assessment for every fix with 4-factor weighted algorithm
-- ✅ **Unified Configuration** - Single JSON config (config/poshguard.json) with environment overrides and runtime updates
-- ✅ **Supply Chain Security** - SBOM generation (CycloneDX 1.5, SPDX 2.3), dependency vulnerability scanning, license compliance
-- ✅ **OpenTelemetry Tracing** - W3C Trace Context, distributed tracing, OTLP export (Jaeger, Grafana, DataDog compatible)
-- ✅ **Federal Grade Security** - NIST SP 800-53 Rev 5 + NIST 800-171 compliance assessment with FedRAMP Low/Moderate/High baselines
-- ✅ **Google SRE Principles** - SLOs, error budgets, observability (Golden Signals), 99.5% availability target with active monitoring
-- ✅ **SWEBOK v4.0** - Complete software engineering lifecycle compliance (15/15 knowledge areas)
-- ✅ **Production-Grade** - Structured logging, metrics, distributed tracing, privacy-first design, SLO enforcement
-- ✅ **Security-First** - Threat model, defense-in-depth, secure defaults, complete OWASP Top 10 2023 coverage
-- ✅ **Beginner-Friendly** - Zero assumed technical knowledge, interactive tutorials, comprehensive documentation
-
-**Core Capabilities**:
-- ✅ **AST-aware analyzers** with strict PSScriptAnalyzer alignment
-- ✅ **Idempotent auto-fixes** with minimal unified diffs
-- ✅ **Dry-run + backups + rollback** (safe by default)
-- ✅ **Structured JSONL logs** (+ exit codes) for CI gating
-- ✅ **Cross-platform**: Windows/macOS/Linux, PowerShell 7+
-- ✅ **Deterministic runs**: pinned ruleset, reproducible output
-
-**v3.0.0 Milestone**: 60/60 general-purpose PSSA rules implemented (100% general rule coverage).
-
-**v3.2.0 Innovation**: Beyond-PSSA code quality enhancements - 5 community-requested features for superior code quality.
-
-**v3.3.0 Excellence**: World-class advanced detection and observability - 50+ additional quality checks, confidence scoring, per-rule metrics, and comprehensive diagnostics for unprecedented code quality insights.
-
-**v4.3.0 Revolution**: FULL AI/ML INTEGRATION - Reinforcement learning, entropy-based secret detection, AI confidence scoring, MCP integration, and unified configuration - ALL ACTIVE in the main pipeline. The tool now learns and improves with every execution.
-
-**v4.2.0 QUANTUM LEAP**: Features that **OBLITERATE** all competition:
-
-**🤖 Reinforcement Learning (WORLD FIRST)**:
-- Q-learning with Markov Decision Process for fix optimization
-- Experience replay buffer with 1000+ episodes
-- Self-improving: learns from successful/failed fixes
-- Adaptive exploration (epsilon-greedy) for continuous improvement
-- **Result**: 95%+ fix rate (vs 82.5% baseline, 60% competitors)
-
-**🔐 Entropy-Based Secret Detection (BEST-IN-CLASS)**:
-- Shannon entropy analysis (information theory)
-- 20+ secret patterns: AWS, Azure, GitHub, GitLab, RSA keys, SSH keys, JWT, connection strings
-- Base64/Hex/ASCII encoding detection with dynamic thresholds
-- Context-aware false positive reduction
-- **Result**: 100% detection rate, <1% false positives
-
-**🔗 Supply Chain Security (CISA 2025 READY)**:
-- SBOM generation: CycloneDX 1.5 & SPDX 2.3
-- Dependency vulnerability scanning (NVD, GitHub Advisory integration)
-- License compliance checking (GPL, LGPL, AGPL, commercial)
-- Transitive dependency analysis
-- **Result**: Full CISA 2025 SBOM compliance
-
-**🏛️ NIST SP 800-53 Compliance (FEDERAL GRADE)**:
-- Complete Rev 5 control assessment (20 control families)
-- FedRAMP Low/Moderate/High baseline mappings
-- FISMA compliance reporting
-- OSCAL export support
-- **Result**: Federal authorization ready
-
-**📊 OpenTelemetry Tracing (ENTERPRISE OBSERVABILITY)**:
-- W3C Trace Context propagation
-- Distributed tracing with span hierarchy
-- OTLP export (Jaeger, Zipkin, Grafana, DataDog)
-- Metrics and events correlation
-- **Result**: Production-grade observability
-
-**v4.1.0 World-Class Enhancements**: Making PoshGuard THE definitive solution:
-- ✨ **Real MCP Client** - Full implementation connecting to Context7, GitHub Copilot MCP, filesystem, and custom MCP servers
-- 🔍 **Enhanced Security** - 12+ CWE mappings, 8+ MITRE ATT&CK techniques, 10+ advanced secret patterns, OWASP Top 10 2023 complete
-- 🎓 **Interactive Tutorial** - Zero-knowledge 30-minute guided learning with quizzes and hands-on examples
-- 🏗️ **Advanced Analysis** - Dead code detection, code smell identification, cognitive complexity, dependency analysis
-- 🔧 **CI/CD Templates** - Production-ready GitHub Actions with quality gates and auto-fix
-- 📚 **Standards Library** - Complete reference to 20+ security/engineering standards with citations
-- 🎨 **VS Code Extension** - Real-time linting, auto-fix on save, AI suggestions (scaffold ready)
+| Item | Version | Why |
+|------|---------|-----|
+| PowerShell | ≥5.1 or ≥7.0 | Runtime |
+| PSScriptAnalyzer | ≥1.21.0 | Detection engine |
 
 ## Why it exists
 
-PSScriptAnalyzer detects issues but provides limited auto-fix capabilities. PoshGuard fills this gap with production-grade, idempotent fixes that preserve code intent while enforcing PowerShell best practices. It's designed for CI/CD pipelines with deterministic output, structured logging, and clear exit codes.
+PSScriptAnalyzer detects issues but doesn't fix them. PoshGuard applies AST-based transformations that preserve code intent. Designed for CI/CD: deterministic output, structured logs, clear exit codes. Safe by default: dry-run mode, automatic backups, instant rollback.
 
-## Quick Start for Beginners
 
-**Never used PowerShell or PoshGuard before?** Start here:
 
-```powershell
-# Step 1: Run the interactive tutorial (30 minutes)
-./tools/Start-InteractiveTutorial.ps1
 
-# Step 2: Try PoshGuard on a sample file (safe preview)
-./tools/Apply-AutoFix.ps1 -Path ./samples/before-security-issues.ps1 -DryRun
 
-# Step 3: Read the beginner's guide
-Get-Content ./docs/BEGINNERS-GUIDE.md
-```
 
-**Key Concepts for Beginners**:
-- `-DryRun` = Preview changes without applying them (ALWAYS safe)
-- Backups are automatic (stored in `.psqa-backup/`)
-- Start with small files to learn
-- Read the tooltips and recommendations
 
-## Safe by Default
 
-🛡️ **Security-first design**:
-- **DryRun mode** — Preview all changes before applying (default recommended)
-- **Automatic backups** — Timestamped copies stored in `.backup/` directory
-- **No secrets stored** — Zero credentials logged or persisted
-- **Rollback support** — Instant restore via `Restore-PoshGuardBackup`
-- **Read-only analysis** — Runs with minimum privileges required
-- **Authenticode ready** — Sign scripts with trusted certificates for enterprise deployment
 
-```powershell
-# Always safe to run - see changes first
-./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
 
-# Rollback if needed
-./tools/Restore-Backup.ps1 -BackupPath .backup/MyScript.ps1.20251011_140523.bak
-```
-
-## AI/ML Features
-
-🤖 **Intelligent Code Analysis** - The ONLY free, privacy-first AI-powered PowerShell tool:
-
-### ML Confidence Scoring
-Every fix includes a quality score (0.0-1.0) based on:
-- ✅ Syntax validation (50% weight)
-- ✅ AST structure preservation (20% weight)
-- ✅ Minimal changes (20% weight)
-- ✅ Safety checks (10% weight)
-
-```powershell
-# Enable AI features (5-minute setup)
-Import-Module ./tools/lib/AIIntegration.psm1
-Initialize-AIFeatures -Minimal  # Local ML only, no cloud
-
-# Run analysis with AI
-Invoke-PoshGuard -Path ./script.ps1 -AIEnhanced
-
-# View confidence scores
-🤖 Fix Applied: PSAvoidUsingCmdletAliases
-   Confidence: 0.95 (Excellent)
-   Pattern: Learned from 42 successful fixes
-```
-
-### Model Context Protocol (MCP) Integration
-Access live code examples and best practices:
-
-```powershell
-# Optional: Enable MCP for enhanced context
-Enable-MCPIntegration -Server Context7
-
-# PoshGuard now fetches live PowerShell examples
-# from Context7, Microsoft Docs, and community sources
-# All cached locally for performance
-```
-
-**Features**:
-- 🧠 **Pattern Learning** - Improves from every fix (100% local)
-- 🔮 **Predictive Analysis** - Detect issues before they occur
-- 🌐 **Live Examples** - Via MCP (Context7 integration)
-- 🔒 **Privacy-First** - All AI runs locally by default
-- 💰 **FREE** - No cloud costs, no subscriptions
-
-See [AI/ML Integration Guide](docs/AI-ML-INTEGRATION.md) for full documentation.
-
-## Standards Compliance
-
-📜 **Industry-Leading Compliance** - More than ANY comparable tool:
-
-| Standard | Coverage | Status |
-|----------|----------|--------|
-| **OWASP ASVS 5.0** | 74/74 controls (100%) | ✅ |
-| **NIST CSF 2.0** | 15/15 controls (100%) | ✅ |
-| **CIS Benchmarks** | 10/10 controls (100%) | ✅ |
-| **ISO/IEC 27001:2022** | 18/18 controls (100%) | ✅ |
-| **MITRE ATT&CK** | 7/8 techniques (87.5%) | ⚠️ |
-| **SWEBOK v4.0** | 15/15 KAs (100%) | ✅ |
-| **Google SRE** | 8/8 principles (100%) | ✅ |
-| **PCI-DSS v4.0** | 7/9 requirements (77.8%) | ⚠️ |
-| **HIPAA Security** | 6/8 standards (75%) | ⚠️ |
-| **SOC 2 Type II** | 10/10 criteria (100%) | ✅ |
-
-**Total**: 170/180 applicable controls (94.4%)
-
-**What This Means**:
-- ✅ Enterprise-ready for regulated industries (healthcare, finance, government)
-- ✅ Audit trail with complete traceability
-- ✅ Verifiable compliance documentation (200+ pages)
-- ✅ No other PowerShell tool provides this level of compliance
-
-See [Comprehensive Standards Compliance](docs/STANDARDS-COMPLIANCE.md) for full mappings.
-
-### Zero Technical Knowledge Required
-
-PoshGuard is designed for everyone:
-- 👶 **Beginners** - Interactive tutorials, clear error messages, safe defaults
-- 🎓 **Intermediate** - Advanced features with comprehensive docs
-- 🚀 **Experts** - Extensible architecture, custom rules, API access
-- 🏢 **Enterprise** - Compliance mappings, audit trails, CI/CD templates
-
-## Prerequisites
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| PowerShell | ≥5.1 | Runtime environment |
-| PSScriptAnalyzer | ≥1.21.0 | Rule detection engine |
 
 ## Install
 
-### Option 1: PowerShell Gallery (Recommended)
-
+### PowerShell Gallery (recommended)
 ```powershell
-# Install module
-Install-Module PoshGuard -Scope CurrentUser -Force
-
-# Import and verify
+Install-Module PoshGuard -Scope CurrentUser
 Import-Module PoshGuard
-Get-Command -Module PoshGuard
-
-# Run fixes
 Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
 ```
 
-### Option 2: Direct from Repository
-
+### From Source
 ```powershell
-# Clone repository
 git clone https://github.com/cboyd0319/PoshGuard.git
 cd PoshGuard
-
-# Import core module
-Import-Module ./tools/lib/Core.psm1
-
-# Verify installation
-Get-Command -Module Core
-
-# Run fixes via script
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
 ```
 
-### Option 3: Release Download
-
-Download the latest release from [GitHub Releases](https://github.com/cboyd0319/PoshGuard/releases), extract, and import:
-
+### Release Download
+Download from [releases](https://github.com/cboyd0319/PoshGuard/releases), extract, then:
 ```powershell
-# Extract zip to desired location
-Expand-Archive poshguard-4.3.0.zip -DestinationPath C:\Tools\PoshGuard
-
-# Import module
 Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1
 ```
 
 ## Usage
 
 ### Basic
-
 ```powershell
-# Dry run (see changes without applying)
+# Preview changes
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -DryRun
 
 # Apply fixes
@@ -345,394 +134,196 @@ Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1
 ```
 
 ### Advanced
-
 ```powershell
 # Show unified diff
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -ShowDiff
 
-# Skip specific fixes
+# Skip rules
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Skip @('PSAvoidUsingPlainTextForPassword')
 
-# CI/CD mode (non-interactive, deterministic output)
+# CI/CD mode
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -NonInteractive
 
-# JSON Lines output for tooling integration
+# JSON Lines output
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -OutputFormat jsonl -OutFile fixes.jsonl
-
-# Verbose logging
-./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Verbose
 ```
 
-**Exit Codes**:
-- `0` — No issues found or all fixes applied successfully
-- `1` — Issues found but not fixed (DryRun mode)
-- `2` — Fatal error (parse failure, access denied, etc.)
+**Exit codes**: `0` = success or no issues, `1` = issues found (DryRun), `2` = fatal error
 
 ## Configuration
 
 | Parameter | Type | Default | Example | Notes |
 |-----------|------|---------|---------|-------|
-| Path | string | (required) | `./script.ps1` | File or directory to process |
-| DryRun | switch | false | `-DryRun` | Preview changes without applying |
-| ShowDiff | switch | false | `-ShowDiff` | Display unified diff output |
-| Recurse | switch | false | `-Recurse` | Process subdirectories recursively |
-| Skip | string[] | @() | `@('PSAvoidUsingPlainTextForPassword')` | Rules to exclude from processing |
-| NonInteractive | switch | false | `-NonInteractive` | CI/CD mode with deterministic output |
-| OutputFormat | string | text | `jsonl` | Output format: text, json, jsonl |
-| Verbose | switch | false | `-Verbose` | Detailed operation logging |
+| Path | string | required | `./script.ps1` | File or directory |
+| DryRun | switch | false | `-DryRun` | Preview only |
+| ShowDiff | switch | false | `-ShowDiff` | Unified diff |
+| Recurse | switch | false | `-Recurse` | Process subdirs |
+| Skip | string[] | @() | `@('RuleName')` | Exclude rules |
+| NonInteractive | switch | false | `-NonInteractive` | CI mode |
+| OutputFormat | string | text | `jsonl` | text, json, jsonl |
+| Verbose | switch | false | `-Verbose` | Debug logging |
 
 ## Coverage
 
-**General Rules: 60/60 (100%)** | **Total PSSA Rules: 60/72 (83.3%)** | **Beyond-PSSA: 5 enhancements**
+60/60 general PSSA rules (100%) + 47 beyond-PSSA rules = 107 total.
 
-PoshGuard implements 100% of PSScriptAnalyzer's general-purpose rules PLUS 5 community-requested code quality enhancements that go beyond PSScriptAnalyzer's capabilities. The 12 excluded PSSA rules fall into specialized categories (DSC-only, complex compatibility requiring 200+ MB profiles, and internal PSSA utilities).
+12 excluded PSSA rules: 6 DSC-only, 3 complex compatibility (require 200+ MB profiles), 2 internal utilities, 1 duplicate.
 
-For complete rule documentation, see the [PSScriptAnalyzer Rules Catalog](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules).
+See [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules) for details.
 
-### Beyond-PSSA Enhancements (v3.2.0)
+### Beyond-PSSA (v3.2.0+)
 
-**Innovation Leadership** - PoshGuard extends PowerShell tooling with community-requested features:
+Community-requested enhancements:
+1. **TODO/FIXME standardization** - Consistent technical debt tracking
+2. **Unused namespace detection** - Performance optimization warnings
+3. **Non-ASCII character warnings** - Cross-platform encoding issues
+4. **ConvertFrom-Json optimization** - Auto-add `-Raw` for performance
+5. **SecureString disclosure detection** - Prevent credential leaks in logs
 
-1. **TODO/FIXME Comment Standardization** - Ensures consistent technical debt tracking
-   ```powershell
-   # BEFORE: # todo fix this later
-   # AFTER:  # TODO: Fix this later
-   ```
+### Advanced Detection (v3.3.0)
 
-2. **Unused Namespace Detection** - Identifies potentially unused `using namespace` imports for performance optimization
-   ```powershell
-   # Adds warnings for namespaces that appear unused
-   # REVIEW: Namespace may be unused - using namespace System.Net
-   ```
+50+ detection rules across 4 categories:
 
-3. **ASCII Character Warnings** - Detects non-ASCII characters that cause cross-platform encoding issues
-   ```powershell
-   # Warns about smart quotes, em dashes, and other Unicode characters
-   Write-Host "Hello—world"  # WARNING: Non-ASCII character detected (U+2014)
-   ```
+**Code Complexity**: cyclomatic complexity >10, nesting depth >4, function length >50 lines, parameter count >7
 
-4. **ConvertFrom-Json Optimization** - Automatically adds `-Raw` parameter for better performance
-   ```powershell
-   # BEFORE: Get-Content "config.json" | ConvertFrom-Json
-   # AFTER:  Get-Content "config.json" -Raw | ConvertFrom-Json
-   ```
+**Performance**: string concatenation in loops, array += in loops, inefficient pipeline order, N+1 patterns
 
-5. **SecureString Disclosure Detection** - Identifies potential credential leaks in logging/output
-   ```powershell
-   # Warns about potential SecureString exposure
-   Write-Host "Password: $securePassword"  # SECURITY WARNING: Potential SecureString disclosure
-   ```
+**Security**: command injection, path traversal, insecure deserialization, missing error logs
 
-These enhancements align with **v3.1.0 roadmap goals** and demonstrate PoshGuard's commitment to innovation in PowerShell tooling.
+**Maintainability**: magic numbers, unclear variable names, missing docs, duplicated code
 
-### Advanced Detection (v3.3.0) - World-Class Code Analysis
-
-**Beyond PSScriptAnalyzer** - PoshGuard now includes 50+ advanced detection rules across 4 categories:
-
-#### 1. Code Complexity Metrics
-- **Cyclomatic Complexity**: Flags functions with complexity > 10 (MEDIUM risk)
-- **Nesting Depth**: Detects deep nesting > 4 levels (HIGH risk)
-- **Function Length**: Identifies functions > 50 lines (LOW risk - refactoring candidate)
-- **Parameter Count**: Warns about functions with > 7 parameters (use parameter objects)
-
-#### 2. Performance Anti-Patterns
-- **String Concatenation in Loops**: Suggests using `-join` or `StringBuilder`
-- **Array += in Loops**: Recommends `ArrayList` or `List<T>` for better performance
-- **Inefficient Pipeline Order**: Detects `Sort-Object` before `Where-Object` (filter first!)
-- **N+1 Query Patterns**: Identifies repeated operations that could be cached
-
-#### 3. Security Vulnerabilities (OWASP Top 10 Aligned)
-- **Command Injection**: Detects `Start-Process` or `Invoke-Expression` with variable input
-- **Path Traversal**: Flags `../` patterns in file operations without validation
-- **Insecure Deserialization**: Warns about untrusted data deserialization
-- **Insufficient Error Logging**: Identifies catch blocks without logging for audit trails
-
-#### 4. Maintainability Issues
-- **Magic Numbers**: Detects unexplained numeric constants
-- **Unclear Variable Names**: Flags single-letter names (except loop counters)
-- **Missing Documentation**: Identifies functions without comment-based help
-- **Duplicated Code**: Detects repeated code blocks (future enhancement)
-
-**Usage**:
+Usage:
 ```powershell
 Import-Module ./tools/lib/AdvancedDetection.psm1
-
 $result = Invoke-AdvancedDetection -Content $scriptContent -FilePath "script.ps1"
-
-Write-Host "Total Issues: $($result.TotalIssues)"
-Write-Host "Errors: $($result.ErrorCount)"
-Write-Host "Warnings: $($result.WarningCount)"
-Write-Host "Info: $($result.InfoCount)"
-
 $result.Issues | Format-Table Rule, Severity, Line, Message
 ```
 
-### Enhanced Metrics & Observability (v3.3.0)
+### Metrics & Observability (v3.3.0)
 
-**Per-Rule Performance Tracking** - Granular metrics for continuous improvement:
+Per-rule tracking:
+- Fix confidence (0.0-1.0): syntax 50%, AST preservation 20%, minimal changes 20%, safety 10%
+- Success/failure rates per rule
+- Performance profiling (min/max/avg duration)
+- Detailed diagnostics
 
-- **Fix Confidence Scoring**: 0.0-1.0 score based on:
-  - Syntax validation (50% weight)
-  - AST structure preservation (20% weight)
-  - Minimal changes (20% weight)
-  - No dangerous side effects (10% weight)
-
-- **Success/Failure Rates**: Track which rules perform best and which need improvement
-- **Performance Profiling**: Min/max/avg duration per rule for optimization
-- **Detailed Diagnostics**: Error messages and failure analysis
-- **Session Metrics**: Overall success rate, top performers, problem rules
-
-**Usage**:
 ```powershell
 Import-Module ./tools/lib/EnhancedMetrics.psm1
-
 Initialize-MetricsTracking
-
-# Track individual fixes
-Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' `
-               -Success $true -DurationMs 45 -ConfidenceScore 0.95
-
-# Calculate confidence for a fix
-$confidence = Get-FixConfidenceScore -OriginalContent $before -FixedContent $after
-
-# Get comprehensive summary
-$summary = Get-MetricsSummary
-Show-MetricsSummary  # Pretty-printed to console
-
-# Export for analysis
+Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' -Success $true -DurationMs 45 -ConfidenceScore 0.95
 Export-MetricsReport -OutputPath "./metrics/session.json"
 ```
 
-### Implemented (60 rules)
+### Implemented Rules
 
-**Security (8/8 - 100%)**
-- PSAvoidUsingPlainTextForPassword
-- PSAvoidUsingConvertToSecureStringWithPlainText
-- PSUsePSCredentialType
-- PSAvoidUsingUserNameAndPasswordParams
-- PSAvoidUsingComputerNameHardcoded
-- PSAvoidUsingCmdletAliases
-- PSAvoidUsingInvokeExpression
-- PSAvoidUsingWriteHost
+**Security**: 8/8 (plaintext passwords, hardcoded computers, aliases, invoke-expression)
 
-**Best Practices (28/28 - 100%)**
-- PSAvoidUsingPositionalParameters
-- PSUseApprovedVerbs
-- PSReservedCmdletChar
-- PSReservedParams
-- PSMisleadingBacktick
-- PSAvoidSemicolonsAsLineTerminators
-- PSAvoidUsingDoubleQuotesForConstantString
-- PSUseSingularNouns
-- PSUseConsistentIndentation
-- PSUseConsistentWhitespace
-- PSAlignAssignmentStatement
-- PSPlaceOpenBrace
-- PSPlaceCloseBrace
-- PSUseCorrectCasing
-- PSProvideCommentHelp
-- PSShouldProcess
-- PSUseDeclaredVarsMoreThanAssignments
-- PSAvoidGlobalVars
-- PSAvoidDefaultValueSwitchParameter
-- PSUseCmdletCorrectly
-- PSAvoidTrailingWhitespace
-- PSAvoidMultipleTypeAttributes
-- PSAvoidUsingEmptyCatchBlock
-- PSAvoidNullOrEmptyHelpMessageAttribute
-- PSReturnCorrectTypesForDSCFunctions
-- PSUseOutputTypeCorrectly
-- PSAvoidInvokingEmptyMembers
-- PSAvoidOverwritingBuiltInCmdlets
+**Best Practices**: 28/28 (approved verbs, formatting, naming, parameters, scope)
 
-**Advanced (24/24 - 100%)**
-- PSUseToExportFieldsInManifest
-- PSMissingModuleManifestField
-- PSAvoidDefaultValueForMandatoryParameter
-- PSUseUTF8EncodingForHelpFile
-- PSUseBOMForUnicodeEncodedFile
-- PSAvoidLongLines
-- PSUseCompatibleSyntax (simplified)
-- PSAvoidUsingDeprecatedManifestFields
-- PSUseProcessBlockForPipelineCommand
-- PSUseSupportsShouldProcess
-- PSAvoidDefaultValueSwitchParameter
-- PSAvoidGlobalAliases
-- PSAvoidAssignmentToAutomaticVariable
-- PSAvoidUninitializedVariable
-- PSPossibleIncorrectComparisonWithNull
-- PSPossibleIncorrectUsageOfAssignmentOperator
-- PSPossibleIncorrectUsageOfRedirectionOperator
-- PSUseIdenticalMandatoryParametersForDSC
-- PSUseIdenticalParametersForDSC
-- PSUseDSCResourceFunctions
-- PSUseLiteralInitializerForHashtable
-- PSAvoidUsingBrokenHashAlgorithms
-- PSUseCompatibleCmdlets (warnings)
-- PSAvoidGlobalFunctions
+**Advanced**: 24/24 (manifests, encoding, compatibility, pipelines, DSC functions)
 
-### Excluded (12 rules)
+### Excluded Rules
 
-**DSC-Only (6 rules)** - Not applicable to general scripts
-- PSDSCDscExamplesPresent
-- PSDSCDscTestsPresent
-- PSDSCStandardDSCFunctionsInResource
-- PSDSCReturnCorrectTypesForDSCFunctions
-- PSDSCUseIdenticalMandatoryParametersForDSC
-- PSDSCUseIdenticalParametersForDSC
+**DSC-only**: 6 rules (not applicable to general scripts)
 
-**Complex Compatibility (3 rules)** - Require 200+ MB profile data
-- PSUseCompatibleTypes
-- PSUseCompatibleCommands
-- PSUseCompatibleSyntax (full implementation)
+**Complex compatibility**: 3 rules (require 200+ MB profiles; simplified version covers 80% of cases)
 
-**Utility (2 rules)** - Internal PSSA development tools
-- PSAvoidGlobalOrUnitializedVariables (duplicate)
-- PSUseCorrectModuleManifestFormat (covered by Test-ModuleManifest)
+**Utility**: 2 rules (duplicates or internal PSSA tools)
 
-**Note**: A simplified compatibility warning system covers 80% of real-world compatibility issues without requiring profile configuration.
+Total excluded: 12 rules
 
 ## Architecture
 
 ```
-PoshGuard/
-├── tools/
-│   ├── Apply-AutoFix.ps1         # Main entry point
-│   └── lib/                      # Modular fixes
-│       ├── Core.psm1             # Utilities (5 functions)
-│       ├── Security.psm1         # Security fixes (8 rules)
-│       ├── BestPractices.psm1    # Best practices facade
-│       ├── Formatting.psm1       # Formatting facade
-│       └── Advanced.psm1         # Advanced patterns facade
-├── modules/                      # PSQA integration
-│   ├── Analysis/                 # AST analysis
-│   ├── Security/                 # Security scanning
-│   ├── Fixing/                   # Auto-fix engine
-│   └── Reporting/                # Output formatting
-└── docs/                         # Documentation
+tools/Apply-AutoFix.ps1  # Entry point
+tools/lib/               # Modular fixes (Core, Security, BestPractices, Formatting, Advanced)
+docs/                    # Documentation
 ```
 
-**Data Flow**: Script → PSScriptAnalyzer → Rule Detection → AST Parsing → Transformation → Validation → Output
+**Flow**: Script → PSScriptAnalyzer → AST Parse → Transform → Validate → Output
 
-**Trust Boundaries**: All file operations use -WhatIf support; rollback available via timestamped backups in `.backup/`
+**Trust**: File ops use -WhatIf; rollback via timestamped backups in `.backup/`
 
 ## Security
 
-- **Secrets**: No credentials stored or logged. Auto-fix detects plaintext passwords and suggests SecureString alternatives.
-- **Least Privilege**: Read-only by default with `-DryRun`. Writes only when explicitly approved.
-- **Supply Chain**: Module dependencies pinned in manifest. No external API calls. SBOM available in releases.
-- **Code Signing**: Supports Authenticode signing for trusted enterprise deployment.
-- **Disclosure**: Report security issues via [GitHub Security Advisories](https://github.com/cboyd0319/PoshGuard/security/advisories) (see [SECURITY.md](docs/SECURITY.md))
-
-### Authenticode Signing
-
-For production deployment, sign PoshGuard scripts with your organization's trusted certificate:
-
-```powershell
-# Sign with certificate
-$cert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
-Set-AuthenticodeSignature -FilePath ./tools/Apply-AutoFix.ps1 -Certificate $cert
-
-# Verify signature
-Get-AuthenticodeSignature -FilePath ./tools/Apply-AutoFix.ps1
-
-# For development, create self-signed cert
-$cert = New-SelfSignedCertificate -Subject "CN=PoshGuard Dev" -Type CodeSigningCert -CertStoreLocation Cert:\CurrentUser\My
-```
+- **Secrets**: None stored. Detects plaintext passwords, suggests SecureString
+- **Least privilege**: Read-only by default (-DryRun). Writes only when approved
+- **Supply chain**: Dependencies pinned. No external API calls. SBOM in releases
+- **Signing**: Authenticode supported for enterprise deployment
+- **Disclosure**: security@poshguard via [GitHub Security Advisories](https://github.com/cboyd0319/PoshGuard/security/advisories)
 
 ## Performance
 
-- **Throughput**: ~50 files/min on typical PowerShell scripts
-- **Latency**: 1-3 seconds per file (AST parsing + transformation)
-- **Memory**: <100 MB for typical projects
-- **Limits**: Files >10K lines may see slower parsing
+- Throughput: ~50 files/min
+- Latency: 1-3 sec/file
+- Memory: <100 MB
+- Files >10K lines may be slower
 
 ## Examples
 
-See the [samples/](samples/) directory for real-world examples with intentionally broken scripts and their expected fixes:
-
-- **before-security-issues.ps1** — 12 security violations (plaintext passwords, hardcoded computers, aliases, etc.)
-- **after-security-issues.ps1** — Expected fixed output
-- **before-formatting.ps1** — Formatting violations (brace placement, indentation, casing)
+See [samples/](samples/) for broken scripts and expected fixes:
+- `before-security-issues.ps1` — 12 security violations
+- `after-security-issues.ps1` — Fixed output
+- `before-formatting.ps1` — Formatting violations
 
 ```powershell
-# Run demo
 ./tools/Apply-AutoFix.ps1 -Path ./samples/before-security-issues.ps1 -ShowDiff
 ```
 
 ## Documentation
 
-**📚 200+ Pages of World-Class Documentation** - Most comprehensive of any PowerShell tool
+**Getting Started**:
+- [Quick Start](docs/quick-start.md) — 5-minute setup
+- [How It Works](docs/how-it-works.md) — AST transformations
+- [CI/CD Integration](docs/ci-integration.md) — GitHub Actions, Azure DevOps, GitLab, Jenkins
 
-### Getting Started (Zero Technical Knowledge Required)
-- **[Quick Start](docs/quick-start.md)** — Get started in 5 minutes
-- **[How It Works](docs/how-it-works.md)** — Deep dive into AST transformations with before/after examples
-- **[CI/CD Integration](docs/ci-integration.md)** — GitHub Actions, Azure DevOps, GitLab, Jenkins
+**AI/ML Features**:
+- [AI/ML Integration](docs/AI-ML-INTEGRATION.md) — ML confidence scoring, MCP integration
+- [Advanced Detection](docs/ADVANCED-DETECTION.md) — 50+ beyond-PSSA rules
+- [Enhanced Metrics](docs/ENHANCED-METRICS.md) — Per-rule performance tracking
 
-### AI/ML & Intelligence (NEW!)
-- **[AI/ML Integration](docs/AI-ML-INTEGRATION.md)** 🤖 — ML confidence scoring, MCP integration, pattern learning
-- **[Advanced Detection](docs/ADVANCED-DETECTION.md)** — 50+ beyond-PSSA detection rules
-- **[Enhanced Metrics](docs/ENHANCED-METRICS.md)** — Per-rule performance tracking and diagnostics
+**Standards**:
+- [Standards Compliance](docs/STANDARDS-COMPLIANCE.md) — NIST, CIS, ISO, MITRE, PCI-DSS, HIPAA, SOC 2
+- [Security Framework](docs/SECURITY-FRAMEWORK.md) — OWASP ASVS 5.0
+- [Benchmarks](docs/benchmarks.md) — Repeatable results (98%+ success rate)
 
-### Standards & Compliance (Industry-Leading)
-- **[Comprehensive Standards Compliance](docs/STANDARDS-COMPLIANCE.md)** 📜 — 10+ standards (NIST, CIS, ISO, MITRE, PCI-DSS, HIPAA, SOC 2)
-- **[Security Framework](docs/SECURITY-FRAMEWORK.md)** — OWASP ASVS 5.0 complete mappings
-- **[Competitive Analysis](docs/COMPETITIVE-ANALYSIS.md)** — Why PoshGuard is THE BEST
-
-### Quality & Reliability
-- **[Benchmarks](docs/benchmarks.md)** — Repeatable results with exact inputs, versions, and commands (82.5% success rate)
-- **[SRE Principles](docs/SRE-PRINCIPLES.md)** — Service Level Objectives, error budgets, observability (99.5% SLO)
-- **[Engineering Standards](docs/ENGINEERING-STANDARDS.md)** — Code quality, performance budgets, testing requirements
-
-### Architecture & Implementation
-- **[Architecture Overview](docs/ARCHITECTURE.md)** — Module structure and data flow
-- **[UGE Compliance](docs/UGE-COMPLIANCE.md)** — Ultimate Genius Engineer framework adherence
-- **[Security Policy](docs/SECURITY.md)** — Vulnerability disclosure process
-
-### UI/UX Design (World-Class)
-- **[UX Design Specification](docs/UX-DESIGN-SPECIFICATION.md)** 🎨 — Professional UI/UX design system, WCAG 2.2 AA compliant
-- **[UI Design Principles](docs/UI-DESIGN-PRINCIPLES.md)** — Zero-knowledge friendly design patterns
-- **[UI Transformation Summary](docs/UI-TRANSFORMATION-SUMMARY.md)** — Complete UI improvement metrics and impact
-
-### Contributing & Roadmap
-- **[Contributing Guide](docs/CONTRIBUTING.md)** — Local dev setup and PR guidelines
-- **[Changelog](docs/CHANGELOG.md)** — Version history and release notes
-- **[Roadmap](docs/ROADMAP.md)** — Future features and priorities
-
-**Sample Outputs**:
-- [JSONL format](docs/sample-output.jsonl) — For CI consumers
-- [Sample report](docs/sample-report.jsonl) — Full benchmark output
+**Reference**:
+- [Architecture](docs/ARCHITECTURE.md) — Module structure
+- [Security Policy](docs/SECURITY.md) — Disclosure process
+- [Contributing](docs/CONTRIBUTING.md) — Dev setup, PR guidelines
+- [Changelog](docs/CHANGELOG.md) — Version history
+- [Roadmap](docs/ROADMAP.md) — Future features
 
 ## Troubleshooting
 
-- **`PSScriptAnalyzer module not found`**: Install via `Install-Module PSScriptAnalyzer -Scope CurrentUser`
-- **`Access denied writing file`**: Run with elevated permissions or use `-DryRun` to preview
-- **`Cannot parse script`**: Syntax errors prevent AST parsing. Fix syntax issues first with `Test-ScriptFileInfo`
-- **Some rules not applied**: Check `-Skip` parameter. DSC-only rules are intentionally excluded.
-- **Performance issues on large files**: Consider splitting files <5K lines or use `-Verbose` to identify slow rules
-- **CI/CD integration**: Use `-NonInteractive` flag and check exit codes for pipeline gating
+| Error | Fix |
+|-------|-----|
+| `PSScriptAnalyzer module not found` | `Install-Module PSScriptAnalyzer -Scope CurrentUser` |
+| `Access denied writing file` | Use `-DryRun` or run with elevated permissions |
+| `Cannot parse script` | Fix syntax errors first with `Test-ScriptFileInfo` |
+| Some rules not applied | Check `-Skip` parameter; DSC rules excluded by design |
+| Performance issues on large files | Split files <5K lines or use `-Verbose` to identify slow rules |
+| CI/CD integration | Use `-NonInteractive` and check exit codes |
 
 ## Roadmap
 
 - [x] 100% general PSSA rule coverage (v3.0.0)
-- [x] GitHub Actions CI/CD integration
-- [x] SBOM generation and build attestation
+- [x] GitHub Actions CI/CD
+- [x] SBOM generation
 - [ ] PowerShell Gallery publication
-- [ ] VS Code extension for inline fixes
-- [ ] Azure DevOps pipeline templates
+- [ ] VS Code extension
+- [ ] Azure DevOps templates
 - [ ] Custom rule framework
-- [ ] Performance: parallel file processing
-- [ ] PSRule integration for policy enforcement
-- [ ] Beyond PSSA: Community-requested rules
+- [ ] Parallel file processing
 
 ## Contributing
 
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for local dev setup, test requirements, and PR guidelines.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for dev setup, tests, and PR guidelines.
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details. You can use this commercially, modify it, and distribute it. Attribution appreciated but not required.
+MIT — See [LICENSE](LICENSE). Use commercially, modify, distribute. Attribution appreciated but not required.
 
 ---
 
-**Status**: Production-ready v4.0.0 | THE WORLD'S BEST PowerShell security & quality tool | October 2025
+**Status**: Production-ready v4.3.0 | October 2025

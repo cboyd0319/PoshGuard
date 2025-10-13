@@ -1,19 +1,12 @@
-# PoshGuard Benchmarks
+# Benchmarks
 
-This document reports *repeatable* results with exact inputs, versions, and commands.
+Repeatable results with exact inputs, versions, commands.
 
 ## Corpus
 
-3 synthetic fixtures in `samples/` designed to trigger common PSSA rules:
-- `PSUseDeclaredVarsMoreThanAssignments`
-- `PSUseConsistentIndentation`
-- `PSAvoidUsingWriteHost`
-- `PSAvoidUsingCmdletAliases`
-- `PSAvoidUsingPlainTextForPassword`
-- `PSAvoidUsingEmptyCatchBlock`
-- And more...
+3 synthetic fixtures in `samples/` triggering common PSSA rules.
 
-**Total baseline violations**: 27
+Total baseline violations: 27
 
 ## Environment
 
@@ -33,11 +26,9 @@ This document reports *repeatable* results with exact inputs, versions, and comm
 | `after-security-issues.ps1` | 50 | 1.3 KB | 0 | Expected fixed output (baseline) |
 | **Total** | **122** | **3.4 KB** | **21** | Comprehensive test coverage |
 
-**Corpus Description**:
-- **Source**: Manually crafted to represent common real-world issues
-- **Coverage**: All 60 general-purpose PSSA rules represented
-- **Diversity**: Security, formatting, best practices, advanced patterns
-- **Validation**: Each violation verified against PSScriptAnalyzer output
+Source: Manual, representing common real-world issues
+Coverage: All 60 general-purpose PSSA rules
+Validation: Each violation verified against PSScriptAnalyzer
 
 ### Rule Categories Tested
 
@@ -78,35 +69,15 @@ Invoke-ScriptAnalyzer -Path samples -Recurse -Settings Default |
 | Regressions | **0** |
 | Parse failures | **0** |
 
-### Detailed Breakdown
+### Breakdown
 
-**before-security-issues.ps1** (13 violations → 0):
-- PSAvoidUsingPlainTextForPassword
-- PSAvoidUsingComputerNameHardcoded
-- PSAvoidUsingConvertToSecureStringWithPlainText
-- PSAvoidUsingCmdletAliases (2 instances)
-- PSAvoidUsingWriteHost
-- PSAvoidUsingInvokeExpression
-- PSAvoidGlobalVars
-- PSAvoidUsingPositionalParameters
-- PSAvoidUsingDoubleQuotesForConstantString
-- PSAvoidSemicolonsAsLineTerminators
-- PSAvoidTrailingWhitespace
-- PSAvoidUsingEmptyCatchBlock
-
-**before-formatting.ps1** (14 violations → 0):
-- PSPlaceOpenBrace (3 instances)
-- PSPlaceCloseBrace (2 instances)
-- PSUseConsistentIndentation (2 instances)
-- PSAlignAssignmentStatement (3 instances)
-- PSUseCorrectCasing
-- PSUseConsistentWhitespace (2 instances)
-- PSProvideCommentHelp
+before-security-issues.ps1: 13 violations → 0
+before-formatting.ps1: 14 violations → 0
 
 ### Performance
 
-- Average time per file: ~325ms
-- Throughput: ~3 files/second
+- ~325ms per file
+- ~3 files/second
 
 ## Rule-by-Rule Validation
 
