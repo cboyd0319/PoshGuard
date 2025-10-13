@@ -175,6 +175,16 @@ npx -y @playwright/mcp@latest
 
 ## Troubleshooting
 
+For comprehensive troubleshooting, see **[.github/MCP-TROUBLESHOOTING.md](../.github/MCP-TROUBLESHOOTING.md)**
+
+### Quick Diagnostics
+
+Run the validation script to test your MCP configuration:
+
+```powershell
+pwsh -File .github/scripts/Test-MCPConfiguration.ps1
+```
+
 ### MCP not working in Copilot
 
 **Check:**
@@ -196,32 +206,40 @@ Get-ChildItem Env: | Where-Object Name -like "COPILOT_MCP_*"
 
 **Error:** "Personal Access Tokens are not supported for this endpoint"
 
-**Why:** GitHub deprecated PATs for some API endpoints. OAuth is now required.
+**Why:** GitHub Copilot MCP endpoint does not support Personal Access Token authentication.
 
 **Fix:**
 
-**Option 1: Use OAuth (recommended)**
-Edit `.github/copilot-mcp.json` to remove PAT authentication:
+**Recommended: Remove GitHub MCP server configuration**
+
+The GitHub MCP server is not needed in `.github/copilot-mcp.json`. GitHub Copilot has built-in GitHub integration that works automatically. Simply remove the `github` server entry from your configuration.
+
+**Correct configuration:**
+```json
+{
+  "mcpServers": {
+    "context7": { ... },
+    "openai-websearch": { ... },
+    "fetch": { ... },
+    "playwright": { ... }
+  }
+}
+```
+
+**Do not include:**
 ```json
 {
   "github": {
     "type": "http",
     "url": "https://api.githubcopilot.com/mcp/",
-    "tools": ["*"]
+    "headers": {
+      "Authorization": "Bearer $COPILOT_MCP_GITHUB_PERSONAL_ACCESS_TOKEN"
+    }
   }
 }
 ```
 
-**Option 2: Fine-grained PAT**
-Create a fine-grained PAT instead of classic PAT:
-- Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
-- Set scopes: `repo`, `read:packages`, `read:org`
-
-**Option 3: GitHub App token**
-Create a GitHub App and use installation tokens instead of PATs.
-
-**Option 4: Check Enterprise restrictions**
-If you're on GitHub Enterprise, your org may restrict PATs. Contact your admin.
+For more details, see [.github/MCP-TROUBLESHOOTING.md](../.github/MCP-TROUBLESHOOTING.md).
 
 ### MCP servers not working in PoshGuard
 
