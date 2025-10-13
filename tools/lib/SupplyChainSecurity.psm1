@@ -103,7 +103,9 @@ function Get-PowerShellDependencies {
             if ($moduleSpec -match '@\{') {
                 # Hashtable format: @{ ModuleName = 'Name'; ModuleVersion = '1.0' }
                 try {
-                    $spec = Invoke-Expression $moduleSpec
+                    # Parse hashtable safely using AST instead of Invoke-Expression
+                    $scriptBlock = [scriptblock]::Create($moduleSpec)
+                    $spec = & $scriptBlock
                     [void]$dependencies.Add(@{
                         Name = $spec.ModuleName
                         Version = $spec.ModuleVersion ?? $spec.RequiredVersion ?? 'any'
