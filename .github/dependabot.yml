@@ -21,7 +21,7 @@ updates:
       - "dependencies"
       - "github-actions"
     commit-message:
-      prefix: "ci"
+      prefix: "chore(deps)"
       include: "scope"
 
   # npm dependencies for VSCode extension
@@ -41,7 +41,7 @@ updates:
       - "dependencies"
       - "npm"
     commit-message:
-      prefix: "deps"
+      prefix: "chore(deps)"
       include: "scope"
     # Ignore major version updates for VSCode engine compatibility
     ignore:
