@@ -470,17 +470,17 @@ When adding new features or modifying existing ones:
 
 Common issues and solutions:
 
-- **AST Parse Errors**: Validate syntax before transformation (see Common Pitfalls #3)
-- **Path Issues**: Always use absolute paths or resolve with `Resolve-Path` (see Common Pitfalls #4)
-- **Module Loading**: Use `Import-Module -Force` for development (see Common Pitfalls #2)
-- **Test Failures**: Check for platform-specific differences (see Common Pitfalls #5)
+- **AST Parse Errors**: Validate syntax before transformation (see "Common Pitfalls & Gotchas" section, item 3)
+- **Path Issues**: Always use absolute paths or resolve with `Resolve-Path` (see "Common Pitfalls & Gotchas" section, item 4)
+- **Module Loading**: Use `Import-Module -Force` for development (see "Common Pitfalls & Gotchas" section, item 2)
+- **Test Failures**: Check for platform-specific differences (see "Common Pitfalls & Gotchas" section, item 5)
 
 ## Resources
 
-- [PowerShell AST Documentation](https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.language)
-- [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/RuleDocumentation)
+- [PowerShell AST Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language)
+- [PSScriptAnalyzer Rules](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/rules/readme)
 - [Pester Documentation](https://pester.dev/)
-- [PoshGuard Documentation](../docs/)
+- [PoshGuard Documentation](../docs/README.md)
 
 ## Code Review Checklist
 
