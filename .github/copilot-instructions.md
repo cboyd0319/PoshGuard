@@ -1,5 +1,28 @@
 # GitHub Copilot Instructions for PoshGuard
 
+## Quick Reference (Most Common Commands)
+```powershell
+# Running PoshGuard
+Invoke-PoshGuard -Path ./script.ps1                    # Analyze single script
+Invoke-PoshGuard -Path ./scripts/ -Recurse             # Analyze directory
+Invoke-PoshGuard -Path ./script.ps1 -Fix               # Auto-fix issues
+Invoke-PoshGuard -Path ./script.ps1 -Severity High     # Only high severity
+Invoke-PoshGuard -Path ./script.ps1 -Format JSON       # JSON output
+
+# Development and Testing
+Invoke-Pester ./tests/                                 # Run all tests
+Invoke-Pester ./tests/MyRule.Tests.ps1                 # Run specific test
+Invoke-Pester -CodeCoverage ./PoshGuard/PoshGuard.psm1 # Test with coverage
+
+# Module Development
+Import-Module ./PoshGuard/PoshGuard.psd1 -Force        # Reload module
+Get-Help Invoke-PoshGuard -Full                        # View documentation
+
+# Quality checks (run before every commit)
+Invoke-ScriptAnalyzer -Path ./PoshGuard -Recurse       # Lint PowerShell code
+Invoke-Pester ./tests/                                 # Run all tests
+```
+
 ## Project Overview
 
 PoshGuard is an advanced PowerShell QA and auto-fix engine that uses AST (Abstract Syntax Tree) analysis to detect and automatically fix code quality issues, security vulnerabilities, and style violations in PowerShell scripts.
@@ -130,6 +153,31 @@ PoshGuard/
    - Ensure idempotent behavior
    - Include edge cases
 
+## MCP Integration (Model Context Protocol)
+
+PoshGuard integrates with MCP servers for enhanced AI capabilities:
+
+### Built-in (GitHub Copilot)
+- **github-mcp:** Repository operations, issues, PRs (OAuth, automatic - no config needed)
+
+### External (Configured)
+- **context7:** Version-specific PowerShell documentation (HTTP, needs API key)
+  - Provides accurate docs for PSScriptAnalyzer, Pester, PowerShell Core, AST APIs
+  - No hallucinations, direct from source
+- **openai-websearch:** Web search via OpenAI for PowerShell best practices (local/uvx, needs API key)
+  - Use for current community practices, security patterns, compliance frameworks
+- **fetch:** Web content fetching (local/npx, ready)
+  - Useful for PowerShell Gallery research, module documentation, security advisories
+- **playwright:** Browser automation for testing (local/npx, ready)
+  - Test PowerShell web interactions, validate auto-fix results
+
+**Config:** `.github/copilot-mcp.json` (HTTP and local command servers)  
+**Important:** GitHub MCP tools are built-in to Copilot. Do NOT add GitHub server to copilot-mcp.json. Personal Access Tokens (PAT) are NOT supported for GitHub MCP - it uses OAuth automatically.
+
+**Environment Variables Required:**
+- `COPILOT_MCP_CONTEXT7_API_KEY` — For Context7 documentation access
+- `COPILOT_MCP_OPENAI_API_KEY` — For OpenAI web search capabilities
+
 ## Key Features and Implementation Details
 
 ### AST-Based Transformations
@@ -167,6 +215,60 @@ PoshGuard implements and validates against 25+ industry standards:
 - SOC 2
 - PCI-DSS
 
+## Data Contracts
+
+### PSScriptAnalyzer Diagnostic Record
+```powershell
+# Standard diagnostic from PSScriptAnalyzer
+@{
+    RuleName = "PSAvoidUsingCmdletAliases"
+    Severity = "Warning"  # Error, Warning, Information
+    Message = "Alias 'gci' should not be used"
+    ScriptPath = "C:\scripts\MyScript.ps1"
+    Line = 42
+    Column = 5
+    Extent = <script extent object>
+}
+```
+
+### PoshGuard Fix Result
+```powershell
+# Result from auto-fix operation
+@{
+    FilePath = "C:\scripts\MyScript.ps1"
+    Success = $true
+    FixesApplied = @(
+        @{
+            RuleName = "PSAvoidUsingCmdletAliases"
+            Line = 42
+            OldCode = "gci -Path ."
+            NewCode = "Get-ChildItem -Path ."
+            Confidence = 0.95  # ML confidence score
+        }
+    )
+    BackupPath = "C:\scripts\MyScript.ps1.20251013_143022.bak"
+    Warnings = @()
+    Errors = @()
+}
+```
+
+### PoshGuard Configuration
+```powershell
+# Configuration object (loaded from config files or parameters)
+@{
+    SeverityThreshold = "Warning"  # Minimum severity to report
+    AutoFix = $false
+    BackupEnabled = $true
+    IncludeRules = @()  # Empty = all rules
+    ExcludeRules = @("PSAvoidUsingWriteHost")
+    Recurse = $false
+    OutputFormat = "Console"  # Console, JSON, HTML, XML
+    ComplianceFrameworks = @("NIST", "OWASP")
+}
+```
+
+> If you add fields to these structures, maintain backward compatibility and document changes.
+
 ## Development Workflow
 
 ### Adding a New Auto-Fix Rule
@@ -192,10 +294,27 @@ Invoke-Pester -CodeCoverage ./PoshGuard/PoshGuard.psm1
 
 ### CI/CD Pipeline
 
-- GitHub Actions workflows in `.github/workflows/`
-- `ci.yml`: Runs on all PRs (linting, testing, security scans)
-- `release.yml`: Automated releases with versioning
-- `poshguard-quality-gate.yml`: Quality checks and benchmarks
+GitHub Actions workflows automate quality gates and releases:
+
+**Workflow Files** (`.github/workflows/`):
+- `poshguard-qa.yml` — Main CI pipeline (PSScriptAnalyzer, Pester tests, multi-platform)
+- `dependabot-auto-merge.yml` — Auto-merge safe dependency updates
+- `release.yml` — Automated releases with versioning and changelog
+- `poshguard-quality-gate.yml` — Quality checks and performance benchmarks
+
+**CI/CD Features:**
+1. **Multi-platform testing:** Windows, Linux, macOS (PowerShell 7)
+2. **Quality gates:** PSScriptAnalyzer must pass, Pester tests must pass
+3. **Path-based filtering:** Skips CI for docs-only changes
+4. **Auto-merge:** Dependabot PRs for patch/minor versions
+5. **Concurrency control:** Cancel outdated runs automatically
+
+**Triggered by:**
+- All PRs and pushes to `main` branch
+- Manual workflow dispatch
+- Dependabot PR creation
+
+All checks must pass before merge. See `.github/workflows/` for details.
 
 ## Common Patterns
 
@@ -295,14 +414,66 @@ When adding new features or modifying existing ones:
 4. **Memory Management**: Dispose of large objects explicitly
 5. **Streaming**: Use streaming for large files
 
+## Common Pitfalls & Gotchas
+
+1. **PowerShell Version:** Requires 5.1+ or 7+
+   - Check with `$PSVersionTable.PSVersion`
+   - Different behavior between Windows PowerShell 5.1 and PowerShell 7
+   - Test fixes on both versions when possible
+
+2. **Module Loading:** Always use `-Force` during development
+   - Symptom: Changes to module not reflected
+   - Fix: `Import-Module ./PoshGuard/PoshGuard.psd1 -Force`
+   - Clear module cache: `Remove-Module PoshGuard -ErrorAction SilentlyContinue`
+
+3. **AST Parse Errors:** Validate syntax before transformation
+   - Symptom: `ParseError` when processing malformed scripts
+   - Fix: Catch parse errors, log, continue with next file
+   - Use `[System.Management.Automation.Language.Parser]::ParseFile()` with error refs
+
+4. **Path Issues:** Always use absolute paths or resolve properly
+   - ✅ GOOD: `Resolve-Path $FilePath` or `(Get-Item $FilePath).FullName`
+   - ❌ AVOID: Relative paths without resolution
+   - Cross-platform: Use `Join-Path` instead of string concatenation
+
+5. **Platform Differences:** Test on Windows, Linux, and macOS
+   - Path separators: Use `[System.IO.Path]::DirectorySeparatorChar`
+   - Case sensitivity: Assume case-sensitive file systems
+   - Line endings: Normalize with `-Raw` parameter
+
+6. **Backup Files:** Always create backups before applying fixes
+   - Format: `{filename}.{timestamp}.bak`
+   - Cleanup: Document backup retention policy
+   - Rollback: Provide easy restore mechanism
+
+7. **Idempotent Fixes:** All auto-fixes must be idempotent
+   - Running fix twice should be safe and produce same result
+   - Check if already compliant before applying fix
+   - Test with multiple fix passes
+
+8. **Pester Test Isolation:** Tests must not depend on external state
+   - Mock all external calls (Test-Path, Get-Content, etc.)
+   - Use `TestDrive:` for file operations in tests
+   - Clean up test artifacts in AfterEach blocks
+
+9. **PSScriptAnalyzer Rules:** Keep rules updated
+   - Update PSScriptAnalyzer regularly for new rules
+   - Document custom rule suppressions with justification
+   - Use `.pssasuppressfile` for known false positives
+
+10. **Module Structure:** Respect development vs. installed structure
+    - Development: `tools/lib/` for auto-fix modules
+    - Installed: `PoshGuard/lib/` structure
+    - Module manifest handles dynamic loading
+
 ## Troubleshooting
 
 Common issues and solutions:
 
-- **AST Parse Errors**: Validate syntax before transformation
-- **Path Issues**: Always use absolute paths or resolve with `Resolve-Path`
-- **Module Loading**: Use `Import-Module -Force` for development
-- **Test Failures**: Check for platform-specific differences (Windows/Linux/macOS)
+- **AST Parse Errors**: Validate syntax before transformation (see Common Pitfalls #3)
+- **Path Issues**: Always use absolute paths or resolve with `Resolve-Path` (see Common Pitfalls #4)
+- **Module Loading**: Use `Import-Module -Force` for development (see Common Pitfalls #2)
+- **Test Failures**: Check for platform-specific differences (see Common Pitfalls #5)
 
 ## Resources
 

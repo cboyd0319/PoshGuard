@@ -1,6 +1,9 @@
 {
+  "$schema": "https://modelcontextprotocol.io/schema/copilot-mcp.json",
+  "$comment": "NOTE: GitHub MCP server tools (repo operations, issues, PRs) are built-in to Copilot and do not need configuration here. GitHub MCP uses OAuth through Copilot's built-in authentication.",
   "mcpServers": {
     "context7": {
+      "description": "Up-to-date PowerShell documentation for PSScriptAnalyzer, Pester, PowerShell Core, and AST manipulation. Provides accurate, version-specific documentation with no hallucinations.",
       "type": "http",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
@@ -9,6 +12,7 @@
       "tools": ["*"]
     },
     "openai-websearch": {
+      "description": "Web search for PowerShell best practices, AST manipulation techniques, security patterns, and compliance frameworks. Use for current PowerShell community practices.",
       "type": "local",
       "command": "uvx",
       "args": ["openai-websearch-mcp"],
@@ -18,15 +22,17 @@
       "tools": ["openai_web_search"]
     },
     "fetch": {
+      "description": "Fetch web content for documentation analysis and compliance standards. Useful for researching PowerShell Gallery modules and security advisories.",
       "type": "local",
       "command": "npx",
-      "args": ["-y", "mcp-fetch-server@latest"],
+      "args": ["-y", "@modelcontextprotocol/server-fetch@latest"],
       "tools": ["*"]
     },
     "playwright": {
+      "description": "Browser automation for testing PowerShell web interactions and validating auto-fix results. Use for interactive debugging and testing.",
       "type": "local",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
+      "args": ["-y", "@modelcontextprotocol/server-playwright@latest"],
       "tools": ["*"]
     }
   }
