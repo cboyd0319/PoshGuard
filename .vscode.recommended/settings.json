@@ -6,8 +6,6 @@
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  
-  // PowerShell specific settings
   "powershell.codeFormatting.preset": "OTBS",
   "powershell.codeFormatting.openBraceOnSameLine": true,
   "powershell.codeFormatting.newLineAfterOpenBrace": true,
@@ -21,8 +19,6 @@
   "powershell.codeFormatting.useCorrectCasing": true,
   "powershell.scriptAnalysis.enable": true,
   "powershell.scriptAnalysis.settingsPath": ".pssasuppressfile",
-  
-  // GitHub Copilot settings
   "github.copilot.enable": {
     "*": true,
     "plaintext": false,
@@ -30,15 +26,11 @@
     "powershell": true
   },
   "github.copilot.editor.enableAutoCompletions": true,
-  
-  // File associations
   "files.associations": {
     "*.ps1": "powershell",
     "*.psm1": "powershell",
     "*.psd1": "powershell"
   },
-  
-  // Exclude patterns
   "files.exclude": {
     "**/.backup": true,
     "**/.psqa-backup": true,
@@ -46,8 +38,6 @@
     "**/*.tmp": true,
     "**/logs": true
   },
-  
-  // Search exclude patterns
   "search.exclude": {
     "**/.backup": true,
     "**/.psqa-backup": true,
