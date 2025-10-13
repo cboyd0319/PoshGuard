@@ -323,7 +323,7 @@ Download the latest release from [GitHub Releases](https://github.com/cboyd0319/
 
 ```powershell
 # Extract zip to desired location
-Expand-Archive poshguard-3.0.0.zip -DestinationPath C:\Tools\PoshGuard
+Expand-Archive poshguard-4.3.0.zip -DestinationPath C:\Tools\PoshGuard
 
 # Import module
 Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1

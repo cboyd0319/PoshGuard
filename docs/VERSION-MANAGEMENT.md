@@ -51,7 +51,16 @@ When releasing a new version, the following files **MUST** be updated to maintai
 | **Restore-Backup.ps1** | `tools/Restore-Backup.ps1` | `.NOTES Version:` | `Version: 4.3.0` |
 | **Start-InteractiveTutorial.ps1** | `tools/Start-InteractiveTutorial.ps1` | `.NOTES Version:` | `Version: 4.3.0` |
 
-### 4. Library Modules (OPTIONAL)
+### 4. Configuration & Asset Files (REQUIRED)
+
+| File | Location | Field | Example |
+|------|----------|-------|---------|
+| **poshguard.json** | `config/poshguard.json` | `"version"` | `"version": "4.3.0"` |
+| **latest.json** | `benchmarks/latest.json` | `"PoshGuardVersion"` | `"PoshGuardVersion": "4.3.0"` |
+| **package.json** | `vscode-extension/package.json` | `"version"` | `"version": "4.3.0"` |
+| **README.md examples** | `README.md` | Release filename in examples | `poshguard-4.3.0.zip` |
+
+### 5. Library Modules (OPTIONAL)
 
 Library modules (`tools/lib/*.psm1`) maintain their own independent version numbers based on when they were last updated. These do NOT need to match the main PoshGuard version.
 
@@ -136,7 +145,15 @@ Update `.NOTES Version:` field in:
 - `tools/Restore-Backup.ps1`
 - `tools/Start-InteractiveTutorial.ps1`
 
-### Step 6: Create Release
+### Step 6: Update Configuration & Asset Files
+
+Update version fields in:
+- `config/poshguard.json`: `"version": "4.4.0"`
+- `benchmarks/latest.json`: `"PoshGuardVersion": "4.4.0"`
+- `vscode-extension/package.json`: `"version": "4.4.0"`
+- `README.md`: Update release filename in examples (e.g., `poshguard-4.4.0.zip`)
+
+### Step 7: Create Release
 
 ```powershell
 # Use the Create-Release.ps1 script
@@ -150,7 +167,7 @@ Update `.NOTES Version:` field in:
 # ✓ Generate release package
 ```
 
-### Step 7: Push Release (Optional)
+### Step 8: Push Release (Optional)
 
 ```powershell
 # Push tag to trigger release workflow
@@ -169,7 +186,10 @@ Before creating a release, verify:
 - [ ] CHANGELOG.md has entry for new version
 - [ ] MODULE_METADATA.md references updated
 - [ ] ROADMAP.md status line updated
-- [ ] Tool scripts updated (Apply-AutoFix.ps1, etc.)
+- [ ] Tool scripts updated (Apply-AutoFix.ps1, Restore-Backup.ps1, Start-InteractiveTutorial.ps1)
+- [ ] Configuration files updated (config/poshguard.json, benchmarks/latest.json)
+- [ ] VS Code extension updated (vscode-extension/package.json)
+- [ ] README.md examples updated with correct version
 - [ ] Module manifest validates: `Test-ModuleManifest PoshGuard/PoshGuard.psd1`
 - [ ] Git status is clean (or changes are committed)
 - [ ] No existing tag with same version: `git tag -l v4.4.0`
