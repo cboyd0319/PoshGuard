@@ -52,7 +52,45 @@
   "mcp": {
     "enabled": false,
     "userConsent": false,
-    "servers": [],
+    "servers": [
+      {
+        "name": "context7",
+        "type": "http",
+        "url": "https://mcp.context7.com/mcp",
+        "headers": {
+          "CONTEXT7_API_KEY": "$COPILOT_MCP_CONTEXT7_API_KEY"
+        },
+        "tools": ["*"],
+        "enabled": false
+      },
+      {
+        "name": "openai-websearch",
+        "type": "local",
+        "command": "uvx",
+        "args": ["openai-websearch-mcp"],
+        "env": {
+          "OPENAI_API_KEY": "COPILOT_MCP_OPENAI_API_KEY"
+        },
+        "tools": ["openai_web_search"],
+        "enabled": false
+      },
+      {
+        "name": "fetch",
+        "type": "local",
+        "command": "npx",
+        "args": ["-y", "mcp-fetch-server@latest"],
+        "tools": ["*"],
+        "enabled": false
+      },
+      {
+        "name": "playwright",
+        "type": "local",
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@latest"],
+        "tools": ["*"],
+        "enabled": false
+      }
+    ],
     "cachePath": "./cache/mcp",
     "cacheExpirationHours": 24,
     "timeout": 5000,
