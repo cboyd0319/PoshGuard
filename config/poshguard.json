@@ -54,6 +54,17 @@
     "userConsent": false,
     "servers": [
       {
+        "name": "github",
+        "type": "http",
+        "url": "https://api.githubcopilot.com/mcp/",
+        "headers": {
+          "Authorization": "Bearer $COPILOT_MCP_GITHUB_PERSONAL_ACCESS_TOKEN"
+        },
+        "tools": ["*"],
+        "enabled": false,
+        "note": "Some GitHub API endpoints may not support PAT authentication. Consider using OAuth for better compatibility."
+      },
+      {
         "name": "context7",
         "type": "http",
         "url": "https://mcp.context7.com/mcp",
