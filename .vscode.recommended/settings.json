@@ -1,0 +1,49 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "powershell.codeFormatting.preset": "OTBS",
+  "powershell.codeFormatting.openBraceOnSameLine": true,
+  "powershell.codeFormatting.newLineAfterOpenBrace": true,
+  "powershell.codeFormatting.newLineAfterCloseBrace": true,
+  "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
+  "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
+  "powershell.codeFormatting.whitespaceAroundOperator": true,
+  "powershell.codeFormatting.whitespaceAfterSeparator": true,
+  "powershell.codeFormatting.ignoreOneLineBlock": true,
+  "powershell.codeFormatting.alignPropertyValuePairs": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.scriptAnalysis.enable": true,
+  "powershell.scriptAnalysis.settingsPath": ".pssasuppressfile",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "powershell": true
+  },
+  "github.copilot.editor.enableAutoCompletions": true,
+  "files.associations": {
+    "*.ps1": "powershell",
+    "*.psm1": "powershell",
+    "*.psd1": "powershell"
+  },
+  "files.exclude": {
+    "**/.backup": true,
+    "**/.psqa-backup": true,
+    "**/*.bak": true,
+    "**/*.tmp": true,
+    "**/logs": true
+  },
+  "search.exclude": {
+    "**/.backup": true,
+    "**/.psqa-backup": true,
+    "**/*.bak": true,
+    "**/*.log": true,
+    "**/logs": true,
+    "**/TestResults": true
+  }
+}

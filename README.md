@@ -294,6 +294,11 @@ See [samples/](samples/) for broken scripts and expected fixes:
 - [Changelog](docs/CHANGELOG.md) — Version history
 - [Roadmap](docs/ROADMAP.md) — Future features
 
+**Developer Experience**:
+- [GitHub Copilot Setup](.github/copilot-instructions.md) — AI-assisted development with comprehensive workspace context
+- [MCP Integration](.github/MCP_SETUP.md) — Model Context Protocol for enhanced Copilot capabilities
+- [VS Code Settings](.vscode.recommended/) — Recommended editor configuration
+
 ## Troubleshooting
 
 | Error | Fix |

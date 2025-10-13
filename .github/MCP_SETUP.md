@@ -124,8 +124,14 @@ Or edit `config/poshguard.json` and set:
 3. Review logs for error messages
 4. Ensure network connectivity for HTTP servers
 
+## Complete Setup Guide
+
+For a comprehensive guide on using GitHub Copilot with PoshGuard, including MCP integration, see:
+- **[GitHub Copilot Setup Guide](COPILOT-SETUP-GUIDE.md)** — Complete guide with examples, workflows, and troubleshooting
+
 ## References
 
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/)
 - [GitHub Copilot MCP Documentation](https://docs.github.com/copilot)
 - [PoshGuard AI/ML Integration](../docs/AI-ML-INTEGRATION.md)
+- [GitHub Copilot Instructions](copilot-instructions.md) — Project-specific context for Copilot
