@@ -8,7 +8,7 @@ MCP (Model Context Protocol) allows GitHub Copilot to access additional tools an
 
 ### 1. Context7
 - **Type**: HTTP Server
-- **Purpose**: Provides access to up-to-date library documentation and code examples
+- **Purpose**: Pulls up-to-date, version-specific documentation and code examples directly from the source. Context7 solves the problem of LLMs relying on outdated or generic information about libraries by providing accurate, relevant documentation that eliminates hallucinations and helps AI tools better understand your stack.
 - **Configuration**: Requires `COPILOT_MCP_CONTEXT7_API_KEY` environment variable
 
 ### 2. OpenAI Web Search
