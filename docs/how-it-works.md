@@ -318,5 +318,5 @@ function Fix-CustomRule {
 ## Further Reading
 
 - [PowerShell AST Documentation](https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.language.ast)
-- [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules)
+- [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules)
 - [Abstract Syntax Trees Explained](https://en.wikipedia.org/wiki/Abstract_syntax_tree)

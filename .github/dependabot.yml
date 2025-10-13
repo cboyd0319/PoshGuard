@@ -1,3 +1,7 @@
+# Standardized Dependabot Configuration
+# Documentation: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# Last updated: October 2025
+
 version: 2
 updates:
   # GitHub Actions dependencies
@@ -7,12 +11,17 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    open-pull-requests-limit: 10
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "cboyd0319"
+    assignees:
+      - "cboyd0319"
     labels:
       - "dependencies"
       - "github-actions"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "ci"
       include: "scope"
 
   # npm dependencies for VSCode extension
@@ -22,14 +31,19 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
+    reviewers:
+      - "cboyd0319"
+    assignees:
+      - "cboyd0319"
     labels:
       - "dependencies"
       - "npm"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "deps"
       include: "scope"
+    # Ignore major version updates for VSCode engine compatibility
     ignore:
-      # Ignore major version updates for VSCode engine compatibility
       - dependency-name: "vscode"
         update-types: ["version-update:semver-major"]

@@ -65,7 +65,7 @@ PoshGuard operates as a local file processing tool with no authentication requir
 | V5.1.1 | Application validates input on server side | ✅ AST parsing validates PowerShell syntax | 100% |
 | V5.1.2 | Application uses strongly typed parsing | ✅ .NET PowerShell AST parser (strongly typed) | 100% |
 | V5.1.3 | Application validates data schemas | ✅ PSScriptAnalyzer settings validation | 100% |
-| V5.1.4 | Application validates file extensions | ✅ Whitelist: .ps1, .psm1, .psd1 only | 100% |
+| V5.1.4 | Application validates file extensions | ✅ Allowlist: .ps1, .psm1, .psd1 only | 100% |
 | V5.1.5 | Application validates file size limits | ✅ 10MB default max, configurable | 100% |
 
 #### V5.2 Sanitization and Sandboxing
@@ -202,7 +202,7 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Defense-in-Depth Layers
 
 ### Layer 1: Input Validation
-- File extension whitelist (.ps1, .psm1, .psd1)
+- File extension Allowlist (.ps1, .psm1, .psd1)
 - AST syntax validation
 - File size enforcement (10MB default)
 - Path traversal prevention

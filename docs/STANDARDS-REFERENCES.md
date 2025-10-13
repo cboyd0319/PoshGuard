@@ -486,7 +486,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Confidence**: High
 - **Description**: Microsoft's official PowerShell static analysis tool
 - **PoshGuard Relationship**: Implements 100% of general-purpose PSSA rules (60/60)
-- **Rules Documentation**: https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules
+- **Rules Documentation**: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules
 
 ---
 

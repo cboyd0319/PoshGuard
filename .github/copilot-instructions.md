@@ -36,6 +36,46 @@ PoshGuard/
 └── benchmarks/             # Performance benchmarks
 ```
 
+## Repository Standards & Configuration
+
+### Workflow & Automation Standards
+- **Dependabot:** Weekly schedule (Mondays 09:00 UTC), commit prefix `chore(deps):`, grouped updates for Actions/npm
+- **Auto-merge:** Automatic approval for all Dependabot PRs, auto-merge for patch/minor versions only
+- **CI/CD:** GitHub Actions workflows in `.github/workflows/` (see `poshguard-qa.yml`, `dependabot-auto-merge.yml`)
+- **Quality Gates:** All PRs must pass PSScriptAnalyzer, Pester tests before merge
+
+### File Organization Standards
+- **`.github/` directory:** Contains only GitHub-specific configs (workflows, templates, Copilot instructions)
+  - Templates: `pull_request_template.md`, `ISSUE_TEMPLATE/*.yml` (lowercase naming)
+  - Ownership: `CODEOWNERS` defines code review requirements (@cboyd0319)
+- **Documentation:** All docs in `/docs`, never in `.github/`
+- **Configuration:** Module manifest (`PoshGuard/PoshGuard.psd1`), config files in `/config`
+- **Tools:** Auto-fix libraries in `/tools/lib`, development scripts in root
+
+### Inclusive Terminology Standards
+- **Required replacements:**
+  - Use "allowlist" instead of "whitelist"
+  - Use "denylist" instead of "blacklist"
+  - Use "main" branch instead of "master" branch
+  - Use "primary/replica" instead of "master/slave" in architecture discussions
+- **Code review:** All PRs checked for outdated terminology
+- **PSScriptAnalyzer rules:** Custom rules detect these patterns in user code
+- **Documentation:** All external links use `/tree/main/` not `/tree/master/`
+
+### Configuration Management
+- **Module manifest:** `PoshGuard/PoshGuard.psd1` — Version, dependencies, exports
+- **PSScriptAnalyzer:** Rules configured for strict analysis
+- **Pester tests:** Test configuration in `tests/` directory
+- **Secrets:** Environment variables only (never commit credentials)
+- **MCP integration:** `.github/copilot-mcp.json` for Model Context Protocol servers
+
+### GitHub Configuration Files
+- **Dependabot:** `.github/dependabot.yml` — Standardized across all repos
+- **Workflows:** `.github/workflows/*.yml` — GitHub Actions automation
+- **Templates:** `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*.yml`
+- **Copilot:** `.github/copilot-instructions.md` (this file), `.github/copilot-mcp.json`
+- **Ownership:** `.github/CODEOWNERS` — Code review assignments (@cboyd0319)
+
 ## Coding Standards
 
 ### PowerShell Style Guide
@@ -45,7 +85,9 @@ PoshGuard/
    - Variables: Use `camelCase` for private, `PascalCase` for parameters
    - Constants: Use `UPPER_SNAKE_CASE`
 
-2. **Function Structure**:
+2. **Inclusive Terminology**: Use modern, inclusive language (see Repository Standards above for details)
+
+3. **Function Structure**:
    ```powershell
    function Verb-Noun {
        [CmdletBinding()]
@@ -71,18 +113,18 @@ PoshGuard/
    }
    ```
 
-3. **Error Handling**:
+4. **Error Handling**:
    - Use `$ErrorActionPreference = 'Stop'` for strict error handling
    - Always include `try-catch` blocks for external operations
    - Use `Write-Error` for user-facing errors
    - Use `throw` for unrecoverable errors
 
-4. **Comments**:
+5. **Comments**:
    - Use comment-based help for all exported functions
    - Include `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER`, `.EXAMPLE`
    - Add inline comments for complex logic
 
-5. **Testing**:
+6. **Testing**:
    - All new features must have Pester tests
    - Test both valid and invalid inputs
    - Ensure idempotent behavior
@@ -265,7 +307,7 @@ Common issues and solutions:
 ## Resources
 
 - [PowerShell AST Documentation](https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.language)
-- [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/RuleDocumentation)
+- [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/RuleDocumentation)
 - [Pester Documentation](https://pester.dev/)
 - [PoshGuard Documentation](../docs/)
 

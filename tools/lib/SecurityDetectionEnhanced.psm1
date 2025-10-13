@@ -131,7 +131,7 @@ function Test-BrokenAccessControl {
                 Message = 'Recursive directory listing with user input may expose sensitive files.'
                 OWASP = 'A01:2023 - Broken Access Control'
                 CWE = 'CWE-22'
-                Remediation = 'Validate directory path and implement whitelist of allowed directories'
+                Remediation = 'Validate directory path and implement Allowlist of allowed directories'
                 FilePath = $FilePath
             }
         }
@@ -536,7 +536,7 @@ function Test-SSRFVulnerabilities {
     try {
         # User-controlled URL in web request
         if ($Content -match '(?i)(Invoke-WebRequest|Invoke-RestMethod).*\$\w+' -and
-            $Content -notmatch '(?i)(Test-Url|Validate-Url|whitelist|allowlist)') {
+            $Content -notmatch '(?i)(Test-Url|Validate-Url|Allowlist|allowlist)') {
             $issues += [PSCustomObject]@{
                 Rule = 'A10-SSRFRisk'
                 Severity = 'Error'
@@ -544,7 +544,7 @@ function Test-SSRFVulnerabilities {
                 Message = 'Potential SSRF vulnerability. User-controlled URL without validation.'
                 OWASP = 'A10:2023 - Server-Side Request Forgery'
                 CWE = 'CWE-918'
-                Remediation = 'Validate URL against whitelist: if ($url -notmatch "^https://trusted\.domain\.com") { throw "Invalid URL" }'
+                Remediation = 'Validate URL against Allowlist: if ($url -notmatch "^https://trusted\.domain\.com") { throw "Invalid URL" }'
                 FilePath = $FilePath
             }
         }

@@ -1549,7 +1549,7 @@ Your choice [1-N, or Q to quit]:
 - "They/their" instead of "he/she"
 - "Developer" instead of "ninja/rockstar/guru"
 - "Primary/replica" instead of "master/slave"
-- "Allowlist/blocklist" instead of "whitelist/blacklist"
+- "Allowlist/blocklist" instead of "Allowlist/Denylist"
 - "Main branch" instead of "master branch"
 
 **Avoid**:

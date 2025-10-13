@@ -49,6 +49,8 @@ coverage.xml
 
 # IDE Files
 .idea/
+.cursor/
+.claude/
 *.swp
 *.swo
 *~

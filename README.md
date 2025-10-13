@@ -170,7 +170,7 @@ Import-Module C:\Tools\PoshGuard\tools\lib\Core.psm1
 
 12 excluded PSSA rules: 6 DSC-only, 3 complex compatibility (require 200+ MB profiles), 2 internal utilities, 1 duplicate.
 
-See [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/docs/Rules) for details.
+See [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules) for details.
 
 ### Beyond-PSSA (v3.2.0+)
 
