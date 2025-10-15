@@ -165,8 +165,17 @@ function Get-MaxNestingDepth {
         [System.Management.Automation.Language.Ast]$Ast,
         
         [Parameter()]
-        [int]$CurrentDepth = 0
+        [int]$CurrentDepth = 0,
+        
+        [Parameter()]
+        [int]$MaxRecursionDepth = 100
     )
+    
+    # Prevent infinite recursion
+    if ($CurrentDepth -gt $MaxRecursionDepth) {
+        Write-Warning "Max recursion depth reached at $MaxRecursionDepth"
+        return $CurrentDepth
+    }
     
     $maxDepth = $CurrentDepth
     
@@ -182,9 +191,68 @@ function Get-MaxNestingDepth {
     }, $false))
     
     foreach ($node in $children) {
-        $childDepth = Get-MaxNestingDepth -Ast $node -CurrentDepth ($CurrentDepth + 1)
-        if ($childDepth -gt $maxDepth) {
-            $maxDepth = $childDepth
+        # Get the body of the control structure to recurse into
+        $bodyAst = $null
+        if ($node -is [System.Management.Automation.Language.IfStatementAst]) {
+            # For if statements, check all clauses
+            foreach ($clause in $node.Clauses) {
+                if ($clause.Item2) {
+                    $clauseDepth = Get-MaxNestingDepth -Ast $clause.Item2 -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+                    if ($clauseDepth -gt $maxDepth) {
+                        $maxDepth = $clauseDepth
+                    }
+                }
+            }
+            # Check else clause if present
+            if ($node.ElseClause) {
+                $elseDepth = Get-MaxNestingDepth -Ast $node.ElseClause -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+                if ($elseDepth -gt $maxDepth) {
+                    $maxDepth = $elseDepth
+                }
+            }
+        } elseif ($node -is [System.Management.Automation.Language.WhileStatementAst] -and $node.Body) {
+            $bodyAst = $node.Body
+        } elseif ($node -is [System.Management.Automation.Language.ForStatementAst] -and $node.Body) {
+            $bodyAst = $node.Body
+        } elseif ($node -is [System.Management.Automation.Language.ForEachStatementAst] -and $node.Body) {
+            $bodyAst = $node.Body
+        } elseif ($node -is [System.Management.Automation.Language.SwitchStatementAst]) {
+            foreach ($clause in $node.Clauses) {
+                if ($clause.Item2) {
+                    $clauseDepth = Get-MaxNestingDepth -Ast $clause.Item2 -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+                    if ($clauseDepth -gt $maxDepth) {
+                        $maxDepth = $clauseDepth
+                    }
+                }
+            }
+        } elseif ($node -is [System.Management.Automation.Language.TryStatementAst]) {
+            if ($node.Body) {
+                $bodyAst = $node.Body
+            }
+            # Also check catch clauses
+            foreach ($catch in $node.CatchClauses) {
+                if ($catch.Body) {
+                    $catchDepth = Get-MaxNestingDepth -Ast $catch.Body -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+                    if ($catchDepth -gt $maxDepth) {
+                        $maxDepth = $catchDepth
+                    }
+                }
+            }
+            # Check finally clause
+            if ($node.Finally) {
+                $finallyDepth = Get-MaxNestingDepth -Ast $node.Finally -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+                if ($finallyDepth -gt $maxDepth) {
+                    $maxDepth = $finallyDepth
+                }
+            }
+        }
+        
+        # Recurse into body if we have one
+        if ($bodyAst) {
+            $childDepth = Get-MaxNestingDepth -Ast $bodyAst -CurrentDepth ($CurrentDepth + 1) -MaxRecursionDepth $MaxRecursionDepth
+            if ($childDepth -gt $maxDepth) {
+                $maxDepth = $childDepth
+            }
         }
     }
     

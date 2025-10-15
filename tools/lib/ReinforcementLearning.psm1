@@ -97,17 +97,17 @@ function Get-CodeState {
         )
         
         # Calculate complexity metrics
-        $allNodes = $ast.FindAll({ $true }, $true)
-        $functionNodes = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
-        $conditionalNodes = $ast.FindAll({ 
+        $allNodes = @($ast.FindAll({ $true }, $true))
+        $functionNodes = @($ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true))
+        $conditionalNodes = @($ast.FindAll({ 
             $args[0] -is [System.Management.Automation.Language.IfStatementAst] -or
             $args[0] -is [System.Management.Automation.Language.SwitchStatementAst]
-        }, $true)
-        $loopNodes = $ast.FindAll({ 
+        }, $true))
+        $loopNodes = @($ast.FindAll({ 
             $args[0] -is [System.Management.Automation.Language.ForStatementAst] -or
             $args[0] -is [System.Management.Automation.Language.ForEachStatementAst] -or
             $args[0] -is [System.Management.Automation.Language.WhileStatementAst]
-        }, $true)
+        }, $true))
         
         # Calculate cyclomatic complexity
         $cyclomaticComplexity = 1 + $conditionalNodes.Count + $loopNodes.Count
@@ -118,9 +118,9 @@ function Get-CodeState {
         # Violation features
         $violationTypes = $Violations | Group-Object RuleName | ForEach-Object { $_.Name }
         $severityCounts = @{
-            Error = ($Violations | Where-Object Severity -eq 'Error').Count
-            Warning = ($Violations | Where-Object Severity -eq 'Warning').Count
-            Information = ($Violations | Where-Object Severity -eq 'Information').Count
+            Error = @($Violations | Where-Object Severity -eq 'Error').Count
+            Warning = @($Violations | Where-Object Severity -eq 'Warning').Count
+            Information = @($Violations | Where-Object Severity -eq 'Information').Count
         }
         
         # Create state vector (normalized features)
@@ -166,16 +166,32 @@ function Get-CodeState {
 function Get-ASTMaxDepth {
     param([Parameter(Mandatory)]$AST)
     
+    # Simple non-recursive approach: count all nested structures
     $maxDepth = 0
     
-    function Get-Depth($node, $currentDepth) {
-        $script:maxDepth = [Math]::Max($script:maxDepth, $currentDepth)
-        foreach ($child in $node.FindAll({ $true }, $false)) {
-            Get-Depth $child ($currentDepth + 1)
+    # Find all nodes and calculate their nesting depth
+    $allNodes = $AST.FindAll({ $true }, $true)
+    
+    foreach ($node in $allNodes) {
+        $depth = 0
+        $current = $node.Parent
+        
+        while ($null -ne $current) {
+            $depth++
+            $current = $current.Parent
+            
+            # Safety check to prevent infinite loops
+            if ($depth -gt 100) {
+                Write-Warning "Maximum depth exceeded, possible circular reference"
+                break
+            }
+        }
+        
+        if ($depth -gt $maxDepth) {
+            $maxDepth = $depth
         }
     }
     
-    Get-Depth $AST 0
     return $maxDepth
 }
 
