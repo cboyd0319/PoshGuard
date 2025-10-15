@@ -45,24 +45,24 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-      
+
       - name: Setup PowerShell modules
         uses: ./.github/actions/setup-powershell
         with:
           modules: 'PSScriptAnalyzer'
           cache-key-suffix: 'lint'
-        
+
       - name: Run PSScriptAnalyzer
         id: lint
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "🔍 Running PSScriptAnalyzer..." -ForegroundColor Cyan
-          
+
           # Analyze main code directories
           $paths = @('PoshGuard', 'tools', 'tests', 'config')
           $allResults = @()
-          
+
           foreach ($path in $paths) {
             if (Test-Path $path) {
               Write-Host "`nAnalyzing: $path" -ForegroundColor Yellow
@@ -71,29 +71,29 @@ jobs:
                 -Recurse `
                 -Severity Error,Warning `
                 -Settings ./config/PSScriptAnalyzerSettings.psd1
-              
+
               if ($results) {
                 $allResults += $results
               }
             }
           }
-          
+
           # Generate summary
           $summary = "## PSScriptAnalyzer Results`n`n"
-          
+
           if ($allResults) {
             Write-Host "::warning::Found $($allResults.Count) PSScriptAnalyzer issues"
-            
+
             $grouped = $allResults | Group-Object Severity
             $summary += "**Total Issues:** $($allResults.Count)`n`n"
-            
+
             foreach ($group in $grouped) {
               $summary += "- **$($group.Name):** $($group.Count)`n"
             }
-            
+
             # Save results as JSON for artifact
             $allResults | ConvertTo-Json -Depth 10 | Set-Content 'pssa-results.json'
-            
+
             # Add file annotations
             foreach ($result in $allResults) {
               $file = $result.ScriptPath -replace [regex]::Escape($PWD), ''
@@ -101,7 +101,7 @@ jobs:
               $level = if ($result.Severity -eq 'Error') { 'error' } else { 'warning' }
               Write-Host "::$level file=$file,line=$($result.Line),col=$($result.Column)::$($result.RuleName): $($result.Message)"
             }
-            
+
             # Fail if critical errors found
             $errors = $allResults | Where-Object Severity -eq 'Error'
             if ($errors) {
@@ -109,15 +109,15 @@ jobs:
               $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
               exit 1
             }
-            
+
             $summary += "`n✓ No blocking errors found`n"
           } else {
             $summary += "✅ No issues found!`n"
             Write-Host "✓ No PSScriptAnalyzer issues found!" -ForegroundColor Green
           }
-          
+
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        
+
       - name: Upload analysis results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always() && hashFiles('pssa-results.json') != ''
@@ -138,20 +138,20 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-      
+
       - name: Setup PowerShell modules
         uses: ./.github/actions/setup-powershell
         with:
           modules: 'Pester'
           cache-key-suffix: 'test'
-        
+
       - name: Run Pester tests
         id: pester
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "🧪 Running Pester tests..." -ForegroundColor Cyan
-          
+
           $config = New-PesterConfiguration
           $config.Run.Path = './tests/'
           $config.Run.Exit = $true
@@ -160,10 +160,10 @@ jobs:
           $config.TestResult.OutputPath = 'TestResults.xml'
           $config.TestResult.OutputFormat = 'NUnitXml'
           $config.CodeCoverage.Enabled = $false
-          
+
           # Run tests
           $result = Invoke-Pester -Configuration $config
-          
+
           # Generate summary
           $summary = "## Pester Test Results`n`n"
           $summary += "**Total Tests:** $($result.TotalCount)`n"
@@ -172,7 +172,7 @@ jobs:
           $summary += "- ⏭️ **Skipped:** $($result.SkippedCount)`n"
           $summary += "- ⚠️ **Not Run:** $($result.NotRunCount)`n"
           $summary += "`n**Duration:** $($result.Duration)`n"
-          
+
           if ($result.FailedCount -gt 0) {
             $summary += "`n### Failed Tests`n`n"
             foreach ($test in $result.Failed) {
@@ -180,16 +180,16 @@ jobs:
               $summary += "  - **Error:** $($test.ErrorRecord.Exception.Message)`n"
             }
           }
-          
+
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
+
           if ($result.FailedCount -gt 0) {
             Write-Host "::error::$($result.FailedCount) test(s) failed"
             exit 1
           }
-          
+
           Write-Host "✓ All tests passed!" -ForegroundColor Green
-        
+
       - name: Upload test results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
@@ -212,14 +212,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-      
+
       - name: Create package
         shell: bash
         run: |
           set -euo pipefail
-          
-          echo "📦 Creating package..." 
-          
+
+          echo "📦 Creating package..."
+
           zip -r "poshguard-${{ github.sha }}.zip" \
             tools/ \
             PoshGuard/ \
@@ -228,12 +228,12 @@ jobs:
             docs/CHANGELOG.md \
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
-          
+
           # Generate checksums
           sha256sum "poshguard-${{ github.sha }}.zip" > "poshguard-${{ github.sha }}.zip.sha256"
-          
+
           echo "✓ Package created successfully"
-          
+
           # Add to summary
           {
             echo "## Package Created"
@@ -245,7 +245,7 @@ jobs:
             cat "poshguard-${{ github.sha }}.zip.sha256"
             echo "\`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
-            
+
       - name: Upload package artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         with:

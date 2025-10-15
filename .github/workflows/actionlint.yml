@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -50,7 +50,7 @@ jobs:
       - name: Install actionlint
         run: |
           set -euo pipefail
-          
+
           if [[ ! -f ./bin/actionlint ]]; then
             echo "Installing actionlint 1.7.8..."
             mkdir -p ./bin
@@ -58,31 +58,31 @@ jobs:
           else
             echo "actionlint already cached"
           fi
-          
+
           ./bin/actionlint -version
 
       - name: Run actionlint
         id: actionlint
         run: |
           set -euo pipefail
-          
+
           echo "::group::Running actionlint on workflows"
           ./bin/actionlint -color .github/workflows/*.yml
           echo "::endgroup::"
-          
+
           echo "✓ All workflows passed actionlint validation" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check for YAML syntax errors
         run: |
           set -euo pipefail
-          
+
           echo "::group::Checking YAML syntax"
-          
+
           # Install yamllint via pip
           pip install --quiet yamllint
-          
+
           # Run yamllint with relaxed rules
           yamllint -d "{extends: relaxed, rules: {line-length: {max: 160}}}" .github/workflows/*.yml .github/actions/*/action.yml
-          
+
           echo "::endgroup::"
           echo "✓ All YAML files have valid syntax" >> "$GITHUB_STEP_SUMMARY"

@@ -28,7 +28,7 @@ runs:
       run: |
         $ErrorActionPreference = 'Stop'
         $modules = '${{ inputs.modules }}' -split ','
-        
+
         foreach ($module in $modules) {
           $module = $module.Trim()
           if ($module) {
@@ -40,17 +40,17 @@ runs:
                 Scope = 'CurrentUser'
                 Force = $true
               }
-              
+
               # Add SkipPublisherCheck for known modules
               if ($module -in @('PSScriptAnalyzer', 'Pester', 'ConvertToSARIF')) {
                 $installParams['SkipPublisherCheck'] = $true
               }
-              
+
               # Add AcceptLicense for ConvertToSARIF
               if ($module -eq 'ConvertToSARIF') {
                 $installParams['AcceptLicense'] = $true
               }
-              
+
               Install-Module @installParams
               Write-Host "✓ Installed $module" -ForegroundColor Green
             } else {

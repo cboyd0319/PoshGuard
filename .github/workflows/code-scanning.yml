@@ -48,34 +48,34 @@ jobs:
       contents: read
       security-events: write  # Required for uploading SARIF results
       actions: read           # Required for code scanning workflow
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0  # Full history for better analysis
-      
+
       - name: Setup PowerShell modules
         uses: ./.github/actions/setup-powershell
         with:
           modules: 'PSScriptAnalyzer,ConvertToSARIF'
           cache-key-suffix: 'code-scanning'
-      
+
       - name: Run PSScriptAnalyzer
         id: analyze
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "🔍 Running PSScriptAnalyzer code analysis..." -ForegroundColor Cyan
-          
+
           # Define paths to analyze
           $pathsToAnalyze = @('PoshGuard', 'tools', 'tests', 'config')
           $allResults = @()
-          
+
           foreach ($path in $pathsToAnalyze) {
             if (Test-Path $path) {
               Write-Host "`nAnalyzing: $path" -ForegroundColor Yellow
-              
+
               try {
                 $results = Invoke-ScriptAnalyzer `
                   -Path $path `
@@ -83,7 +83,7 @@ jobs:
                   -Severity Error,Warning,Information `
                   -Settings ./config/PSScriptAnalyzerSettings.psd1 `
                   -ErrorAction SilentlyContinue
-                
+
                 if ($results) {
                   $allResults += $results
                   Write-Host "  Found $($results.Count) issue(s)" -ForegroundColor Gray
@@ -96,17 +96,17 @@ jobs:
               }
             }
           }
-          
+
           # Generate summary
           $summary = "## Code Scanning Results`n`n"
           $summary += "**Total Issues:** $($allResults.Count)`n`n"
-          
+
           if ($allResults) {
             $grouped = $allResults | Group-Object Severity
             foreach ($group in $grouped) {
               $summary += "- **$($group.Name):** $($group.Count)`n"
             }
-            
+
             # Save results for SARIF conversion
             $allResults | Export-Clixml -Path 'pssa-results.xml' -Depth 10
             Write-Host "`n✓ Results saved to pssa-results.xml" -ForegroundColor Green
@@ -116,21 +116,21 @@ jobs:
             # Create empty results file for SARIF conversion
             @() | Export-Clixml -Path 'pssa-results.xml'
           }
-          
+
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-      
+
       - name: Convert results to SARIF
         if: always()
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "📄 Converting results to SARIF format..." -ForegroundColor Cyan
-          
+
           Import-Module ConvertToSARIF
-          
+
           if (Test-Path 'pssa-results.xml') {
             $results = Import-Clixml -Path 'pssa-results.xml'
-            
+
             if ($results -and $results.Count -gt 0) {
               Write-Host "  Converting $($results.Count) issue(s)..." -ForegroundColor Gray
               try {
@@ -181,9 +181,9 @@ jobs:
               } | ConvertTo-Json -Depth 10
               Set-Content -Path 'results.sarif' -Value $emptySarif
             }
-            
+
             Write-Host "✓ SARIF file created: results.sarif" -ForegroundColor Green
-            
+
             # Display SARIF summary
             $sarif = Get-Content 'results.sarif' | ConvertFrom-Json
             $resultCount = $sarif.runs[0].results.Count
@@ -192,7 +192,7 @@ jobs:
             Write-Error "Results file not found!"
             exit 1
           }
-      
+
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@6624720a7c4b75e40e52266d412b9c46e6993a80 # v3.29.0
         if: always()
@@ -200,7 +200,7 @@ jobs:
           sarif_file: results.sarif
           category: poshguard-pssa
           wait-for-processing: true
-      
+
       - name: Upload SARIF artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
@@ -209,7 +209,7 @@ jobs:
           path: results.sarif
           retention-days: 30
           if-no-files-found: error
-      
+
       - name: Upload analysis results artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
