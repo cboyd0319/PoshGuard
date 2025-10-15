@@ -94,3 +94,6 @@ web/storybook-static/
 
 # Tool binaries
 actionlint
+
+# Build tools
+bin/

@@ -26,7 +26,7 @@ Dependabot monitors workflow files and updates action versions:
 - uses: actions/checkout@v3
 
 # After Dependabot
-- uses: actions/checkout@v4
+- uses: actions/checkout@v5
 ```
 
 **Schedule:** Weekly, Mondays at 09:00 UTC

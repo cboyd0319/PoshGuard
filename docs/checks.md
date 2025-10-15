@@ -1844,7 +1844,7 @@ test.yaml:9:11: input "keys" is not defined in action "actions/cache@v4". availa
 
 [Playground](https://rhysd.github.io/actionlint/#eNqEjrHKwkAQhPs8xRQ/5DeQpLG6ysr32ByLFy/eHdlbRWLeXRIliI3VsvN9MBODQVJxRXGOnZgCyCx5ucCoQepF0E5D1nqgha1IMid5WUANFRYDsrmPQVpL1vHhun9j4NZnZ7YP8HwXg8dHAvxNExyJO/YDy39ZVW3VDNH6cod5/mmuld9qouwMmjaR9XRi2eaOGgwu5PkZAAD///tlRBU=)
 
-actionlint checks inputs of many popular actions such as `actions/checkout@v4`. It checks
+actionlint checks inputs of many popular actions such as `actions/checkout@v5`. It checks
 
 - some input is required by the action but it is not set at `with:`
 - input set at `with:` is not defined in the action (this commonly occurs by a typo)
@@ -1852,8 +1852,8 @@ actionlint checks inputs of many popular actions such as `actions/checkout@v4`. 
 this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
 can check popular actions without fetching any `action.yml` of the actions from the remote so that it can run efficiently.
 
-Note that it only supports the case of specifying major versions like `actions/checkout@v4`. Fixing version of action like
-`actions/checkout@v4.0.1` and using the HEAD of action like `actions/checkout@main` are not supported for now.
+Note that it only supports the case of specifying major versions like `actions/checkout@v5`. Fixing version of action like
+`actions/checkout@v5.0.1` and using the HEAD of action like `actions/checkout@main` are not supported for now.
 
 So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](../popular_actions.go)
 and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
@@ -1890,8 +1890,8 @@ In addition to the checks for inputs of actions described in [the previous secti
 reports an error when a popular action is 'outdated'. An action is outdated when the runner used by the action is no longer
 supported by GitHub Actions runtime. For example, `node12` is no longer available so any actions can not use `node12` runner.
 
-Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v4` and
-newer version `actions/checkout@v5` is available, actionlint reports no error as long as `actions/checkout@v4` is not outdated.
+Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v5` and
+newer version `actions/checkout@v5` is available, actionlint reports no error as long as `actions/checkout@v5` is not outdated.
 If you want to keep actions used by your workflows up-to-date, consider to use [Dependabot][dependabot-doc].
 
 <a id="check-shell-names"></a>
