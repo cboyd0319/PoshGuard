@@ -33,7 +33,7 @@ jobs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
         with:
           fetch-depth: 1
 
@@ -79,7 +79,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
         with:
           fetch-depth: 0
 
@@ -118,14 +118,14 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0.16.0
+        uses: anchore/sbom-action@v0.20.6
         with:
           artifact-name: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           output-file: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           format: spdx-json
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@703878a39fbc9e4a0fecc12bdc00f560030e8301 # v1.5.1
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: poshguard-${{ needs.validate.outputs.version }}.zip
 
@@ -153,7 +153,7 @@ jobs:
           fi
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@7b4da11513bf3f43f9999059a4027196f098468f # v2.2.2
+        uses: softprops/action-gh-release@5d12f0f460eaad27c6b5b1e82e2c8e9dd8e45144 # v2.4.1
         with:
           files: |
             poshguard-${{ needs.validate.outputs.version }}.zip

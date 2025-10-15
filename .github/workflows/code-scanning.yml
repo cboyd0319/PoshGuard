@@ -51,17 +51,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
         with:
           fetch-depth: 0  # Full history for better analysis
-      
+
       - name: Setup PowerShell
         uses: microsoft/setup-powershell@v2
         with:
           pwsh: true
-      
+
       - name: Cache PowerShell modules
-        uses: actions/cache@v4
+        uses: actions/cache@5b8b28c6c60d6c9f068c935f6df6caa1dc5ad8ec # v4.3.0
         with:
           modules: 'PSScriptAnalyzer,ConvertToSARIF'
           cache-key-suffix: 'code-scanning'
@@ -199,7 +199,7 @@ jobs:
           }
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@6624720a7c4b75e40e52266d412b9c46e6993a80 # v3.29.0
+        uses: github/codeql-action/upload-sarif@56b66b1d6f1fa3b4bed45321cd18a52f1b9f9eff # v3.30.8
         if: always()
         with:
           sarif_file: results.sarif
@@ -207,7 +207,7 @@ jobs:
           wait-for-processing: true
 
       - name: Upload SARIF artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
+        uses: actions/upload-artifact@d0d5ba7887b7f651bea0d47495e1e9e0c210a8ec # v4.6.2
         if: always()
         with:
           name: sarif-results
@@ -216,7 +216,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload analysis results artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
+        uses: actions/upload-artifact@d0d5ba7887b7f651bea0d47495e1e9e0c210a8ec # v4.6.2
         if: always()
         with:
           name: pssa-results-xml
