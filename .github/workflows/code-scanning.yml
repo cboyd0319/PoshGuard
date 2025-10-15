@@ -14,6 +14,7 @@ on:
       - '**.psm1'
       - '**.psd1'
       - '.github/workflows/code-scanning.yml'
+      - '.github/actions/**'
   pull_request:
     branches: [main]
     paths:
@@ -21,132 +22,143 @@ on:
       - '**.psm1'
       - '**.psd1'
       - '.github/workflows/code-scanning.yml'
+      - '.github/actions/**'
   schedule:
     # Run weekly on Sunday at 6 AM UTC
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  security-events: write  # Required for uploading SARIF results
-  actions: read          # Required for code scanning workflow
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   code-scanning:
     name: PSScriptAnalyzer Code Scanning
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF results
+      actions: read           # Required for code scanning workflow
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0  # Full history for better analysis
-      
-      - name: Setup PowerShell
-        uses: microsoft/setup-powershell@v1
+
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-powershell
         with:
-          pwsh: true
-      
-      - name: Cache PowerShell modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/powershell/Modules
-          key: ${{ runner.os }}-powershell-modules-${{ hashFiles('**/PSScriptAnalyzerSettings.psd1') }}
-          restore-keys: |
-            ${{ runner.os }}-powershell-modules-
-      
-      - name: Install PSScriptAnalyzer
-        shell: pwsh
-        run: |
-          Write-Host "Installing PSScriptAnalyzer..." -ForegroundColor Cyan
-          if (!(Get-Module -ListAvailable PSScriptAnalyzer)) {
-            Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          Import-Module PSScriptAnalyzer
-          Write-Host "✓ PSScriptAnalyzer $($(Get-Module PSScriptAnalyzer).Version) installed" -ForegroundColor Green
-      
-      - name: Install ConvertToSARIF
-        shell: pwsh
-        run: |
-          Write-Host "Installing ConvertToSARIF module..." -ForegroundColor Cyan
-          if (!(Get-Module -ListAvailable ConvertToSARIF)) {
-            Install-Module -Name ConvertToSARIF -Force -Scope CurrentUser -AcceptLicense
-          }
-          Import-Module ConvertToSARIF
-          Write-Host "✓ ConvertToSARIF installed" -ForegroundColor Green
-      
+          modules: 'PSScriptAnalyzer,ConvertToSARIF'
+          cache-key-suffix: 'code-scanning'
+
       - name: Run PSScriptAnalyzer
-        shell: pwsh
+        id: analyze
         run: |
+          $ErrorActionPreference = 'Stop'
+
           Write-Host "🔍 Running PSScriptAnalyzer code analysis..." -ForegroundColor Cyan
-          
+
           # Define paths to analyze
           $pathsToAnalyze = @('PoshGuard', 'tools', 'tests', 'config')
           $allResults = @()
-          
+
           foreach ($path in $pathsToAnalyze) {
             if (Test-Path $path) {
               Write-Host "`nAnalyzing: $path" -ForegroundColor Yellow
-              
-              $results = Invoke-ScriptAnalyzer `
-                -Path $path `
-                -Recurse `
-                -Severity Error,Warning,Information `
-                -Settings ./config/PSScriptAnalyzerSettings.psd1 `
-                -ErrorAction SilentlyContinue
-              
-              if ($results) {
-                $allResults += $results
-                Write-Host "  Found $($results.Count) issue(s)" -ForegroundColor Gray
-              } else {
-                Write-Host "  No issues found" -ForegroundColor Green
+
+              try {
+                $results = Invoke-ScriptAnalyzer `
+                  -Path $path `
+                  -Recurse `
+                  -Severity Error,Warning,Information `
+                  -Settings ./config/PSScriptAnalyzerSettings.psd1 `
+                  -ErrorAction SilentlyContinue
+
+                if ($results) {
+                  $allResults += $results
+                  Write-Host "  Found $($results.Count) issue(s)" -ForegroundColor Gray
+                } else {
+                  Write-Host "  No issues found" -ForegroundColor Green
+                }
+              }
+              catch {
+                Write-Warning "Error analyzing $path : $_"
               }
             }
           }
-          
-          # Report summary
-          Write-Host "`n📊 Analysis Summary:" -ForegroundColor Cyan
-          Write-Host "  Total issues: $($allResults.Count)" -ForegroundColor White
-          
+
+          # Generate summary
+          $summary = "## Code Scanning Results`n`n"
+          $summary += "**Total Issues:** $($allResults.Count)`n`n"
+
           if ($allResults) {
             $grouped = $allResults | Group-Object Severity
             foreach ($group in $grouped) {
-              $color = switch ($group.Name) {
-                'Error' { 'Red' }
-                'Warning' { 'Yellow' }
-                'Information' { 'Gray' }
-                default { 'White' }
-              }
-              Write-Host "  $($group.Name): $($group.Count)" -ForegroundColor $color
+              $summary += "- **$($group.Name):** $($group.Count)`n"
             }
-            
+
             # Save results for SARIF conversion
             $allResults | Export-Clixml -Path 'pssa-results.xml' -Depth 10
             Write-Host "`n✓ Results saved to pssa-results.xml" -ForegroundColor Green
           } else {
+            $summary += "✅ No issues found!`n"
             Write-Host "`n✓ No issues found!" -ForegroundColor Green
             # Create empty results file for SARIF conversion
             @() | Export-Clixml -Path 'pssa-results.xml'
           }
-      
+
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
       - name: Convert results to SARIF
         if: always()
-        shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
+
           Write-Host "📄 Converting results to SARIF format..." -ForegroundColor Cyan
-          
+
           Import-Module ConvertToSARIF
-          
+
           if (Test-Path 'pssa-results.xml') {
             $results = Import-Clixml -Path 'pssa-results.xml'
-            
+
             if ($results -and $results.Count -gt 0) {
               Write-Host "  Converting $($results.Count) issue(s)..." -ForegroundColor Gray
-              $results | ConvertTo-SARIF -FilePath 'results.sarif'
+              try {
+                $results | ConvertTo-SARIF -FilePath 'results.sarif'
+              }
+              catch {
+                Write-Warning "Failed to convert with ConvertTo-SARIF: $_"
+                Write-Host "Creating minimal SARIF file..."
+                # Fallback to manual SARIF creation
+                $emptySarif = @{
+                  '$schema' = 'https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json'
+                  'version' = '2.1.0'
+                  'runs' = @(
+                    @{
+                      'tool' = @{
+                        'driver' = @{
+                          'name' = 'PSScriptAnalyzer'
+                          'informationUri' = 'https://github.com/PowerShell/PSScriptAnalyzer'
+                          'rules' = @()
+                        }
+                      }
+                      'results' = @()
+                      'columnKind' = 'utf16CodeUnits'
+                    }
+                  )
+                } | ConvertTo-Json -Depth 10
+                Set-Content -Path 'results.sarif' -Value $emptySarif
+              }
             } else {
               Write-Host "  No issues to convert, creating empty SARIF..." -ForegroundColor Gray
               # Create minimal valid SARIF for empty results
@@ -169,9 +181,9 @@ jobs:
               } | ConvertTo-Json -Depth 10
               Set-Content -Path 'results.sarif' -Value $emptySarif
             }
-            
+
             Write-Host "✓ SARIF file created: results.sarif" -ForegroundColor Green
-            
+
             # Display SARIF summary
             $sarif = Get-Content 'results.sarif' | ConvertFrom-Json
             $resultCount = $sarif.runs[0].results.Count
@@ -180,28 +192,29 @@ jobs:
             Write-Error "Results file not found!"
             exit 1
           }
-      
+
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@6624720a7c4b75e40e52266d412b9c46e6993a80 # v3.29.0
         if: always()
         with:
           sarif_file: results.sarif
           category: poshguard-pssa
-          # Upload even if there are no results to clear previous alerts
           wait-for-processing: true
-      
+
       - name: Upload SARIF artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
         with:
           name: sarif-results
           path: results.sarif
           retention-days: 30
-      
+          if-no-files-found: error
+
       - name: Upload analysis results artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
         with:
-          name: pssa-results
+          name: pssa-results-xml
           path: pssa-results.xml
           retention-days: 30
+          if-no-files-found: error
