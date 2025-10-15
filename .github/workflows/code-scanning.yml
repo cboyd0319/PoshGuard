@@ -54,9 +54,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0  # Full history for better analysis
-
-      - name: Setup PowerShell modules
-        uses: ./.github/actions/setup-powershell
+      
+      - name: Setup PowerShell
+        uses: microsoft/setup-powershell@v2
+        with:
+          pwsh: true
+      
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
         with:
           modules: 'PSScriptAnalyzer,ConvertToSARIF'
           cache-key-suffix: 'code-scanning'

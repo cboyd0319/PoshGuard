@@ -118,7 +118,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.18.1
+        uses: anchore/sbom-action@v0.16.0
         with:
           artifact-name: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           output-file: poshguard-${{ needs.validate.outputs.version }}.spdx.json
