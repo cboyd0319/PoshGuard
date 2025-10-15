@@ -1,4 +1,5 @@
-name: ci
+name: CI
+
 on:
   push:
     branches: [main]
@@ -9,6 +10,7 @@ on:
       - 'tests/**'
       - 'config/**'
       - '.github/workflows/ci.yml'
+      - '.github/actions/**'
   pull_request:
     paths:
       - '**.ps1'
@@ -17,41 +19,53 @@ on:
       - 'tests/**'
       - 'config/**'
       - '.github/workflows/ci.yml'
+      - '.github/actions/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   lint:
+    name: Lint PowerShell Code
     runs-on: windows-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Cache PSScriptAnalyzer
-        uses: actions/cache@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: ~\Documents\PowerShell\Modules\PSScriptAnalyzer
-          key: ${{ runner.os }}-psscriptanalyzer-${{ hashFiles('**/PSScriptAnalyzerSettings.psd1') }}
-          
-      - name: Install PSScriptAnalyzer
-        run: |
-          if (!(Get-Module -ListAvailable PSScriptAnalyzer)) {
-            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
-          }
-        shell: pwsh
+          fetch-depth: 1
+      
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-powershell
+        with:
+          modules: 'PSScriptAnalyzer'
+          cache-key-suffix: 'lint'
         
       - name: Run PSScriptAnalyzer
         id: lint
         run: |
-          # Analyze main code directories, excluding samples/before-* files
+          $ErrorActionPreference = 'Stop'
+          
+          Write-Host "🔍 Running PSScriptAnalyzer..." -ForegroundColor Cyan
+          
+          # Analyze main code directories
           $paths = @('PoshGuard', 'tools', 'tests', 'config')
           $allResults = @()
           
           foreach ($path in $paths) {
             if (Test-Path $path) {
+              Write-Host "`nAnalyzing: $path" -ForegroundColor Yellow
               $results = Invoke-ScriptAnalyzer `
                 -Path $path `
                 -Recurse `
@@ -64,81 +78,149 @@ jobs:
             }
           }
           
-          # Report summary
+          # Generate summary
+          $summary = "## PSScriptAnalyzer Results`n`n"
+          
           if ($allResults) {
             Write-Host "::warning::Found $($allResults.Count) PSScriptAnalyzer issues"
-            $allResults | Group-Object Severity | Format-Table -AutoSize
+            
+            $grouped = $allResults | Group-Object Severity
+            $summary += "**Total Issues:** $($allResults.Count)`n`n"
+            
+            foreach ($group in $grouped) {
+              $summary += "- **$($group.Name):** $($group.Count)`n"
+            }
             
             # Save results as JSON for artifact
             $allResults | ConvertTo-Json -Depth 10 | Set-Content 'pssa-results.json'
             
+            # Add file annotations
+            foreach ($result in $allResults) {
+              $file = $result.ScriptPath -replace [regex]::Escape($PWD), ''
+              $file = $file.TrimStart('\', '/')
+              $level = if ($result.Severity -eq 'Error') { 'error' } else { 'warning' }
+              Write-Host "::$level file=$file,line=$($result.Line),col=$($result.Column)::$($result.RuleName): $($result.Message)"
+            }
+            
             # Fail if critical errors found
             $errors = $allResults | Where-Object Severity -eq 'Error'
             if ($errors) {
-              Write-Host "::error::Found $($errors.Count) error-level violations"
+              $summary += "`n❌ **Build failed:** Found $($errors.Count) error-level violations`n"
+              $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
               exit 1
             }
+            
+            $summary += "`n✓ No blocking errors found`n"
           } else {
-            Write-Host "✓ No PSScriptAnalyzer issues found!"
+            $summary += "✅ No issues found!`n"
+            Write-Host "✓ No PSScriptAnalyzer issues found!" -ForegroundColor Green
           }
-        shell: pwsh
-        continue-on-error: true
+          
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
         
-      - name: Upload Analysis Results
-        uses: actions/upload-artifact@v4
+      - name: Upload analysis results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always() && hashFiles('pssa-results.json') != ''
         with:
-          name: pssa-results
+          name: pssa-results-windows
           path: pssa-results.json
+          retention-days: 30
+          if-no-files-found: ignore
 
   test:
+    name: Run Pester Tests
     runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Cache Pester
-        uses: actions/cache@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: ~\Documents\PowerShell\Modules\Pester
-          key: ${{ runner.os }}-pester-5
-          
-      - name: Install Pester
-        run: |
-          if (!(Get-Module -ListAvailable Pester)) {
-            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
-          }
-        shell: pwsh
+          fetch-depth: 1
+      
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-powershell
+        with:
+          modules: 'Pester'
+          cache-key-suffix: 'test'
         
-      - name: Run Pester Tests
+      - name: Run Pester tests
+        id: pester
         run: |
+          $ErrorActionPreference = 'Stop'
+          
+          Write-Host "🧪 Running Pester tests..." -ForegroundColor Cyan
+          
           $config = New-PesterConfiguration
           $config.Run.Path = './tests/'
           $config.Run.Exit = $true
           $config.Output.Verbosity = 'Detailed'
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.TestResult.OutputFormat = 'NUnitXml'
           $config.CodeCoverage.Enabled = $false
           
-          Invoke-Pester -Configuration $config
-        shell: pwsh
+          # Run tests
+          $result = Invoke-Pester -Configuration $config
+          
+          # Generate summary
+          $summary = "## Pester Test Results`n`n"
+          $summary += "**Total Tests:** $($result.TotalCount)`n"
+          $summary += "- ✅ **Passed:** $($result.PassedCount)`n"
+          $summary += "- ❌ **Failed:** $($result.FailedCount)`n"
+          $summary += "- ⏭️ **Skipped:** $($result.SkippedCount)`n"
+          $summary += "- ⚠️ **Not Run:** $($result.NotRunCount)`n"
+          $summary += "`n**Duration:** $($result.Duration)`n"
+          
+          if ($result.FailedCount -gt 0) {
+            $summary += "`n### Failed Tests`n`n"
+            foreach ($test in $result.Failed) {
+              $summary += "- ``$($test.ExpandedPath)``:`n"
+              $summary += "  - **Error:** $($test.ErrorRecord.Exception.Message)`n"
+            }
+          }
+          
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          
+          if ($result.FailedCount -gt 0) {
+            Write-Host "::error::$($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          
+          Write-Host "✓ All tests passed!" -ForegroundColor Green
         
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+      - name: Upload test results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         if: always()
         with:
-          name: test-results
+          name: test-results-windows
           path: TestResults.xml
+          retention-days: 30
+          if-no-files-found: ignore
 
   package:
+    name: Create Package
     needs: [lint, test]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
       
-      - name: Create Package
+      - name: Create package
+        shell: bash
         run: |
-          zip -r poshguard-${{ github.sha }}.zip \
+          set -euo pipefail
+          
+          echo "📦 Creating package..." 
+          
+          zip -r "poshguard-${{ github.sha }}.zip" \
             tools/ \
             PoshGuard/ \
             README.md \
@@ -146,10 +228,30 @@ jobs:
             docs/CHANGELOG.md \
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
+          
+          # Generate checksums
+          sha256sum "poshguard-${{ github.sha }}.zip" > "poshguard-${{ github.sha }}.zip.sha256"
+          
+          echo "✓ Package created successfully"
+          
+          # Add to summary
+          {
+            echo "## Package Created"
+            echo ""
+            echo "- **SHA:** \`${{ github.sha }}\`"
+            echo "- **Size:** $(du -h "poshguard-${{ github.sha }}.zip" | cut -f1)"
+            echo ""
+            echo "\`\`\`"
+            cat "poshguard-${{ github.sha }}.zip.sha256"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
             
-      - name: Upload Package Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload package artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.5.0
         with:
           name: poshguard-package
-          path: poshguard-${{ github.sha }}.zip
+          path: |
+            poshguard-${{ github.sha }}.zip
+            poshguard-${{ github.sha }}.zip.sha256
           retention-days: 30
+          if-no-files-found: error

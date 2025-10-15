@@ -1,0 +1,88 @@
+name: Lint GitHub Actions Workflows
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - '.github/workflows/*.yaml'
+      - '.github/actions/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/*.yml'
+      - '.github/workflows/*.yaml'
+      - '.github/actions/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  actionlint:
+    name: Lint Workflows with actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Cache actionlint
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.2
+        with:
+          path: ./bin/actionlint
+          key: ${{ runner.os }}-actionlint-1.7.8
+          restore-keys: |
+            ${{ runner.os }}-actionlint-
+
+      - name: Install actionlint
+        run: |
+          set -euo pipefail
+          
+          if [[ ! -f ./bin/actionlint ]]; then
+            echo "Installing actionlint 1.7.8..."
+            mkdir -p ./bin
+            curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash -s -- 1.7.8 ./bin
+          else
+            echo "actionlint already cached"
+          fi
+          
+          ./bin/actionlint -version
+
+      - name: Run actionlint
+        id: actionlint
+        run: |
+          set -euo pipefail
+          
+          echo "::group::Running actionlint on workflows"
+          ./bin/actionlint -color .github/workflows/*.yml
+          echo "::endgroup::"
+          
+          echo "✓ All workflows passed actionlint validation" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check for YAML syntax errors
+        run: |
+          set -euo pipefail
+          
+          echo "::group::Checking YAML syntax"
+          
+          # Install yamllint via pip
+          pip install --quiet yamllint
+          
+          # Run yamllint with relaxed rules
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 160}}}" .github/workflows/*.yml .github/actions/*/action.yml
+          
+          echo "::endgroup::"
+          echo "✓ All YAML files have valid syntax" >> "$GITHUB_STEP_SUMMARY"
