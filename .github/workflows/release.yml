@@ -1,47 +1,96 @@
-name: release
+name: Release
+
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v4.3.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   validate:
+    name: Validate Version
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Extract and Validate Version
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Extract and validate version
         id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          
+          set -euo pipefail
+
+          # Get version from tag or workflow input
+          if [[ -n "${{ inputs.tag }}" ]]; then
+            VERSION="${{ inputs.tag }}"
+            VERSION="${VERSION#v}"  # Remove 'v' prefix if present
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+
           # Validate semver format
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
-            echo "Error: Invalid version format: $VERSION"
+          if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Invalid version format: ${VERSION}"
             exit 1
           fi
-          
-          echo "Valid version: $VERSION"
+
+          echo "✓ Valid version: ${VERSION}"
+
+          # Add to summary
+          {
+            echo "## Release Validation"
+            echo ""
+            echo "- **Version:** \`${VERSION}\`"
+            echo "- **Tag:** \`v${VERSION}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   release:
+    name: Create Release
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
       attestations: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
-      - name: Create Release Package
+      - name: Create release package
         run: |
+          set -euo pipefail
+
           VERSION="${{ needs.validate.outputs.version }}"
-          zip -r poshguard-$VERSION.zip \
+          echo "📦 Creating release package for v${VERSION}..."
+
+          zip -r "poshguard-${VERSION}.zip" \
             tools/ \
             PoshGuard/ \
             README.md \
@@ -49,9 +98,24 @@ jobs:
             docs/CHANGELOG.md \
             docs/SECURITY.md \
             docs/CONTRIBUTING.md
-          
+
           # Create checksums
-          sha256sum poshguard-$VERSION.zip > poshguard-$VERSION.zip.sha256
+          sha256sum "poshguard-${VERSION}.zip" > "poshguard-${VERSION}.zip.sha256"
+
+          echo "✓ Package created successfully"
+
+          # Add to summary
+          {
+            echo "## Release Package"
+            echo ""
+            echo "- **File:** \`poshguard-${VERSION}.zip\`"
+            echo "- **Size:** $(du -h "poshguard-${VERSION}.zip" | cut -f1)"
+            echo ""
+            echo "### SHA256 Checksum"
+            echo "\`\`\`"
+            cat "poshguard-${VERSION}.zip.sha256"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.16.0
@@ -60,28 +124,36 @@ jobs:
           output-file: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           format: spdx-json
 
-      - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v1
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@703878a39fbc9e4a0fecc12bdc00f560030e8301 # v1.5.1
         with:
           subject-path: poshguard-${{ needs.validate.outputs.version }}.zip
 
-      - name: Extract Release Notes
+      - name: Extract release notes
         id: release_notes
         run: |
+          set -euo pipefail
+
           VERSION="${{ needs.validate.outputs.version }}"
-          
+
+          echo "📝 Extracting release notes for v${VERSION}..."
+
           # Try to extract version-specific notes from CHANGELOG
-          if grep -q "## \[$VERSION\]" docs/CHANGELOG.md; then
-            awk "/## \[$VERSION\]/,/## \[/{if (/## \[/ && !/## \[$VERSION\]/) exit; print}" docs/CHANGELOG.md > release-notes.md
+          if grep -q "## \[${VERSION}\]" docs/CHANGELOG.md 2>/dev/null; then
+            awk "/## \[${VERSION}\]/,/## \[/{if (/## \[/ && !/## \[${VERSION}\]/) exit; print}" docs/CHANGELOG.md > release-notes.md
+            echo "✓ Extracted release notes from CHANGELOG"
           else
-            # Fallback to latest section
-            echo "Release v$VERSION" > release-notes.md
-            echo "" >> release-notes.md
-            echo "See [CHANGELOG](docs/CHANGELOG.md) for details." >> release-notes.md
+            # Fallback to generic notes
+            {
+              echo "Release v${VERSION}"
+              echo ""
+              echo "See [CHANGELOG](docs/CHANGELOG.md) for details."
+            } > release-notes.md
+            echo "⚠️ Using generic release notes (version not found in CHANGELOG)"
           fi
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@7b4da11513bf3f43f9999059a4027196f098468f # v2.2.2
         with:
           files: |
             poshguard-${{ needs.validate.outputs.version }}.zip
@@ -91,5 +163,6 @@ jobs:
           draft: false
           prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
           generate_release_notes: true
+          tag_name: v${{ needs.validate.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

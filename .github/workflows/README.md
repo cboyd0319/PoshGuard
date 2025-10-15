@@ -1,219 +1,73 @@
 # GitHub Actions Workflows
 
-This directory contains automated workflows for PoshGuard CI/CD and code quality assurance.
+All workflows follow CI/CD best practices: SHA-pinned actions, minimal permissions, timeouts, and proper error handling.
 
-## Workflows Overview
+## Workflows Summary
 
-### code-scanning.yml - GitHub Code Scanning with SARIF
+| Workflow | Purpose | Triggers | Timeout |
+|----------|---------|----------|---------|
+| `ci.yml` | Lint, test, package | Push/PR to main | 15-20 min |
+| `code-scanning.yml` | Security scanning (SARIF) | Push/PR, weekly, manual | 20 min |
+| `release.yml` | Create releases with SBOM | Tag push, manual | 15 min |
+| `poshguard-quality-gate.yml` | Quality analysis demo | Push/PR, manual | 20 min |
+| `actionlint.yml` | Validate workflows | Push/PR to workflows | 5 min |
+| `dependabot-auto-merge.yml` | Auto-merge Dependabot | Dependabot PRs | N/A |
 
-**Purpose**: Performs static code analysis and uploads results to GitHub Security tab in SARIF format.
+## Security Best Practices
 
-**Triggers**:
-- Push to `main` branch (PowerShell files only)
-- Pull requests to `main` (PowerShell files only)
-- Weekly schedule (Sundays at 6 AM UTC)
-- Manual workflow dispatch
+✅ All third-party actions pinned by commit SHA  
+✅ Minimal permissions (least-privilege principle)  
+✅ Explicit timeouts on all jobs  
+✅ Strict error handling (`$ErrorActionPreference = 'Stop'`)  
+✅ Concurrency control (cancel duplicate runs)  
+✅ Input validation and safe defaults  
 
-**Key Features**:
-- Runs PSScriptAnalyzer on all PowerShell code
-- Converts results to SARIF format using ConvertToSARIF module
-- Uploads to GitHub Security tab for centralized vulnerability tracking
-- Caches PowerShell modules for faster runs
-- Creates artifacts for audit and review
+## Composite Actions
 
-**Required Permissions**:
+### `setup-powershell/action.yml`
+
+Reusable action for setting up PowerShell with required modules.
+
+**Usage:**
 ```yaml
-permissions:
-  contents: read          # Read repository files
-  security-events: write  # Upload SARIF results
-  actions: read          # Required by CodeQL action
+- uses: ./.github/actions/setup-powershell
+  with:
+    modules: 'PSScriptAnalyzer,Pester'
+    cache-key-suffix: 'test'
 ```
 
-**Outputs**:
-- GitHub Security tab alerts
-- SARIF artifact (30-day retention)
-- PSScriptAnalyzer results artifact
+## Action Versions (SHA-Pinned)
 
-**Usage**: Results appear in the "Security" tab → "Code scanning alerts" section of your repository.
+| Action | Version | SHA (First 8 chars) |
+|--------|---------|---------------------|
+| actions/checkout | v4.2.2 | 11bd7190 |
+| actions/cache | v4.2.2 | 1bd1e32a |
+| actions/upload-artifact | v4.5.0 | ea165f8d |
+| github/codeql-action/upload-sarif | v3.29.0 | 6624720a |
+| actions/github-script | v7.0.2 | 8ea07e23 |
+| anchore/sbom-action | v0.18.1 | f8bdd1d8 |
+| actions/attest-build-provenance | v1.5.1 | 703878a3 |
+| softprops/action-gh-release | v2.2.2 | 7b4da115 |
+| dependabot/fetch-metadata | v2.2.0 | dbb049ab |
 
----
+Last updated: 2025-10-15
 
-### ci.yml - Continuous Integration
+## Performance Optimizations
 
-**Purpose**: Lints and tests PowerShell code on every commit.
+- **Caching:** PowerShell modules cached by OS, architecture, and config hash
+- **Fetch Depth:** `fetch-depth: 1` for faster clones (except where history needed)
+- **Path Filters:** Workflows run only when relevant files change
+- **Concurrency:** Automatic cancellation of duplicate/outdated runs
 
-**Triggers**:
-- Push to `main` branch
-- Pull requests
+## Observability
 
-**Jobs**:
-1. **lint**: Runs PSScriptAnalyzer with Error/Warning severity
-2. **test**: Runs Pester tests
-3. **package**: Creates release artifacts (main branch only)
+- **Step Summaries:** Rich markdown summaries in `$GITHUB_STEP_SUMMARY`
+- **File Annotations:** `::error file=...` for linting/test failures
+- **SARIF Upload:** Security issues visible in GitHub Security tab
+- **Artifacts:** Results preserved for 30 days
 
-**Optimizations**:
-- Path-based filtering (only runs on PowerShell file changes)
-- Concurrency controls (cancels outdated runs)
-- Module caching (faster installation)
+## References
 
----
-
-### poshguard-quality-gate.yml - Quality Gate Template
-
-**Purpose**: Example quality gate workflow for projects using PoshGuard.
-
-**Features**:
-- Configurable thresholds for security issues
-- Confidence score validation
-- PR comments with analysis results
-- Auto-fix capability (optional)
-
-**Note**: This is a template/example workflow. Can be customized for specific project needs.
-
----
-
-### release.yml - Automated Releases
-
-**Purpose**: Creates GitHub releases when version tags are pushed.
-
-**Triggers**: Git tags matching `v*.*.*` (semantic versioning)
-
-**Features**:
-- Version validation
-- Release notes extraction from CHANGELOG
-- Package creation with SHA256 checksums
-- Prerelease detection (alpha/beta/rc)
-
----
-
-### dependabot-auto-merge.yml - Dependabot Automation
-
-**Purpose**: Automatically approves and merges safe Dependabot updates.
-
-**Triggers**: Dependabot PRs
-
-**Safety**: Only auto-merges patch and minor version updates (not major versions).
-
----
-
-## GitHub Security Tab Integration
-
-The `code-scanning.yml` workflow integrates PoshGuard with GitHub Advanced Security features:
-
-### How It Works
-
-1. **Analysis**: PSScriptAnalyzer scans all PowerShell files
-2. **Conversion**: Results converted to SARIF format
-3. **Upload**: SARIF uploaded to GitHub using `github/codeql-action/upload-sarif@v3`
-4. **Display**: Alerts appear in Security tab
-
-### Viewing Results
-
-1. Go to repository **Security** tab
-2. Click **Code scanning alerts**
-3. Filter by:
-   - Severity (Error, Warning, Information)
-   - Rule ID (e.g., PSAvoidUsingCmdletAliases)
-   - Status (Open, Closed, Fixed)
-   - Branch
-
-### Alert Management
-
-- **Dismiss**: Mark false positives
-- **Fix**: View remediation guidance
-- **Track**: Monitor trends over time
-
-### PR Integration
-
-When code scanning finds new issues in a PR:
-- Automatically posts PR comment
-- Shows affected lines
-- Links to rule documentation
-
-## Local Testing
-
-Test workflows locally before pushing:
-
-### Validate YAML Syntax
-
-```bash
-# Using Python
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/code-scanning.yml'))"
-
-# Using yq (if installed)
-yq eval '.github/workflows/code-scanning.yml'
-```
-
-### Test SARIF Generation
-
-```powershell
-# Install dependencies
-Install-Module PSScriptAnalyzer -Force
-Install-Module ConvertToSARIF -Force -AcceptLicense
-
-# Generate SARIF
-$results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning
-if ($results) {
-    $results | ConvertTo-SARIF -FilePath results.sarif
-}
-
-# Validate SARIF
-Get-Content results.sarif | ConvertFrom-Json | ConvertTo-Json -Depth 10
-```
-
-## Best Practices
-
-1. **Permissions**: Always use minimal required permissions
-2. **Caching**: Cache dependencies to speed up workflows
-3. **Path Filters**: Only run on relevant file changes
-4. **Concurrency**: Cancel outdated workflow runs
-5. **Artifacts**: Store important outputs for auditing
-6. **Secrets**: Never commit secrets; use GitHub Secrets
-7. **Testing**: Test workflows in draft PRs before merging
-
-## Troubleshooting
-
-### "Resource not accessible by integration"
-
-**Cause**: Missing permissions in workflow
-
-**Fix**: Add required permissions:
-```yaml
-permissions:
-  security-events: write
-```
-
-### "No SARIF results uploaded"
-
-**Cause**: Empty or invalid SARIF file
-
-**Fix**: Check workflow logs for conversion errors
-
-### "Module not found" errors
-
-**Cause**: Module installation failed
-
-**Fix**: Check network connectivity and module availability:
-```powershell
-Find-Module PSScriptAnalyzer
-Find-Module ConvertToSARIF
-```
-
-### Workflow not triggering
-
-**Cause**: Path filters excluding changes
-
-**Fix**: Check if your changes match the path filters in `on.push.paths` or `on.pull_request.paths`
-
-## Documentation
-
-- [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning)
-- [SARIF Format](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
-- [PoshGuard SARIF Guide](../../docs/GITHUB-SARIF-INTEGRATION.md)
 - [GitHub Actions Docs](https://docs.github.com/en/actions)
-
-## Support
-
-For issues with workflows:
-- [GitHub Issues](https://github.com/cboyd0319/PoshGuard/issues)
-- [Discussions](https://github.com/cboyd0319/PoshGuard/discussions)
+- [Security Hardening Guide](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [actionlint](https://github.com/rhysd/actionlint)
