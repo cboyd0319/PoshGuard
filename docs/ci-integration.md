@@ -39,7 +39,7 @@ jobs:
   lint:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Cache PSScriptAnalyzer
         uses: actions/cache@v4
@@ -74,7 +74,7 @@ jobs:
   autofix:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
@@ -111,7 +111,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install dependencies
         run: |
@@ -397,7 +397,7 @@ jobs:
   poshguard-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Setup PowerShell
         uses: microsoft/setup-powershell@v1
