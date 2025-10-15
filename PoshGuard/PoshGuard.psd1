@@ -13,7 +13,7 @@
     PowerShellVersion = '5.1'
 
     RequiredModules = @(
-        @{ ModuleName = 'PSScriptAnalyzer'; ModuleVersion = '1.21.0' }
+        @{ ModuleName = 'PSScriptAnalyzer'; ModuleVersion = '1.24.0' }
     )
 
     # Note: Module loading is handled dynamically in PoshGuard.psm1

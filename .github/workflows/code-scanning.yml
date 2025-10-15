@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0  # Full history for better analysis
       
       - name: Setup PowerShell
-        uses: microsoft/setup-powershell@v1
+        uses: microsoft/setup-powershell@v2
         with:
           pwsh: true
       

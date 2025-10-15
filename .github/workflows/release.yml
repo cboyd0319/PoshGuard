@@ -54,7 +54,7 @@ jobs:
           sha256sum poshguard-$VERSION.zip > poshguard-$VERSION.zip.sha256
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@v0.16.0
         with:
           artifact-name: poshguard-${{ needs.validate.outputs.version }}.spdx.json
           output-file: poshguard-${{ needs.validate.outputs.version }}.spdx.json
