@@ -25,7 +25,7 @@ Core Capabilities:
 • Cross-platform: Windows/macOS/Linux, PowerShell 7+
 • Deterministic runs with reproducible output
 
-v4.3.0 implements 130+ rules (60 PSSA + 70 advanced) with 98%+ fix rate. Features AI/ML integration with reinforcement learning, entropy-based secret detection, and confidence scoring. In our benchmark corpus, achieves industry-leading accuracy. See GitHub docs/benchmarks.md and docs/V4.3.0-RELEASE-NOTES.md for complete details.
+v4.3.0 implements 130+ rules (60 PSSA + 70 advanced) with 98%+ fix rate. Features AI/ML integration with reinforcement learning, entropy-based secret detection, and confidence scoring. In our benchmark corpus, achieves industry-leading accuracy. See GitHub docs/development/benchmarks.md and docs/V4.3.0-RELEASE-NOTES.md for complete details.
 
 Perfect for CI/CD pipelines (GitHub Actions, Azure DevOps, GitLab), pre-commit hooks, and enterprise PowerShell standards enforcement.
 

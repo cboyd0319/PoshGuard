@@ -99,6 +99,28 @@ PoshGuard/
 - **Copilot:** `.github/copilot-instructions.md` (this file), `.github/copilot-mcp.json`
 - **Ownership:** `.github/CODEOWNERS` — Code review assignments (@cboyd0319)
 
+## Documentation (Copilot — follow these rules)
+
+### Documentation Hub
+- Start at `docs/DOCUMENTATION_INDEX.md`.
+
+### Docs Structure & Style (enforced)
+- All docs live in `docs/` (never under `.github/`).
+- Prefer short, scannable bullets over wide tables; keep lines ≤120 chars (MD013).
+- Use active voice and avoid hedging; keep language plainspoken (Vale enforces this).
+- Make commands runnable; pin versions; include expected output where useful.
+- Update cross‑links when moving docs; avoid broken anchors.
+
+### Docs CI (must pass on PR)
+- Markdownlint (`.github/workflows/docs-ci.yml`) — MD013 line length = 120.
+- Vale style lint (`.vale.ini` + `Styles/`) — active voice, terminology, spelling.
+- Lychee link check (`.lycheeignore` covers local/secret URLs).
+
+### When adding or editing docs
+- Put deep‑dives under `docs/reference/` when appropriate; link from the main hub.
+- Use bullets for configuration/performance and keep examples self‑contained.
+- Run locally: `markdownlint "**/*.md"` and `vale .` before pushing.
+
 ## Coding Standards
 
 ### PowerShell Style Guide

@@ -60,7 +60,7 @@ Invoke-PoshGuard -Path ./src -DryRun -ExportSarif
 
 Created comprehensive documentation:
 
-**Main Guide**: `docs/GITHUB-SARIF-INTEGRATION.md` (11KB)
+**Main Guide**: `docs/reference/GITHUB-SARIF-INTEGRATION.md` (11KB)
 - What is SARIF
 - Quick start guide
 - Complete workflow examples
@@ -76,7 +76,7 @@ Created comprehensive documentation:
 - Local testing guide
 - Troubleshooting section
 
-**CI Integration**: `docs/ci-integration.md` (Updated)
+**CI Integration**: `docs/development/ci-integration.md` (Updated)
 - Added SARIF section
 - Example workflow
 - Reference to full guide

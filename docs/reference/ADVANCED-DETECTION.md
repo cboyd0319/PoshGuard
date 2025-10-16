@@ -620,7 +620,7 @@ To add new detection rules:
 4. Document the rule in this file with remediation examples
 5. Add references for non-obvious patterns
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for full guidelines.
 
 ---
 

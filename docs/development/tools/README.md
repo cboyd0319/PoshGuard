@@ -173,7 +173,7 @@ Set-Content ./MyScript.ps1 -Value $fixed
 Each module is tested via:
 1. **Unit tests** - In `/tests/Phase2-AutoFix.Tests.ps1`
 2. **Integration tests** - Via `Apply-AutoFix.ps1` on sample files
-3. **Benchmarks** - See `/docs/benchmarks.md`
+3. **Benchmarks** - See `/docs/development/benchmarks.md`
 
 Run tests:
 ```powershell

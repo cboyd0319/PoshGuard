@@ -464,7 +464,7 @@ $perfIssues = Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
 
 For any organization serious about PowerShell code quality:
 
-**Use PoshGuard v3.3.0** - It's not just better, it's **in a different league**.
+**Use PoshGuard v3.3.0** - It's not better, it's **in a different league**.
 
 ---
 

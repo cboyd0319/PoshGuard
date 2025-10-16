@@ -24,7 +24,7 @@
 
 ## Do I Need to Know How to Code?
 
-**NO!** You just need to:
+**NO!** You need to:
 1. Have PowerShell installed (it comes with Windows)
 2. Have some PowerShell scripts (`.ps1` files)
 3. Follow the steps below
@@ -200,12 +200,12 @@ Maybe you don't want to fix `Write-Host` (you like it the old way):
 4. You can always undo with `-DryRun` first
 
 ### Q: How long does it take?
-**A**: Usually 1-5 seconds per script (very fast!)
+**A**: Usually 1-5 seconds per script (fast!)
 
 ### Q: Does it work offline?
 **A**: YES! No internet required after installation.
 
-### Q: Is it really free?
+### Q: Is it free?
 **A**: YES! Completely free, open source (MIT license).
 
 ### Q: Do I need to be a programmer?
@@ -357,7 +357,7 @@ Get-ChildItem -Path C:\Users\YourName -Recurse -Filter "*.ps1"
 **Problem**: Don't have permission to modify file
 **Solution**: 
 - Right-click PowerShell → "Run as Administrator"
-- Or use `-DryRun` to just preview (doesn't need special permissions)
+- Or use `-DryRun` to preview (doesn't need special permissions)
 
 ### Error: "PSScriptAnalyzer module not found"
 **Problem**: Missing required module
@@ -436,7 +436,7 @@ You're now a PoshGuard user! You can:
 - **Parameter**: An option you add to a command (like `-Path` or `-DryRun`)
 - **AST**: Abstract Syntax Tree - How PowerShell understands your code (don't worry about it!)
 - **Backup**: A copy of your original file (safety net!)
-- **Fix Success Rate**: How many issues PoshGuard can fix (82.5% = very good!)
+- **Fix Success Rate**: How many issues PoshGuard can fix (82.5% = good!)
 - **Dry Run**: Preview mode - see changes without applying them
 
 ---

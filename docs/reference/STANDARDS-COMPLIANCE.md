@@ -376,7 +376,7 @@ All compliance claims are verifiable through:
 1. **Source Code**: https://github.com/cboyd0319/PoshGuard
 2. **Documentation**: `/docs/` directory (200+ pages)
 3. **Test Suite**: `/tests/` directory (69 tests, 91.3% pass rate)
-4. **Benchmarks**: Reproducible results in `docs/benchmarks.md`
+4. **Benchmarks**: Reproducible results in `docs/development/benchmarks.md`
 5. **CI/CD**: GitHub Actions workflows in `.github/workflows/`
 
 ---

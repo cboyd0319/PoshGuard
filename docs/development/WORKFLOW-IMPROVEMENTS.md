@@ -190,7 +190,7 @@ No action required - workflows are backward compatible with existing releases.
 
 ### For CI/CD Integration Users
 
-If you're using the example workflows from `docs/ci-integration.md`:
+If you're using the example workflows from `docs/development/ci-integration.md`:
 1. Update to use path filters for efficiency
 2. Add caching for faster runs
 3. Use concurrency controls to save resources

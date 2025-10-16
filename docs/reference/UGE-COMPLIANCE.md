@@ -495,7 +495,7 @@ See CHANGELOG.md v3.2.0 for complete release notes.
 - No destructive operations without user confirmation
 
 **Extensibility**:
-- Modular architecture (easy to add new fixes)
+- Modular architecture (straightforward to add new fixes)
 - Plugin system (planned v4.0)
 - Custom rule framework (planned v4.0)
 - Template in CONTRIBUTING.md
@@ -657,7 +657,7 @@ PoshGuard v3.2.0 **FULLY COMPLIES** with all UGE framework requirements:
 ✅ **Advanced Modes**: Fail-safe and fail-fast implemented  
 ✅ **Security Checklist**: OWASP ASVS Level 1 compliance achieved  
 ✅ **Reliability**: SLOs defined, monitored, and met  
-✅ **Style & DX**: Idiomatic, well-documented, easy to use  
+✅ **Style & DX**: Idiomatic, well-documented, straightforward to use  
 
 **Benchmark Achievement**: 77.78% fix success rate (exceeds 70% target)  
 **Test Coverage**: 29 tests, 100% pass rate (excluding intentional skips)  

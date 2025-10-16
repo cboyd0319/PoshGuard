@@ -62,7 +62,7 @@ This file configures MCP servers for GitHub Copilot. GitHub Copilot automaticall
 
 ### `config/poshguard.json`
 
-The MCP section in this file lets PoshGuard integrate with MCP servers directly (not just Copilot). By default, disabled—requires user consent.
+The MCP section in this file lets PoshGuard integrate with MCP servers directly (not Copilot). By default, disabled—requires user consent.
 
 ```json
 {

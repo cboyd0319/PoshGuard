@@ -15,7 +15,7 @@
 .NOTES
     Version: 3.1.0
     Part of PoshGuard UGE Framework Enhancement
-    Reference: docs/SRE-PRINCIPLES.md
+    Reference: docs/development/SRE-PRINCIPLES.md
 #>
 
 Set-StrictMode -Version Latest
@@ -454,7 +454,7 @@ function Test-SLO {
     
     .DESCRIPTION
         Evaluates current metrics against defined SLOs.
-        See docs/SRE-PRINCIPLES.md for SLO definitions.
+        See docs/development/SRE-PRINCIPLES.md for SLO definitions.
     
     .EXAMPLE
         $sloStatus = Test-SLO
@@ -471,7 +471,7 @@ function Test-SLO {
     
     $metrics = Get-OperationMetrics
     
-    # Define SLO targets (from docs/SRE-PRINCIPLES.md)
+    # Define SLO targets (from docs/development/SRE-PRINCIPLES.md)
     $sloTargets = @{
         AvailabilityTarget = 99.5  # 99.5% success rate
         LatencyP95Target = 5000    # 5s per file (p95)

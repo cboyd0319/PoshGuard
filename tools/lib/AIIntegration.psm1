@@ -14,7 +14,7 @@
 .NOTES
     Version: 4.0.0
     Part of PoshGuard UGE Framework Enhancement
-    Reference: docs/AI-ML-INTEGRATION.md
+    Reference: docs/reference/AI-ML-INTEGRATION.md
     
     Privacy: All features work locally by default. MCP integration is optional.
     Cost: FREE - No cloud services required

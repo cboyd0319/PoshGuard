@@ -437,7 +437,7 @@ function Get-CodeIntent {
 For organizations that cannot use cloud AI services, PoshGuard supports local language models:
 
 **Supported Models**:
-- **Ollama** (recommended): Free, easy setup
+- **Ollama** (recommended): Free, straightforward setup
 - **llama.cpp**: Lightweight C++ implementation  
 - **GPT4All**: Desktop application with API
 

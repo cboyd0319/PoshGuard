@@ -1439,8 +1439,7 @@ Your choice [1-N, or Q to quit]:
 
 **Principles**:
 - Start with icon (visual anchor)
-- State the problem clearly
-- Provide specific solution
+- State the problem - Provide specific solution
 - Keep under 100 characters
 
 ### Empty State Copy
@@ -1615,7 +1614,7 @@ Your choice [1-N, or Q to quit]:
 
 **Task 5: Rollback (Optional)**
 - **Setup**: User has applied fixes
-- **Task**: "Undo the changes you just made"
+- **Task**: "Undo the changes you made"
 - **Success Criteria**: User locates backup or uses restore command
 - **Metrics**: Discovery time, success rate
 - **Target**: 80% success, <5 min
@@ -1642,7 +1641,7 @@ Any questions before we start?"
 2. Answer clarifying questions only
 3. Note: time started, verbalizations, struggles, successes
 4. Allow 2x expected time before offering help
-5. After completion: "How confident are you in what you just did?" (1-10)
+5. After completion: "How confident are you in what you did?" (1-10)
 
 **Post-Task Questions**:
 - What was easiest about that task?
@@ -2343,7 +2342,7 @@ $Colors = @{
 
 ### What Makes This Special
 
-**Not just "good UX"** - This is a new standard for CLI tools:
+**Not "good UX"** - This is a new standard for CLI tools:
 - First PowerShell tool with WCAG 2.2 AA compliance
 - First with comprehensive usability testing protocol
 - First with beginner-focused design system
