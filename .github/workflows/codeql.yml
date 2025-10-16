@@ -32,6 +32,9 @@ jobs:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Skip this job - PowerShell is not supported by CodeQL
+    # Use code-scanning.yml (PSScriptAnalyzer) for PowerShell security analysis instead
+    if: false
     permissions:
       contents: read
       security-events: write
