@@ -70,12 +70,18 @@ jobs:
           $config.CodeCoverage.Enabled = $true
           $config.CodeCoverage.OutputPath = 'coverage.xml'
           $config.CodeCoverage.OutputFormat = 'JaCoCo'
-          $config.CodeCoverage.Path = @(
-            'PoshGuard/*.psm1',
-            'PoshGuard/*.ps1',
-            'tools/lib/**/*.psm1',
-            'tools/lib/**/*.ps1'
-          )
+
+          # Resolve all module files for coverage tracking
+          $coverageFiles = @()
+          $coverageFiles += Get-ChildItem -Path 'PoshGuard' -Filter '*.psm1' -File | Select-Object -ExpandProperty FullName
+          $coverageFiles += Get-ChildItem -Path 'PoshGuard' -Filter '*.ps1' -File | Select-Object -ExpandProperty FullName
+          $coverageFiles += Get-ChildItem -Path 'tools/lib' -Filter '*.psm1' -Recurse -File | Select-Object -ExpandProperty FullName
+          $coverageFiles += Get-ChildItem -Path 'tools/lib' -Filter '*.ps1' -Recurse -File | Select-Object -ExpandProperty FullName
+
+          Write-Host "📁 Tracking $($coverageFiles.Count) files for coverage:" -ForegroundColor Cyan
+          $coverageFiles | ForEach-Object { Write-Host "  - $_" }
+
+          $config.CodeCoverage.Path = $coverageFiles
 
           # Run tests
           $result = Invoke-Pester -Configuration $config
