@@ -6,7 +6,7 @@ Comprehensive Pester v5+ test suite for PoshGuard following best practices for d
 
 - **Framework**: Pester v5.7+
 - **Pattern**: AAA (Arrange-Act-Assert)
-- **Coverage**: 158 tests across 4 modules
+- **Coverage**: 147 tests across 7 modules
 - **Status**: ✅ All passing
 - **Platforms**: Windows, macOS, Linux (PowerShell 7+)
 
@@ -18,15 +18,22 @@ tests/
 │   ├── Core.Tests.ps1        # Core module (32 tests)
 │   ├── Security.Tests.ps1    # Security module (31 tests)
 │   ├── ConfigurationManager.Tests.ps1 # Config module (13 tests)
+│   ├── BestPractices/
+│   │   ├── Syntax.Tests.ps1  # Syntax best practices (38 tests)
+│   │   └── Naming.Tests.ps1  # Naming conventions (9 tests)
 │   └── Formatting/
-│       └── Aliases.Tests.ps1  # Alias expansion (17 tests)
+│       ├── Aliases.Tests.ps1  # Alias expansion (17 tests)
+│       └── Whitespace.Tests.ps1 # Whitespace formatting (7 tests)
 ├── Helpers/                   # Shared test utilities
-│   └── TestHelpers.psm1      # Helper functions
+│   ├── TestHelpers.psm1      # Helper functions
+│   ├── MockBuilders.psm1     # Mock object factories
+│   └── TestData.psm1         # Test data generators
 ├── Integration/               # Integration tests (future)
 ├── AdvancedDetection.Tests.ps1 # Existing tests (16 tests)
 ├── CodeQuality.Tests.ps1      # Existing tests (17 tests)
 ├── EnhancedMetrics.Tests.ps1  # Existing tests (11 tests)
 ├── Phase2-AutoFix.Tests.ps1   # Existing tests (21 tests, 4 skipped)
+├── TEST_PLAN.md              # Comprehensive test plan
 └── README.md                  # This file
 ```
 
@@ -118,6 +125,27 @@ Invoke-Pester -Path ./tests -Output Detailed
 - `Invoke-AliasFixAst`: AST-based alias replacement
 
 **Coverage**: Common aliases (gci, ls, cat, rm, cp), multiple aliases, special cases, integration
+
+### BestPractices/Syntax.psm1 ✅ (38 tests)
+- `Invoke-SemicolonFix`: Trailing semicolon removal
+- `Invoke-NullComparisonFix`: Null comparison order fixes
+- `Invoke-ExclaimOperatorFix`: Exclaim operator replacement with -not
+
+**Coverage**: AST transformations, idempotency, edge cases, integration scenarios
+
+### BestPractices/Naming.psm1 ✅ (9 tests)
+- `Invoke-SingularNounFix`: Plural to singular noun conversion
+- `Invoke-ApprovedVerbFix`: Approved verb enforcement
+- `Invoke-ReservedCmdletCharFix`: Reserved character handling
+
+**Coverage**: Naming conventions, function declarations, PowerShell standards
+
+### Formatting/Whitespace.psm1 ✅ (7 tests)
+- `Invoke-WhitespaceFix`: Trailing whitespace removal, line ending normalization
+- `Invoke-FormatterFix`: PSScriptAnalyzer Invoke-Formatter integration
+- `Invoke-MisleadingBacktickFix`: Backtick handling
+
+**Coverage**: Whitespace cleanup, formatting integration, idempotency
 
 ### Existing Tests ✅ (65 tests, 4 skipped)
 - `AdvancedDetection.Tests.ps1`: Complexity and nesting detection
@@ -296,12 +324,17 @@ It 'Should expand <Alias> to <Expected>' -TestCases @(
 ## Future Enhancements
 
 ### Planned Test Additions
-- [ ] Formatting submodules (Whitespace, Casing, Output)
-- [ ] BestPractices submodules (Syntax, Naming, Scoping)
-- [ ] Advanced submodules (AST, Parameters, Documentation)
-- [ ] Security detection modules (Enhanced, Entropy, Advanced)
-- [ ] Enterprise features (NIST, SupplyChain, AI)
-- [ ] Infrastructure modules (Metrics, Observability, Performance)
+- [x] BestPractices/Syntax.psm1 (38 tests - completed)
+- [x] BestPractices/Naming.psm1 (9 tests - completed)  
+- [x] Formatting/Whitespace.psm1 (7 tests - completed)
+- [x] Test infrastructure (MockBuilders, TestData helpers)
+- [ ] Formatting submodules (Casing, Output, Alignment, Runspaces)
+- [ ] BestPractices submodules (Scoping, StringHandling, TypeSafety, UsagePatterns, CodeQuality)
+- [ ] Advanced submodules (CmdletBinding, ParameterManagement, ShouldProcess, Documentation, ManifestManagement)
+- [ ] Security detection modules (EnhancedSecurityDetection, EntropySecretDetection)
+- [ ] AI/ML modules (AIIntegration, ReinforcementLearning)
+- [ ] Enterprise features (NISTSP80053Compliance, SupplyChainSecurity)
+- [ ] Infrastructure modules (Observability, OpenTelemetryTracing, PerformanceOptimization)
 
 ### Quality Improvements
 - [ ] Mutation testing for test effectiveness
@@ -331,11 +364,11 @@ When adding tests:
 
 ## Current Status
 
-✅ **158 tests passing** (93 new + 65 existing)  
-⏭️ **4 tests skipped** (known limitations)  
+✅ **147 tests passing** (93 original + 54 new)  
+⏭️ **4 tests skipped** (known limitations in existing tests)  
 ❌ **0 tests failing**  
-⏱️ **~3.8s total execution time**  
-📊 **Coverage**: Core, Security, Configuration, Aliases modules  
+⏱️ **~3.5s total execution time**  
+📊 **Coverage**: Core, Security, Configuration, BestPractices (Syntax, Naming), Formatting (Aliases, Whitespace)  
 
 **Last Updated**: 2025-10-16  
-**Version**: 1.0
+**Version**: 2.0

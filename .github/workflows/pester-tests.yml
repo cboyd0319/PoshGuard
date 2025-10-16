@@ -72,8 +72,25 @@ jobs:
             './tools/lib/Core.psm1',
             './tools/lib/Security.psm1',
             './tools/lib/BestPractices.psm1',
+            './tools/lib/BestPractices/**/*.psm1',
             './tools/lib/Formatting.psm1',
-            './tools/lib/Advanced.psm1'
+            './tools/lib/Formatting/**/*.psm1',
+            './tools/lib/Advanced.psm1',
+            './tools/lib/Advanced/**/*.psm1',
+            './tools/lib/ConfigurationManager.psm1',
+            './tools/lib/AIIntegration.psm1',
+            './tools/lib/EntropySecretDetection.psm1',
+            './tools/lib/EnhancedSecurityDetection.psm1',
+            './tools/lib/AdvancedDetection.psm1',
+            './tools/lib/AdvancedCodeAnalysis.psm1',
+            './tools/lib/MCPIntegration.psm1',
+            './tools/lib/Observability.psm1',
+            './tools/lib/OpenTelemetryTracing.psm1',
+            './tools/lib/ReinforcementLearning.psm1',
+            './tools/lib/PerformanceOptimization.psm1',
+            './tools/lib/NISTSP80053Compliance.psm1',
+            './tools/lib/SupplyChainSecurity.psm1',
+            './tools/lib/EnhancedMetrics.psm1'
           )
           $config.CodeCoverage.OutputFormat = 'JaCoCo'
           $config.CodeCoverage.OutputPath = 'coverage.xml'
