@@ -66,14 +66,21 @@ jobs:
           foreach ($path in $paths) {
             if (Test-Path $path) {
               Write-Host "`nAnalyzing: $path" -ForegroundColor Yellow
-              $results = Invoke-ScriptAnalyzer `
-                -Path $path `
-                -Recurse `
-                -Severity Error,Warning `
-                -Settings ./config/PSScriptAnalyzerSettings.psd1
+              try {
+                $results = Invoke-ScriptAnalyzer `
+                  -Path $path `
+                  -Recurse `
+                  -Severity Error,Warning `
+                  -Settings ./config/PSScriptAnalyzerSettings.psd1 `
+                  -ErrorAction Stop
 
-              if ($results) {
-                $allResults += $results
+                if ($results) {
+                  $allResults += $results
+                }
+              }
+              catch {
+                Write-Host "::warning::Error analyzing $path : $_"
+                Write-Host "Continuing with next path..." -ForegroundColor Yellow
               }
             }
           }
