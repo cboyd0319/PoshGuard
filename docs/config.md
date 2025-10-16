@@ -5,6 +5,7 @@ Defaults are sensible; you rarely need to tweak anything. When you do, start her
 
 Files
 -----
+
 - PSScriptAnalyzer rules: `config/PSScriptAnalyzerSettings.psd1`
 - Quality gates & formatting: `config/QASettings.psd1`
 - Security rules: `config/SecurityRules.psd1`
@@ -12,11 +13,13 @@ Files
 
 How settings apply
 ------------------
+
 - Tools (`./tools/Apply-AutoFix.ps1`) load `PSScriptAnalyzerSettings.psd1` and `QASettings.psd1` by default.
 - Module (`Invoke-PoshGuard`) uses the same defaults. Override via parameters or environment variables when provided.
 
 Key settings (quick scan)
 -------------------------
+
 - SecurityRules.psd1: credential handling, secrets detection, API token patterns, risk levels.
 - QASettings.psd1: formatting rules (indent, casing), naming, scoping, string handling, output conventions.
 - PSScriptAnalyzerSettings.psd1: upstream rules inclusion/exclusions, severity.
@@ -24,6 +27,7 @@ Key settings (quick scan)
 
 poshguard.json (example)
 ------------------------
+
 ```json
 {
   "mcp": {
@@ -41,12 +45,14 @@ poshguard.json (example)
 
 Override patterns
 -----------------
+
 - Per-run: prefer command parameters (e.g., `-Skip @('RuleA','RuleB')`).
 - Per-repo: commit adjusted PSD1 files under `config/` with rationale in PR.
 - Per-file: use comment-based suppression only when necessary; document in the PR.
 
 Tips
 ----
+
 - Keep changes minimal; prefer upstream rule updates over local overrides.
 - Never disable security-critical rules without a clear, documented reason.
 - Validate with `-DryRun` and include before/after diffs in reviews.

@@ -14,6 +14,7 @@ PoshGuard/
 ## Development vs. Published Structure
 
 ### Development (Current Repo)
+
 ```
 PoshGuard/              <- Manifest only
 tools/
@@ -24,6 +25,7 @@ tools/
 **Usage**: `./tools/Apply-AutoFix.ps1 -Path ./script.ps1`
 
 ### PowerShell Gallery (Published)
+
 ```
 PoshGuard/
   ├── PoshGuard.psd1

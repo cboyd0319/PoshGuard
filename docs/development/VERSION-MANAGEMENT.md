@@ -141,6 +141,7 @@ None / List any breaking changes
 ### Step 5: Update Tool Scripts
 
 Update `.NOTES Version:` field in:
+
 - `tools/Apply-AutoFix.ps1`
 - `tools/Restore-Backup.ps1`
 - `tools/Start-InteractiveTutorial.ps1`
@@ -148,6 +149,7 @@ Update `.NOTES Version:` field in:
 ### Step 6: Update Configuration & Asset Files
 
 Update version fields in:
+
 - `config/poshguard.json`: `"version": "4.4.0"`
 - `benchmarks/latest.json`: `"PoshGuardVersion": "4.4.0"`
 - `vscode-extension/package.json`: `"version": "4.4.0"`
@@ -204,6 +206,7 @@ The `Create-Release.ps1` script automatically validates:
 4. **Changelog snippet**: Extracts notes for git tag annotation
 
 If any validation fails, the script will:
+
 - Offer to update VERSION.txt automatically
 - Offer to update module manifest automatically
 - Abort if tag already exists (requires manual deletion)
@@ -215,6 +218,7 @@ If any validation fails, the script will:
 **Symptom**: VERSION.txt shows 4.3.0 but PoshGuard.psd1 shows 4.2.0
 
 **Solution**: Run version sync check:
+
 ```powershell
 $versionFile = Get-Content PoshGuard/VERSION.txt
 $manifest = Test-ModuleManifest PoshGuard/PoshGuard.psd1
@@ -236,6 +240,7 @@ if ($versionFile.Trim() -ne $manifest.Version) {
 **Symptom**: `git tag -a v4.4.0` fails with "already exists"
 
 **Solution**: Delete old tag (if appropriate):
+
 ```powershell
 # Delete local tag
 git tag -d v4.4.0

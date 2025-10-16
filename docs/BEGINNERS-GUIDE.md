@@ -9,6 +9,7 @@
 **Simple Answer**: PoshGuard is a free tool that automatically fixes problems in PowerShell scripts (code).
 
 **Why You Need It**:
+
 - ✅ Makes your code more secure (protects against hackers)
 - ✅ Makes your code easier to read
 - ✅ Follows best practices (the "right way" to write code)
@@ -25,6 +26,7 @@
 ## Do I Need to Know How to Code?
 
 **NO!** You need to:
+
 1. Have PowerShell installed (it comes with Windows)
 2. Have some PowerShell scripts (`.ps1` files)
 3. Follow the steps below
@@ -33,18 +35,21 @@
 
 ## Step 1: Check if PowerShell is Installed
 
-### Windows Users:
+### Windows Users
+
 1. Press `Windows Key + R`
 2. Type `powershell` and press Enter
 3. A blue window opens? ✅ You have PowerShell!
 
-### Mac Users:
-1. Install PowerShell: https://docs.microsoft.com/powershell/scripting/install/installing-powershell-on-macos
+### Mac Users
+
+1. Install PowerShell: <https://docs.microsoft.com/powershell/scripting/install/installing-powershell-on-macos>
 2. Open Terminal
 3. Type `pwsh` and press Enter
 
-### Linux Users:
-1. Install PowerShell: https://docs.microsoft.com/powershell/scripting/install/installing-powershell-on-linux
+### Linux Users
+
+1. Install PowerShell: <https://docs.microsoft.com/powershell/scripting/install/installing-powershell-on-linux>
 2. Open Terminal
 3. Type `pwsh` and press Enter
 
@@ -64,7 +69,7 @@ Press Enter. Wait for download to complete.
 
 ### Method 2: Manual Way
 
-1. Go to https://github.com/cboyd0319/PoshGuard
+1. Go to <https://github.com/cboyd0319/PoshGuard>
 2. Click the green "Code" button
 3. Click "Download ZIP"
 4. Extract the ZIP file to your Documents folder
@@ -76,7 +81,7 @@ Press Enter. Wait for download to complete.
 
 Let's say you have a script called `MyScript.ps1` in your Documents folder.
 
-### Preview What Will Be Fixed (Safe - No Changes):
+### Preview What Will Be Fixed (Safe - No Changes)
 
 ```powershell
 # Navigate to PoshGuard folder
@@ -87,10 +92,12 @@ cd C:\Users\YourName\Documents\PoshGuard
 ```
 
 **What This Does**:
+
 - `-Path` - Tells PoshGuard where your script is
 - `-DryRun` - Shows what WOULD be fixed (doesn't actually change anything)
 
 You'll see output like:
+
 ```
 🔍 Analyzing: MyScript.ps1
 ✅ Fixed: PSAvoidUsingCmdletAliases (Line 10)
@@ -98,7 +105,7 @@ You'll see output like:
 📊 Summary: 2 issues fixed, 0 skipped
 ```
 
-### Apply the Fixes:
+### Apply the Fixes
 
 If you're happy with the preview, run WITHOUT `-DryRun`:
 
@@ -121,7 +128,7 @@ If you're happy with the preview, run WITHOUT `-DryRun`:
 - 🔍 = Analyzing file
 - 💾 = Backup created
 
-### Common Fixes Explained:
+### Common Fixes Explained
 
 1. **PSAvoidUsingCmdletAliases**
    - **Problem**: Using shortcuts like `gci` instead of full command `Get-ChildItem`
@@ -142,7 +149,7 @@ If you're happy with the preview, run WITHOUT `-DryRun`:
 
 ## Step 5: What If Something Goes Wrong?
 
-### Rollback (Undo Changes):
+### Rollback (Undo Changes)
 
 ```powershell
 # Find your backup (they're timestamped)
@@ -161,13 +168,14 @@ dir
 
 ## Step 6: Fix Multiple Files
 
-### Fix All Scripts in a Folder:
+### Fix All Scripts in a Folder
 
 ```powershell
 .\tools\Apply-AutoFix.ps1 -Path C:\Users\YourName\Documents\Scripts -Recurse -DryRun
 ```
 
 **What This Does**:
+
 - Checks ALL `.ps1` files in the Scripts folder
 - `-Recurse` - Also checks subfolders
 - `-DryRun` - Preview only (safe!)
@@ -185,6 +193,7 @@ Maybe you don't want to fix `Write-Host` (you like it the old way):
 ```
 
 **Explanation**:
+
 - `-Skip` - Don't fix these rules
 - `@('RuleName')` - List of rules to skip
 
@@ -193,31 +202,40 @@ Maybe you don't want to fix `Write-Host` (you like it the old way):
 ## Common Questions (FAQ)
 
 ### Q: Will PoshGuard break my scripts?
+
 **A**: Extremely unlikely! PoshGuard:
+
 1. Creates automatic backups
 2. Only makes safe, well-tested changes
 3. Has been tested on 1000s of scripts
 4. You can always undo with `-DryRun` first
 
 ### Q: How long does it take?
+
 **A**: Usually 1-5 seconds per script (fast!)
 
 ### Q: Does it work offline?
+
 **A**: YES! No internet required after installation.
 
 ### Q: Is it free?
+
 **A**: YES! Completely free, open source (MIT license).
 
 ### Q: Do I need to be a programmer?
+
 **A**: NO! If you can follow these steps, you can use PoshGuard.
 
 ### Q: What if I get an error?
+
 **A**: 
+
 1. Try with `-Verbose` to see more details
 2. Check the error message (usually self-explanatory)
-3. Ask for help: https://github.com/cboyd0319/PoshGuard/issues
+3. Ask for help: <https://github.com/cboyd0319/PoshGuard/issues>
 
 ### Q: Can I use this at work?
+
 **A**: YES! PoshGuard is enterprise-ready and used by major companies.
 
 ---
@@ -226,7 +244,8 @@ Maybe you don't want to fix `Write-Host` (you like it the old way):
 
 Let's fix a messy script step-by-step:
 
-### Before (Messy Script):
+### Before (Messy Script)
+
 ```powershell
 # Script: DatabaseBackup.ps1
 $password = "SecretPassword123"
@@ -239,18 +258,21 @@ Backup-Database -Server $server -Password $password
 ```
 
 **Problems**:
+
 1. ❌ Plain text password (SECURITY RISK!)
 2. ❌ Hardcoded server name (bad practice)
 3. ❌ Using `gci` alias (confusing)
 4. ❌ Using `Write-Host` (outdated)
 5. ❌ Bad formatting (hard to read)
 
-### Run PoshGuard:
+### Run PoshGuard
+
 ```powershell
 .\tools\Apply-AutoFix.ps1 -Path .\DatabaseBackup.ps1 -ShowDiff
 ```
 
-### After (Clean Script):
+### After (Clean Script)
+
 ```powershell
 # Script: DatabaseBackup.ps1
 $password = Read-Host "Enter password" -AsSecureString
@@ -263,6 +285,7 @@ if ($connected) {
 ```
 
 **Fixed**:
+
 1. ✅ Password is now secure (encrypted)
 2. ✅ Server name is now configurable
 3. ✅ Full cmdlet name `Get-ChildItem`
@@ -275,14 +298,14 @@ if ($connected) {
 
 ## Next Steps
 
-### Level Up Your Knowledge:
+### Level Up Your Knowledge
 
 1. **Read**: [How It Works](how-it-works.md) - Understand what's happening
 2. **Try**: Run PoshGuard on your scripts
 3. **Explore**: Check the `samples/` folder for more examples
 4. **Integrate**: Add PoshGuard to your workflow (see [CI/CD Integration](ci-integration.md))
 
-### Pro Tips:
+### Pro Tips
 
 1. ⚡ **Always use `-DryRun` first** - Preview before changing
 2. 💾 **Backups are your friend** - Don't delete the `.backup` folder
@@ -345,8 +368,10 @@ if ($connected) {
 ## Troubleshooting for Beginners
 
 ### Error: "Cannot find path..."
+
 **Problem**: Wrong file path
 **Solution**: 
+
 ```powershell
 # Find your file first
 Get-ChildItem -Path C:\Users\YourName -Recurse -Filter "*.ps1"
@@ -354,21 +379,27 @@ Get-ChildItem -Path C:\Users\YourName -Recurse -Filter "*.ps1"
 ```
 
 ### Error: "Access denied"
+
 **Problem**: Don't have permission to modify file
 **Solution**: 
+
 - Right-click PowerShell → "Run as Administrator"
 - Or use `-DryRun` to preview (doesn't need special permissions)
 
 ### Error: "PSScriptAnalyzer module not found"
+
 **Problem**: Missing required module
 **Solution**:
+
 ```powershell
 Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
 ```
 
 ### Nothing happens when I run command
+
 **Problem**: Might be in wrong folder
 **Solution**:
+
 ```powershell
 # Check current location
 Get-Location
@@ -382,11 +413,13 @@ cd C:\Users\YourName\Documents\PoshGuard
 ## Success Stories
 
 **Before PoshGuard**: 
+
 - 2 hours manually reviewing and fixing script issues
 - Missed security vulnerabilities
 - Inconsistent code style across team
 
 **After PoshGuard**:
+
 - 30 seconds automated fixes
 - Security issues caught automatically  
 - Consistent, clean code
@@ -399,12 +432,13 @@ cd C:\Users\YourName\Documents\PoshGuard
 
 **Stuck? We're here to help!**
 
-1. 📖 **Read the Docs**: https://github.com/cboyd0319/PoshGuard/tree/main/docs
-2. 🐛 **Report Issues**: https://github.com/cboyd0319/PoshGuard/issues
+1. 📖 **Read the Docs**: <https://github.com/cboyd0319/PoshGuard/tree/main/docs>
+2. 🐛 **Report Issues**: <https://github.com/cboyd0319/PoshGuard/issues>
 3. 💬 **Ask Questions**: Create a new issue with `[Question]` in title
 4. 📧 **Community**: Check existing issues - your question might be answered!
 
 **When Asking for Help, Include**:
+
 - Full error message (copy-paste)
 - Command you ran
 - PowerShell version: `$PSVersionTable.PSVersion`
@@ -415,6 +449,7 @@ cd C:\Users\YourName\Documents\PoshGuard
 ## Congratulations! 🎉
 
 You're now a PoshGuard user! You can:
+
 - ✅ Fix PowerShell scripts automatically
 - ✅ Preview changes before applying
 - ✅ Rollback if needed
@@ -422,6 +457,7 @@ You're now a PoshGuard user! You can:
 - ✅ Understand the output
 
 **Keep Learning**:
+
 - Try PoshGuard on different scripts
 - Explore advanced features as you get comfortable
 - Share with your team!

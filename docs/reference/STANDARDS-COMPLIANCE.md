@@ -29,7 +29,7 @@ PoshGuard implements **THE MOST COMPREHENSIVE** set of security, quality, and en
 
 ## 1. OWASP ASVS 5.0 Compliance
 
-**Reference**: OWASP ASVS 5.0 | https://owasp.org/www-project-application-security-verification-standard/ | High | Concrete application security verification requirements.
+**Reference**: OWASP ASVS 5.0 | <https://owasp.org/www-project-application-security-verification-standard/> | High | Concrete application security verification requirements.
 
 ### Level 1 Compliance: ✅ 100% Coverage
 
@@ -55,6 +55,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 **Total**: 74/74 applicable controls (100%)
 
 **Key Implementations**:
+
 - V5.1.1: AST-based input validation (strongly typed)
 - V5.2.1: No code execution via Invoke-Expression
 - V7.1.4: Zero secrets in logs or error messages
@@ -68,7 +69,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 2. NIST Cybersecurity Framework 2.0
 
-**Reference**: NIST CSF 2.0 | https://www.nist.gov/cyberframework | High | Risk-based approach to cybersecurity.
+**Reference**: NIST CSF 2.0 | <https://www.nist.gov/cyberframework> | High | Risk-based approach to cybersecurity.
 
 ### Core Functions Coverage
 
@@ -117,7 +118,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 3. CIS Benchmarks - PowerShell Security
 
-**Reference**: CIS Benchmarks | https://www.cisecurity.org/cis-benchmarks | High | Prescriptive guidance for secure configuration.
+**Reference**: CIS Benchmarks | <https://www.cisecurity.org/cis-benchmarks> | High | Prescriptive guidance for secure configuration.
 
 ### CIS PowerShell Controls
 
@@ -142,7 +143,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 4. ISO/IEC 27001:2022 Information Security
 
-**Reference**: ISO/IEC 27001:2022 | https://www.iso.org/standard/27001 | High | International standard for ISMS.
+**Reference**: ISO/IEC 27001:2022 | <https://www.iso.org/standard/27001> | High | International standard for ISMS.
 
 ### Annex A Controls Coverage
 
@@ -176,7 +177,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 5. MITRE ATT&CK Framework - PowerShell Threats
 
-**Reference**: MITRE ATT&CK v14 | https://attack.mitre.org | High | Knowledge base of adversary tactics and techniques.
+**Reference**: MITRE ATT&CK v14 | <https://attack.mitre.org> | High | Knowledge base of adversary tactics and techniques.
 
 ### PowerShell-Specific Detections
 
@@ -196,6 +197,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 **Detection Rate**: 7/8 techniques with automated detection (87.5%)
 
 **Future Enhancements** (v4.1.0):
+
 - T1053.005: Full scheduled task analysis
 - T1070.001: Comprehensive logging coverage analysis
 - T1071.001: Application Layer Protocol detection
@@ -204,7 +206,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 6. SWEBOK v4.0 Software Engineering
 
-**Reference**: SWEBOK v4.0 | https://www.computer.org/education/bodies-of-knowledge/software-engineering | High | Canonical SE knowledge areas.
+**Reference**: SWEBOK v4.0 | <https://www.computer.org/education/bodies-of-knowledge/software-engineering> | High | Canonical SE knowledge areas.
 
 ### Knowledge Area Coverage
 
@@ -232,7 +234,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 7. Google SRE Principles
 
-**Reference**: Google SRE Book | https://sre.google/books/ | High | Production reliability practices.
+**Reference**: Google SRE Book | <https://sre.google/books/> | High | Production reliability practices.
 
 ### SRE Pillars Implementation
 
@@ -250,6 +252,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 **Compliance**: 8/8 principles implemented (100%)
 
 **Key Metrics**:
+
 - Availability SLO: 99.5% (target)
 - Latency SLO: p95 < 5 seconds per file
 - Quality SLO: 70%+ fix success rate (achieved: 82.5%)
@@ -259,7 +262,7 @@ PoshGuard achieves **complete Level 1 compliance** (opportunistic security).
 
 ## 8. PCI-DSS v4.0 (Payment Card Industry)
 
-**Reference**: PCI DSS v4.0 | https://www.pcisecuritystandards.org | High | Requirements for payment card data security.
+**Reference**: PCI DSS v4.0 | <https://www.pcisecuritystandards.org> | High | Requirements for payment card data security.
 
 ### Applicable Requirements
 
@@ -285,7 +288,7 @@ PoshGuard is not a payment processing system, but supports PCI-DSS compliance fo
 
 ## 9. HIPAA Security Rule (Healthcare)
 
-**Reference**: HIPAA Security Rule | https://www.hhs.gov/hipaa/for-professionals/security | High | Protected Health Information (PHI) safeguards.
+**Reference**: HIPAA Security Rule | <https://www.hhs.gov/hipaa/for-professionals/security> | High | Protected Health Information (PHI) safeguards.
 
 ### Administrative Safeguards
 
@@ -317,7 +320,7 @@ N/A (software tool, not physical infrastructure)
 
 ## 10. SOC 2 Type II (Service Organization Controls)
 
-**Reference**: AICPA SOC 2 | https://www.aicpa.org/soc2 | High | Trust service criteria for service providers.
+**Reference**: AICPA SOC 2 | <https://www.aicpa.org/soc2> | High | Trust service criteria for service providers.
 
 ### Trust Service Criteria
 
@@ -373,7 +376,7 @@ N/A (software tool, not physical infrastructure)
 
 All compliance claims are verifiable through:
 
-1. **Source Code**: https://github.com/cboyd0319/PoshGuard
+1. **Source Code**: <https://github.com/cboyd0319/PoshGuard>
 2. **Documentation**: `/docs/` directory (200+ pages)
 3. **Test Suite**: `/tests/` directory (69 tests, 91.3% pass rate)
 4. **Benchmarks**: Reproducible results in `docs/development/benchmarks.md`

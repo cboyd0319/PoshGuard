@@ -9,7 +9,7 @@
 
 This document defines engineering standards for PoshGuard development, aligned with **Software Engineering Body of Knowledge (SWEBOK) v4.0** principles. All contributions must meet these standards for quality, security, performance, and maintainability.
 
-**Source**: SWEBOK v4.0 | https://www.computer.org/education/bodies-of-knowledge/software-engineering | High | Canonical software engineering knowledge areas and lifecycle guidance.
+**Source**: SWEBOK v4.0 | <https://www.computer.org/education/bodies-of-knowledge/software-engineering> | High | Canonical software engineering knowledge areas and lifecycle guidance.
 
 ## Code Quality Standards
 
@@ -19,6 +19,7 @@ This document defines engineering standards for PoshGuard development, aligned w
 **SWEBOK Reference**: Software Design (KA 2.1 - Interface Design)
 
 **PowerShell Implementation**:
+
 ```powershell
 # ✅ GOOD: Strongly typed parameters with validation
 function Invoke-SecurityFix {
@@ -44,6 +45,7 @@ function Invoke-SecurityFix {
 ```
 
 **Validation Rules**:
+
 - All parameters must have type constraints
 - Use `[ValidateNotNullOrEmpty()]`, `[ValidateRange()]`, `[ValidateSet()]`
 - Output types declared with `[OutputType()]`
@@ -55,6 +57,7 @@ function Invoke-SecurityFix {
 **SWEBOK Reference**: Software Testing (KA 4.2 - Exception Handling)
 
 **PowerShell Implementation**:
+
 ```powershell
 # ✅ GOOD: Structured error handling with context
 try {
@@ -87,6 +90,7 @@ catch {
 ```
 
 **Error Standards**:
+
 - Use specific exception types
 - Include file path/context in error messages
 - Never leak credentials or secrets in errors
@@ -99,6 +103,7 @@ catch {
 **SWEBOK Reference**: Software Security (KA 10)
 
 **Security Checklist** (mandatory for all PRs):
+
 - [ ] No credentials in code, logs, or error messages
 - [ ] Input validation at all trust boundaries
 - [ ] No `Invoke-Expression` or dynamic code execution
@@ -125,6 +130,7 @@ catch {
 | > 10MB    | Reject       | N/A       | Return error           |
 
 **Measurement**:
+
 ```powershell
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
@@ -139,6 +145,7 @@ if ($stopwatch.ElapsedMilliseconds > $budget) {
 ```
 
 **Optimization Techniques**:
+
 - Use AST `FindAll()` with specific predicates (not entire tree walk)
 - Cache cmdlet lists (don't re-query on every call)
 - Avoid regex on multi-line content (use AST where possible)
@@ -151,6 +158,7 @@ if ($stopwatch.ElapsedMilliseconds > $budget) {
 **SWEBOK Reference**: Software Maintenance (KA 5.1 - Maintenance Logs)
 
 **Structured Logging**:
+
 ```powershell
 function Write-StructuredLog {
     param(
@@ -177,12 +185,14 @@ Write-StructuredLog -Level INFO -Message "Processing file" -Properties @{
 ```
 
 **Trace Correlation**:
+
 - Generate trace ID at operation start: `$script:TraceId = (New-Guid).ToString()`
 - Propagate trace ID through all function calls
 - Include trace ID in all log entries and errors
 - Use for end-to-end debugging
 
 **Metrics to Emit**:
+
 - Operation success/failure counts
 - Duration (latency) for each operation
 - Violations detected/fixed counts
@@ -195,6 +205,7 @@ Write-StructuredLog -Level INFO -Message "Processing file" -Properties @{
 **SWEBOK Reference**: Software Testing (KA 4)
 
 **Test Pyramid**:
+
 ```
         E2E Tests (10%)
        ↗ Benchmark runs
@@ -212,6 +223,7 @@ Write-StructuredLog -Level INFO -Message "Processing file" -Properties @{
 ```
 
 **Test Requirements**:
+
 ```powershell
 Describe "Invoke-EmptyCatchBlockFix" {
     Context "When catch block is empty" {
@@ -250,6 +262,7 @@ catch { Write-Error "Failed" }
 ```
 
 **Test Categories**:
+
 - **Valid Input**: Typical use cases, expected transformations
 - **Edge Cases**: Empty files, massive files, nested structures
 - **Idempotency**: Running fix twice produces same result
@@ -257,6 +270,7 @@ catch { Write-Error "Failed" }
 - **Performance**: Benchmark tests against performance budgets
 
 **Coverage Requirements**:
+
 - Functions: >85% line coverage
 - Branches: >75% coverage
 - Security modules: 95% coverage (critical paths)
@@ -267,6 +281,7 @@ catch { Write-Error "Failed" }
 **SWEBOK Reference**: Software Design (KA 2.3 - Module Design)
 
 **Module Structure**:
+
 ```powershell
 <#
 .SYNOPSIS
@@ -308,6 +323,7 @@ Export-ModuleMember -Function @(
 ```
 
 **Function Naming Conventions**:
+
 - Use approved verbs: `Get-`, `Set-`, `Invoke-`, `New-`, `Remove-`
 - Pattern: `Invoke-{RuleName}Fix` for fix functions
 - Pattern: `Get-{Resource}` for queries
@@ -315,6 +331,7 @@ Export-ModuleMember -Function @(
 - No aliases in module exports (internal use only)
 
 **Parameter Design**:
+
 - Consistent parameter names across modules (`-Content`, `-FilePath`)
 - Position 0 for most common parameter
 - Use `[Parameter(Mandatory)]` explicitly
@@ -329,6 +346,7 @@ Export-ModuleMember -Function @(
 **SWEBOK Reference**: Software Construction (KA 3.3 - Modularity)
 
 **Current Architecture** (modular, extensible):
+
 ```
 PoshGuard/
 ├── Core.psm1              # Foundation (logging, backups, file ops)
@@ -355,6 +373,7 @@ PoshGuard/
 ```
 
 **Module Cohesion Rules**:
+
 - Each module focuses on single responsibility (Security, Formatting, etc.)
 - Submodules group related rules (Syntax, Naming, Scoping)
 - No circular dependencies between modules
@@ -362,6 +381,7 @@ PoshGuard/
 - Fix modules only depend on Core.psm1
 
 **Coupling Constraints**:
+
 - Modules communicate via explicit function calls (no global state)
 - Shared configuration via `$script:Config` in Apply-AutoFix.ps1
 - No direct file I/O in fix functions (handled by Core.psm1)
@@ -375,23 +395,27 @@ PoshGuard/
 **Version Format**: MAJOR.MINOR.PATCH (e.g., 3.1.2)
 
 **Versioning Rules**:
+
 - **MAJOR**: Breaking changes (API changes, removed functions)
 - **MINOR**: New features, new rules (backward compatible)
 - **PATCH**: Bug fixes, performance improvements (no new features)
 
 **Breaking Change Policy**:
+
 - Announce in release notes 2 versions in advance
 - Provide migration guide with code examples
 - Deprecation warnings in logs for 1 version
 - Mark deprecated functions with `[Obsolete()]` attribute
 
 **Backward Compatibility Requirements**:
+
 - All exported functions maintain signature for MINOR releases
 - Configuration file format versioned (`Version = "3.0"`)
 - Auto-migration for config files when possible
 - Documented migration steps in CHANGELOG.md
 
 **Deprecation Process**:
+
 1. **Announce** (v3.0): Function marked deprecated, warning in logs
 2. **Maintain** (v3.1-v3.x): Function still works, migration guide available
 3. **Remove** (v4.0): Function removed, major version bump
@@ -404,6 +428,7 @@ PoshGuard/
 **SWEBOK Reference**: Software Quality (KA 10.5 - Reviews)
 
 **PR Checklist** (mandatory):
+
 - [ ] Unit tests added/updated (>85% coverage)
 - [ ] Integration tests pass locally
 - [ ] PSScriptAnalyzer reports zero violations
@@ -414,6 +439,7 @@ PoshGuard/
 - [ ] Breaking changes documented (if any)
 
 **Review Criteria**:
+
 - **Correctness**: Logic is sound, edge cases handled
 - **Security**: No vulnerabilities introduced (OWASP ASVS checks)
 - **Performance**: Meets performance budgets
@@ -421,6 +447,7 @@ PoshGuard/
 - **Testing**: Adequate test coverage, tests are meaningful
 
 **Review Timeline**:
+
 - Initial review within 48 hours (business days)
 - Address feedback within 5 business days
 - Re-review within 24 hours
@@ -454,6 +481,7 @@ PoshGuard/
 ```
 
 **Quality Gates**:
+
 - **Lint**: Zero PSScriptAnalyzer errors (warnings allowed with justification)
 - **Test**: All tests pass, no skipped tests without reason
 - **Coverage**: >85% line coverage on new code
@@ -461,6 +489,7 @@ PoshGuard/
 - **Performance**: Benchmark success rate ≥70%
 
 **Gate Overrides**:
+
 - Security fixes: Can bypass feature freeze
 - Hotfixes: Expedited review + approval
 - Documentation: No tests required
@@ -471,6 +500,7 @@ PoshGuard/
 **SWEBOK Reference**: Software Maintenance (KA 5.4 - Documentation)
 
 **Comment-Based Help** (all functions):
+
 ```powershell
 <#
 .SYNOPSIS
@@ -501,6 +531,7 @@ PoshGuard/
 ```
 
 **Documentation Types**:
+
 - **README.md**: Quick start, installation, examples
 - **ARCHITECTURE.md**: System design, module structure
 - **CONTRIBUTING.md**: Dev setup, PR guidelines
@@ -509,6 +540,7 @@ PoshGuard/
 - **API Docs**: Auto-generated from comment-based help
 
 **Documentation Review**:
+
 - Accuracy: Examples work as written
 - Completeness: All parameters documented
 - Clarity: Non-expert can understand
@@ -522,6 +554,7 @@ PoshGuard/
 **SWEBOK Reference**: Software Quality (KA 10.2.3 - Performance Analysis)
 
 **Profiling Tools**:
+
 ```powershell
 # Method 1: Measure-Command (simple)
 Measure-Command { Invoke-MyFix -Content $large }
@@ -539,12 +572,14 @@ Trace-Command -Name TypeConversion,ETS -Expression {
 ```
 
 **Optimization Priority**:
+
 1. **Correctness** > Performance (never sacrifice correctness)
 2. **Algorithm** > Micro-optimizations (O(n²) → O(n log n))
 3. **Memory** > CPU (avoid large object allocations)
 4. **Readability** > Clever tricks (maintainability matters)
 
 **Common Bottlenecks**:
+
 - AST full tree walks (use predicates to filter early)
 - String concatenation in loops (use `StringBuilder` or `-join`)
 - Repeated file I/O (cache content in memory)
@@ -556,11 +591,13 @@ Trace-Command -Name TypeConversion,ETS -Expression {
 **SWEBOK Reference**: Software Construction (KA 3.7 - Resource Management)
 
 **Memory Budgets**:
+
 - Max file size: 10MB (reject larger files)
 - Max concurrent files: 1 (process sequentially)
 - Peak memory: <500MB for typical workload (100 files)
 
 **Memory Discipline**:
+
 ```powershell
 # ✅ GOOD: Dispose large objects
 $ast = [Parser]::ParseFile($path)
@@ -573,17 +610,18 @@ $global:AllAsts += $ast  # Memory leak!
 ```
 
 **Garbage Collection**:
+
 - Let GC run automatically (don't force unless necessary)
 - Nullify large objects after use
 - Avoid holding file content in memory longer than needed
 
 ## References
 
-1. **SWEBOK v4.0** | https://www.computer.org/education/bodies-of-knowledge/software-engineering | High | Software engineering best practices
-2. **PowerShell Best Practices** | https://poshcode.gitbooks.io/powershell-practice-and-style/ | High | Community style guide
-3. **Clean Code (Martin)** | https://www.oreilly.com/library/view/clean-code/9780136083238/ | Medium | Code quality principles
-4. **Refactoring (Fowler)** | https://refactoring.com/ | Medium | Code improvement techniques
-5. **Design Patterns (GoF)** | https://en.wikipedia.org/wiki/Design_Patterns | Medium | Reusable design solutions
+1. **SWEBOK v4.0** | <https://www.computer.org/education/bodies-of-knowledge/software-engineering> | High | Software engineering best practices
+2. **PowerShell Best Practices** | <https://poshcode.gitbooks.io/powershell-practice-and-style/> | High | Community style guide
+3. **Clean Code (Martin)** | <https://www.oreilly.com/library/view/clean-code/9780136083238/> | Medium | Code quality principles
+4. **Refactoring (Fowler)** | <https://refactoring.com/> | Medium | Code improvement techniques
+5. **Design Patterns (GoF)** | <https://en.wikipedia.org/wiki/Design_Patterns> | Medium | Reusable design solutions
 
 ---
 

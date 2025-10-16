@@ -282,6 +282,7 @@ exit 0
 ```
 
 Make executable:
+
 ```bash
 chmod +x .git/hooks/pre-commit
 ```
@@ -304,6 +305,7 @@ CMD ["-Path", ".", "-Recurse", "-DryRun", "-NonInteractive"]
 ```
 
 Build and run:
+
 ```bash
 docker build -t poshguard:latest .
 docker run -v $(pwd):/workspace poshguard:latest
@@ -350,6 +352,7 @@ Each line is a JSON object representing one violation:
 ```
 
 Parse in CI:
+
 ```powershell
 $violations = Get-Content violations.jsonl | ConvertFrom-Json
 $critical = $violations | Where-Object { $_.severity -eq 'Error' }
@@ -439,18 +442,22 @@ See [GitHub SARIF Integration Guide](./GITHUB-SARIF-INTEGRATION.md) for complete
 ## Troubleshooting
 
 **Issue**: PoshGuard not found in CI
+
 - **Solution**: Ensure `Install-Module PoshGuard` runs before invoking
 
 **Issue**: Permissions error in CI
+
 - **Solution**: Use `-Scope CurrentUser` for module installation
 
 **Issue**: Different results locally vs CI
+
 - **Solution**: Use `-NonInteractive` flag and ensure same PSScriptAnalyzer version
 
 **Issue**: Slow CI builds
+
 - **Solution**: Use `-Path` with changed files only, enable caching
 
 ## Support
 
 For CI/CD integration issues, open an issue at:
-https://github.com/cboyd0319/PoshGuard/issues
+<https://github.com/cboyd0319/PoshGuard/issues>

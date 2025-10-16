@@ -15,6 +15,7 @@ The `.github` directory configurations are **100% compliant** with GitHub's 2025
 **File:** `.github/dependabot.yml`
 
 **Configuration:**
+
 ```yaml
 commit-message:
   prefix: "chore(deps)"
@@ -22,6 +23,7 @@ commit-message:
 ```
 
 **Compliance:**
+
 - ✅ Uses Conventional Commits format (`chore(deps)`)
 - ✅ Consistent across all ecosystems (GitHub Actions, npm)
 - ✅ Includes scope as recommended by Dependabot docs
@@ -31,6 +33,7 @@ commit-message:
 - ✅ Matches documented standards in `copilot-instructions.md`
 
 **Best Practice References:**
+
 - [Dependabot commit-message options](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file)
 - [Conventional Commits specification](https://www.conventionalcommits.org/)
 
@@ -45,6 +48,7 @@ commit-message:
 **Current Approach:** Semantic versioning (e.g., `@v4`, `@v2`)
 
 **Actions Used:**
+
 - `actions/checkout@v4` ✅
 - `actions/cache@v4` ✅
 - `actions/upload-artifact@v4` ✅
@@ -56,6 +60,7 @@ commit-message:
 - `softprops/action-gh-release@v2` ✅
 
 **Compliance:**
+
 - ✅ All actions are from verified/trusted sources
 - ✅ Semantic versioning allows automatic security patches
 - ✅ Dependabot configured for automatic updates
@@ -63,6 +68,7 @@ commit-message:
 
 **Best Practice Note:**
 GitHub's security hardening guide mentions commit SHA pinning for maximum security, but semantic versioning with Dependabot is the **industry standard** for:
+
 - Official GitHub actions (`actions/*`)
 - Well-maintained verified actions
 - Actions with strong version governance
@@ -72,6 +78,7 @@ GitHub's security hardening guide mentions commit SHA pinning for maximum securi
 #### Permissions Model
 
 **ci.yml:**
+
 ```yaml
 jobs:
   lint:
@@ -80,6 +87,7 @@ jobs:
 ```
 
 **release.yml:**
+
 ```yaml
 jobs:
   release:
@@ -90,6 +98,7 @@ jobs:
 ```
 
 **Compliance:**
+
 - ✅ Follows least-privilege principle
 - ✅ Explicit permissions where needed
 - ✅ No broad `write-all` permissions
@@ -100,15 +109,18 @@ jobs:
 #### Workflow Patterns
 
 **Concurrency Control:**
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 ```
+
 ✅ Prevents redundant runs  
 ✅ Reduces queue time and costs
 
 **Path Filters:**
+
 ```yaml
 paths:
   - '**.ps1'
@@ -116,26 +128,31 @@ paths:
   - '**.psd1'
   - 'tests/**'
 ```
+
 ✅ Triggers only on relevant changes  
 ✅ Reduces unnecessary workflow runs
 
 **Caching:**
+
 ```yaml
 - uses: actions/cache@v4
   with:
     path: ~\Documents\PowerShell\Modules\PSScriptAnalyzer
     key: ${{ runner.os }}-psscriptanalyzer-${{ hashFiles('**/PSScriptAnalyzerSettings.psd1') }}
 ```
+
 ✅ Appropriate cache key with hash  
 ✅ Speeds up workflow execution
 
 **Artifact Management:**
+
 ```yaml
 - uses: actions/upload-artifact@v4
   with:
     name: test-results
     retention-days: 30
 ```
+
 ✅ Explicit retention policy  
 ✅ Manages storage costs
 
@@ -144,20 +161,24 @@ paths:
 #### Supply Chain Security
 
 **SBOM Generation:**
+
 ```yaml
 - uses: anchore/sbom-action@v0
   with:
     format: spdx-json
 ```
+
 ✅ Generates Software Bill of Materials  
 ✅ SPDX format for interoperability
 
 **Build Provenance:**
+
 ```yaml
 - uses: actions/attest-build-provenance@v1
   with:
     subject-path: poshguard-${{ version }}.zip
 ```
+
 ✅ Cryptographic attestation of build  
 ✅ Verifiable supply chain
 
@@ -170,12 +191,14 @@ paths:
 **File:** `.github/copilot-mcp.json`
 
 **Servers Configured:**
+
 1. `context7` - HTTP server with API key ✅
 2. `openai-websearch` - Local server with uvx ✅
 3. `fetch` - Local server with npx ✅
 4. `playwright` - Local server with npx ✅
 
 **Compliance:**
+
 - ✅ No deprecated authentication methods
 - ✅ Environment variables properly referenced
 - ✅ All servers passed validation
@@ -188,17 +211,20 @@ paths:
 ### 4. Templates and Documentation ✅ GOOD
 
 **Pull Request Template:** `.github/PULL_REQUEST_TEMPLATE.md`
+
 - ✅ Comprehensive checklist format
 - ✅ Includes test evidence section
 - ✅ Risk assessment section
 - ✅ Type classification
 
 **Issue Templates:** `.github/ISSUE_TEMPLATE/*.yml`
+
 - ✅ Structured YAML format
 - ✅ Required fields enforced
 - ✅ Categories for different issue types
 
 **CODEOWNERS:** `.github/CODEOWNERS`
+
 - ✅ Default owner configured
 - ✅ Protected paths defined
 - ✅ Security-critical files covered
@@ -248,16 +274,19 @@ While the current configuration is **100% compliant**, here are optional enhance
 ### 1. SHA Pinning for Critical Workflows (Optional)
 
 **Current:**
+
 ```yaml
 uses: actions/checkout@v4
 ```
 
 **Enhanced:**
+
 ```yaml
 uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
 ```
 
 **Trade-offs:**
+
 - ➕ Maximum security against action maintainer compromise
 - ➖ More maintenance overhead
 - ➖ Dependabot PRs show long commit hashes
@@ -268,6 +297,7 @@ uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
 ### 2. Explicit Job-Level Permissions (Optional)
 
 **Current:**
+
 ```yaml
 jobs:
   test:
@@ -276,6 +306,7 @@ jobs:
 ```
 
 **Enhanced:**
+
 ```yaml
 jobs:
   test:
@@ -286,6 +317,7 @@ jobs:
 ```
 
 **Benefits:**
+
 - ➕ Self-documenting
 - ➕ Explicit about requirements
 - ➖ More verbose
@@ -293,6 +325,7 @@ jobs:
 ### 3. Job Timeouts (Optional)
 
 **Enhanced:**
+
 ```yaml
 jobs:
   lint:
@@ -301,6 +334,7 @@ jobs:
 ```
 
 **Benefits:**
+
 - ➕ Prevents runaway jobs consuming minutes
 - ➕ Faster failure feedback
 - ➖ May need tuning for slow operations
@@ -312,6 +346,7 @@ jobs:
 This analysis used multiple authoritative sources:
 
 ### MCP Servers Used
+
 1. **Context7** - Retrieved current documentation for:
    - GitHub Actions Toolkit
    - Dependabot Core
@@ -324,12 +359,14 @@ This analysis used multiple authoritative sources:
    - Supply chain security standards
 
 ### Official Documentation
+
 - [GitHub Actions security hardening](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
 - [Dependabot configuration options](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file)
 - [Actions Toolkit documentation](https://github.com/actions/toolkit)
 - [Conventional Commits specification](https://www.conventionalcommits.org/)
 
 ### Automated Validation
+
 - ✅ MCP validation script (`Test-MCPConfiguration.ps1`)
 - ✅ JSON syntax validation
 - ✅ YAML linting (yamllint)

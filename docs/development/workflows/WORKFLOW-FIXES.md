@@ -11,6 +11,7 @@ This document details the workflow issues identified and fixed in October 2025 t
 **Severity:** High (Workflow-blocking)
 
 **Affected Files:**
+
 - `.github/workflows/code-scanning.yml` (line 59)
 - `.github/workflows/poshguard-quality-gate.yml` (line 60, 331)
 
@@ -21,11 +22,13 @@ The workflow files referenced `microsoft/setup-powershell@v2`, which does not ex
 Likely confusion with other setup actions like `actions/setup-python` or misunderstanding of PowerShell availability on GitHub runners.
 
 **Solution:**
+
 - Removed the invalid action references
 - Replaced with the existing composite action `.github/actions/setup-powershell` which properly handles PowerShell module installation
 - PowerShell (`pwsh`) is pre-installed on all GitHub-hosted runners (Windows, Linux, macOS), so no setup action is needed for the PowerShell runtime itself
 
 **Changes:**
+
 ```yaml
 # BEFORE (BROKEN)
 - name: Setup PowerShell
@@ -46,10 +49,12 @@ Likely confusion with other setup actions like `actions/setup-python` or misunde
 **Severity:** Medium (Configuration error)
 
 **Affected Files:**
+
 - `.github/workflows/code-scanning.yml` (line 64-67)
 
 **Problem:**
 The workflow had a cache step with invalid syntax:
+
 ```yaml
 - name: Cache PowerShell modules
   uses: actions/cache@...
@@ -68,10 +73,12 @@ Replaced the entire step with the composite action call, which includes proper c
 **Severity:** High (Job would fail)
 
 **Affected Files:**
+
 - `.github/workflows/poshguard-quality-gate.yml` (lines 320-377)
 
 **Problem:**
 The workflow had an `auto-fix` job that:
+
 1. Tried to install PoshGuard from PSGallery (it's not published there)
 2. Used the non-existent `microsoft/setup-powershell@v2` action
 3. Attempted to push commits directly to PRs (requires complex permissions and token setup)
@@ -79,6 +86,7 @@ The workflow had an `auto-fix` job that:
 
 **Solution:**
 Removed the entire `auto-fix` job (58 lines). Auto-fixing in CI requires:
+
 - A GitHub App or PAT with repo write access
 - Careful handling of merge conflicts
 - Clear communication to users about automated changes
@@ -92,6 +100,7 @@ The `poshguard-quality-gate.yml` workflow is meant to be a **demo** showing how 
 **Severity:** Low (Confusing for users)
 
 **Affected Files:**
+
 - `.github/copilot-instructions.md`
 
 **Problem:**
@@ -99,6 +108,7 @@ The instructions referenced a workflow file `poshguard-qa.yml` that doesn't exis
 
 **Solution:**
 Updated all references to use the correct workflow names:
+
 - `poshguard-qa.yml` → `ci.yml`
 - Added descriptions of all 6 workflows with their purposes
 
@@ -119,11 +129,13 @@ $ yamllint .github/workflows/*.yml .github/actions/*/action.yml
 ## Testing Results
 
 ### Before Fixes
+
 - ❌ `code-scanning.yml` - Would fail with "Action not found: microsoft/setup-powershell@v2"
 - ❌ `poshguard-quality-gate.yml` - Would fail on analysis job and auto-fix job
 - ⚠️ Documentation referenced non-existent workflows
 
 ### After Fixes
+
 - ✅ `ci.yml` - Runs successfully (lint, test, package)
 - ✅ `code-scanning.yml` - Runs successfully (SARIF upload works)
 - ✅ `poshguard-quality-gate.yml` - Runs successfully (analysis and quality gate work)
@@ -171,6 +183,7 @@ If auto-fixing is desired in the future, consider:
 ### PowerShell on GitHub Actions
 
 Remember:
+
 - ✅ PowerShell 7+ is pre-installed on all GitHub runners
 - ✅ Use `shell: pwsh` in your steps to use PowerShell
 - ✅ Use composite actions for module installation and caching
@@ -180,6 +193,7 @@ Remember:
 ## Impact
 
 **Files Changed:** 3
+
 - `.github/workflows/code-scanning.yml` - Fixed action reference and cache
 - `.github/workflows/poshguard-quality-gate.yml` - Fixed action reference, removed auto-fix job
 - `.github/copilot-instructions.md` - Fixed workflow name references

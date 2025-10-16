@@ -5,6 +5,7 @@ Run PoshGuard in two ways: module or tools.
 
 Module (Invoke-PoshGuard)
 -------------------------
+
 ```powershell
 Import-Module PoshGuard
 
@@ -23,6 +24,7 @@ Invoke-PoshGuard -Path . -DryRun -ExportSarif -SarifOutputPath ./poshguard-resul
 
 Tools (no install required)
 ---------------------------
+
 ```powershell
 # Preview (safe)
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun -ShowDiff
@@ -36,18 +38,21 @@ Tools (no install required)
 
 Common scenarios
 ----------------
+
 - Pre-commit: `./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse`
 - CI/CD: `./tools/Apply-AutoFix.ps1 -Path . -NonInteractive -OutputFormat jsonl`
 - Sample run: `cd samples; ../tools/Apply-AutoFix.ps1 -Path ./before-security-issues.ps1 -ShowDiff`
 
 Exit codes
 ----------
+
 - 0 = Success
 - 1 = Issues found (DryRun)
 - 2 = Error
 
 Help
 ----
+
 ```powershell
 Get-Help Invoke-PoshGuard -Full
 Get-Help ./tools/Apply-AutoFix.ps1 -Full

@@ -18,6 +18,7 @@ cargo install agg
 ## Recording Steps
 
 1. **Prepare demo script**:
+
 ```powershell
 # Use the sample file
 cd samples/
@@ -25,11 +26,13 @@ cp before-security-issues.ps1 demo-script.ps1
 ```
 
 2. **Start recording**:
+
 ```bash
 asciinema rec demo.cast
 ```
 
 3. **Run commands** (what viewers will see):
+
 ```powershell
 # Show the problematic file
 cat demo-script.ps1
@@ -44,16 +47,19 @@ echo "✓ Fixed 12 issues: 5 security, 4 formatting, 3 best practices"
 4. **Stop recording**: Press `Ctrl+D`
 
 5. **Convert to GIF**:
+
 ```bash
 agg demo.cast demo.gif --speed 1.5 --cols 100 --rows 30
 ```
 
 6. **Optimize GIF size**:
+
 ```bash
 gifsicle -O3 --colors 256 demo.gif -o demo-optimized.gif
 ```
 
 7. **Move to docs folder**:
+
 ```bash
 mv demo-optimized.gif ../docs/demo.gif
 ```
@@ -62,7 +68,7 @@ mv demo-optimized.gif ../docs/demo.gif
 
 If you prefer a simpler tool:
 
-1. Visit https://terminalizer.com/
+1. Visit <https://terminalizer.com/>
 2. Install: `npm install -g terminalizer`
 3. Record: `terminalizer record demo`
 4. Render: `terminalizer render demo`
@@ -70,6 +76,7 @@ If you prefer a simpler tool:
 ## What to Show
 
 **Ideal demo flow (30-45 seconds)**:
+
 1. Show messy script with violations (5 sec)
 2. Run `Apply-AutoFix.ps1 -ShowDiff` (10 sec)
 3. Display unified diff with color highlighting (15 sec)

@@ -10,6 +10,7 @@ This directory contains intentionally broken PowerShell scripts demonstrating co
 - **after-security-issues.ps1** - Expected output after PoshGuard auto-fix
 
 Demonstrates fixes for:
+
 - PSAvoidUsingPlainTextForPassword
 - PSAvoidUsingConvertToSecureStringWithPlainText
 - PSAvoidUsingComputerNameHardcoded
@@ -28,6 +29,7 @@ Demonstrates fixes for:
 - **before-formatting.ps1** - Script with formatting violations
 
 Demonstrates fixes for:
+
 - PSPlaceOpenBrace
 - PSPlaceCloseBrace
 - PSUseConsistentIndentation

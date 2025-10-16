@@ -42,9 +42,11 @@ lib/
 ## Module Descriptions
 
 ### Core.psm1
+
 **Foundation utilities used across all modules**
 
 Functions:
+
 - `Clean-Backups` - Cleanup old backup files
 - `Write-Log` - Structured logging with color-coded output
 - `Get-PowerShellFiles` - Discover PowerShell files recursively
@@ -52,9 +54,11 @@ Functions:
 - `New-UnifiedDiff` - Generate unified diff format
 
 ### Security.psm1
+
 **Security vulnerability fixes (100% PSSA security coverage)**
 
 Functions:
+
 - `Invoke-PlainTextPasswordFix` - Fix plaintext password parameters
 - `Invoke-ConvertToSecureStringFix` - Fix insecure ConvertTo-SecureString usage
 - `Invoke-UsernamePasswordParamsFix` - Replace Username/Password with PSCredential
@@ -65,9 +69,11 @@ Functions:
 - `Invoke-BrokenHashAlgorithmFix` - Replace MD5/SHA1 with SHA256
 
 ### BestPractices.psm1
+
 **PowerShell coding standards (facade for 6 submodules)**
 
 Submodules:
+
 - **Syntax.psm1** - Language-level fixes (semicolons, null comparisons, operators)
 - **Naming.psm1** - Identifier conventions (verbs, singular nouns, characters)
 - **Scoping.psm1** - Namespace management (global vars, function scoping)
@@ -78,9 +84,11 @@ Submodules:
 Total: 28 functions across 6 focused modules
 
 ### Formatting.psm1
+
 **Code formatting and style (facade for 6 submodules)**
 
 Submodules:
+
 - **Whitespace.psm1** - Indentation, consistency, trailing spaces
 - **Aliases.psm1** - Cmdlet aliases, global aliases
 - **Casing.psm1** - Cmdlet/parameter casing
@@ -91,9 +99,11 @@ Submodules:
 Total: 11 functions across 6 focused modules
 
 ### Advanced.psm1
+
 **Complex AST-based transformations (facade for 9 submodules)**
 
 Submodules:
+
 - **ASTTransformations.psm1** - Pipeline processing, long line wrapping, WMI to CIM
 - **ParameterManagement.psm1** - Mandatory params, switch defaults, unused params
 - **CodeAnalysis.psm1** - Empty members, built-in cmdlets
@@ -114,23 +124,29 @@ Total: 24 functions across 9 focused modules
 ## Design Principles
 
 ### 1. Single Responsibility
+
 Each module/submodule focuses on one specific category of fixes.
 
 ### 2. Facade Pattern
+
 Top-level modules (BestPractices, Formatting, Advanced) act as facades that import and re-export submodules.
 
 ### 3. Load-on-Demand
+
 Import specific submodules for faster load times when you only need certain fixes.
 
 ### 4. Zero Dependencies
+
 All modules work independently with only PowerShell 5.1+ built-ins (except PSScriptAnalyzer requirement).
 
 ### 5. Idempotent Fixes
+
 All fix functions can be run multiple times safely - they won't introduce errors on subsequent runs.
 
 ## Usage Examples
 
 ### Import All Modules
+
 ```powershell
 Import-Module ./Core.psm1
 Import-Module ./Security.psm1
@@ -140,6 +156,7 @@ Import-Module ./Advanced.psm1
 ```
 
 ### Import Specific Submodule
+
 ```powershell
 # Just need syntax fixes
 Import-Module ./BestPractices/Syntax.psm1
@@ -149,6 +166,7 @@ Import-Module ./Security.psm1
 ```
 
 ### Use in Script
+
 ```powershell
 # Import Core for logging
 Import-Module ./Core.psm1
@@ -171,11 +189,13 @@ Set-Content ./MyScript.ps1 -Value $fixed
 ## Testing
 
 Each module is tested via:
+
 1. **Unit tests** - In `/tests/Phase2-AutoFix.Tests.ps1`
 2. **Integration tests** - Via `Apply-AutoFix.ps1` on sample files
 3. **Benchmarks** - See `/docs/development/benchmarks.md`
 
 Run tests:
+
 ```powershell
 Invoke-Pester -Path ../tests/
 ```
@@ -189,6 +209,7 @@ Invoke-Pester -Path ../tests/
 ## Coverage
 
 **Total: 71 PSScriptAnalyzer rules covered**
+
 - Security: 8 rules (100% coverage)
 - Best Practices: 28 rules
 - Formatting: 11 rules

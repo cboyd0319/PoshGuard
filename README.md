@@ -23,12 +23,14 @@ TL;DR: Install from Gallery and fix scripts with safe, AST‑based transformatio
 ## Quickstart
 
 Install
+
 ```powershell
 Install-Module -Name PoshGuard -Scope CurrentUser -Force
 Import-Module PoshGuard
 ```
 
 Use
+
 ```powershell
 # Preview changes (safe)
 Invoke-PoshGuard -Path ./script.ps1 -DryRun -ShowDiff
@@ -41,6 +43,7 @@ Invoke-PoshGuard -Path . -DryRun -ExportSarif -SarifOutputPath ./poshguard-resul
 ```
 
 From source (no install)
+
 ```powershell
 git clone https://github.com/cboyd0319/PoshGuard.git
 cd PoshGuard
@@ -64,8 +67,8 @@ See docs/CHANGELOG.md and docs/V4.3.0-RELEASE-NOTES.md.
 
 ## Community and support
 
-- Issues: https://github.com/cboyd0319/PoshGuard/issues
-- Discussions: https://github.com/cboyd0319/PoshGuard/discussions
+- Issues: <https://github.com/cboyd0319/PoshGuard/issues>
+- Discussions: <https://github.com/cboyd0319/PoshGuard/discussions>
 - Security policy: docs/SECURITY.md
 
 ## License

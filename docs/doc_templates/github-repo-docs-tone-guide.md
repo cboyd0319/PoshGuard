@@ -1,6 +1,7 @@
 # GitHub Repo Docs — Tone & Structure Guide (Chad Edition)
 
 ## Core voice (unchanged fundamentals — tightened)
+
 - **Plainspoken, first-person**. No buzzwords, no TED-talk cadence. State facts, fast.  
 - **Answer first, why second.** TL;DR up top, then rationale and tradeoffs.  
 - **Active, present tense.** “Run this,” not “This can be leveraged to be run.”  
@@ -8,6 +9,7 @@
 - **No sales adjectives.** Ban: leverage, utilize, seamlessly, cutting-edge, game-changing. Replace hedges with evidence+likelihood.
 
 ## What every README must answer (the triad)
+
 1. **What it is** (one line)  
 2. **Why it exists** (pain, constraints, target users)  
 3. **How to use it** (90-second quickstart + real example)
@@ -15,6 +17,7 @@
 ---
 
 ## Minimum Viable README (MVR) — exact section order
+
 Keep this order unless you have a good reason to change it (you probably don’t).
 
 1) **Title + one-liner**  
@@ -38,6 +41,7 @@ Keep this order unless you have a good reason to change it (you probably don’t
 ---
 
 ## File/Folder layout that supports good docs (drop these in root)
+
 - `README.md` — you’re here  
 - `CONTRIBUTING.md` — how to run tests, style/lint, commit format, release rules  
 - `SECURITY.md` — vuln disclosure contact & PGP key, supported versions  
@@ -49,6 +53,7 @@ Keep this order unless you have a good reason to change it (you probably don’t
 ---
 
 ## Style rules (tighten yours with enforceable checks)
+
 - **Paragraphs ≤ 3 sentences. Bullets > walls of text.**  
 - **Prefer bullets over tables** for scanability. If a table is essential, keep lines ≤120 chars.  
 - **Code blocks are runnable.** Pin versions. Include expected output where helpful.  
@@ -61,6 +66,7 @@ Keep this order unless you have a good reason to change it (you probably don’t
 ---
 
 ## Security section (one screen, no drama)
+
 Include a **single** block:
 
 ```
@@ -76,6 +82,7 @@ Why so terse? It’s the most actionable way to communicate risk without turning
 ---
 
 ## Contribution hygiene (so you don’t babysit PRs)
+
 - **CONTRIBUTING.md**: local dev, test, lint, how to structure PRs, “what good looks like.”  
 - **PR template**: intent, changes, screenshots/logs, risk, test coverage.  
 - **Issue templates**: bug vs feature vs question.  
@@ -84,6 +91,7 @@ Why so terse? It’s the most actionable way to communicate risk without turning
 ---
 
 ## Badges that actually matter (not NASCAR)
+
 - Build, Test, Coverage, Release (SemVer), License  
 - Security: `OpenSSF Best Practices` (if relevant), `SBOM available`, `Sigstore verified`  
 - Support Matrix: OS/runtime versions you test
@@ -91,6 +99,7 @@ Why so terse? It’s the most actionable way to communicate risk without turning
 ---
 
 ## “Docs debt” controls (automation you should wire up)
+
 - **Markdown lint**: `markdownlint` (CI fail on rules).  
 - **Vale** (style linter): enforce your diction bans and “no sales adjectives.”  
 - **Link checker**: CI to prevent rot.  
@@ -102,6 +111,7 @@ Why so terse? It’s the most actionable way to communicate risk without turning
 ## Two blessed README scaffolds
 
 ### A) Library/SDK
+
 ```
 # <Name> — <one-line value prop>
 
@@ -116,42 +126,53 @@ python -c "import yourlib; print(yourlib.ping())"
 ```
 
 ## Usage
+
 ### Basic
+
 ```python
 from yourlib import Client
 Client().do_thing()
 ```
 
 ### Advanced (config file)
+
 ```toml
 [auth]
 token="..."
 ```
 
 ## Configuration
+
 | Key | Type | Default | Example | Notes |
 |-----|------|---------|---------|-------|
 | timeout | int | 30 | 10 | seconds |
 
 ## Architecture
+
 ![diagram](docs/diagrams/arch.png)
+
 - Flow: A → B → C
 - Data: input.csv → result.json
 - Trust: token only, no long-lived creds
 
 ## Security
+
 (secrets/privilege/signing/SBOM/disclosure)
 
 ## Troubleshooting
+
 - `AuthError`: token missing → set $YOURLIB_TOKEN
 - `Timeout`: raise `timeout` to 60
 
 ## Contributing | License
+
 links…
+
 ```
 
 ### B) CLI/App
 ```
+
 # <Name>: <one-line problem solved>
 
 [badges]
@@ -159,6 +180,7 @@ links…
 **TL;DR**: One command to get value.
 
 ## Quickstart
+
 ```bash
 curl -fsSL https://.../install.sh | bash
 app init --project demo
@@ -166,34 +188,43 @@ app run --input samples/a.json --out out/
 ```
 
 ## Prereqs
+
 | Item | Version | Why |
 |------|---------|-----|
 | Node | >=20 | runtime |
 | gcloud | >=460 | deploy |
 
 ## Usage
+
 - Basic: `app run --input …`
 - With config: `app run -c config.yaml`
 
 ## Config
+
 | Name | Type | Default | Example |
 |------|------|---------|---------|
 | threads | int | 4 | 8 |
 
 ## Security
+
 (secrets/least-priv/signing/SBOM/disclosure)
 
 ## Performance
+
 - Single node: ~2k items/min, p95 latency ~120ms
 
 ## Troubleshooting
+
 (errors → fixes)
 
 ## Roadmap
+
 - [ ] Feature X
 - [ ] Provider Y
 
 ## Contributing | License
+
 links…
+
 ```
 

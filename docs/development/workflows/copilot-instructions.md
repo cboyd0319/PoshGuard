@@ -1,6 +1,7 @@
 # GitHub Copilot Instructions for PoshGuard
 
 ## Quick Reference (Most Common Commands)
+
 ```powershell
 # Running PoshGuard
 Invoke-PoshGuard -Path ./script.ps1                    # Analyze single script
@@ -30,6 +31,7 @@ PoshGuard is an advanced PowerShell QA and auto-fix engine that uses AST (Abstra
 **Current Version**: 4.3.0
 
 **Key Technologies**:
+
 - PowerShell 5.1+ and PowerShell 7+
 - PSScriptAnalyzer for static analysis
 - Pester for testing
@@ -62,12 +64,14 @@ PoshGuard/
 ## Repository Standards & Configuration
 
 ### Workflow & Automation Standards
+
 - **Dependabot:** Weekly schedule (Mondays 09:00 UTC), commit prefix `chore(deps):`, grouped updates for Actions/npm
 - **Auto-merge:** Automatic approval for all Dependabot PRs, auto-merge for patch/minor versions only
 - **CI/CD:** GitHub Actions workflows in `.github/workflows/` (see `ci.yml`, `dependabot-auto-merge.yml`)
 - **Quality Gates:** All PRs must pass PSScriptAnalyzer, Pester tests before merge
 
 ### File Organization Standards
+
 - **`.github/` directory:** Contains only GitHub-specific configs (workflows, templates, Copilot instructions)
   - Templates: `pull_request_template.md`, `ISSUE_TEMPLATE/*.yml` (lowercase naming)
   - Ownership: `CODEOWNERS` defines code review requirements (@cboyd0319)
@@ -76,6 +80,7 @@ PoshGuard/
 - **Tools:** Auto-fix libraries in `/tools/lib`, development scripts in root
 
 ### Inclusive Terminology Standards
+
 - **Required replacements:**
   - Use "allowlist" instead of "whitelist"
   - Use "denylist" instead of "blacklist"
@@ -86,6 +91,7 @@ PoshGuard/
 - **Documentation:** All external links use `/tree/main/` not `/tree/master/`
 
 ### Configuration Management
+
 - **Module manifest:** `PoshGuard/PoshGuard.psd1` — Version, dependencies, exports
 - **PSScriptAnalyzer:** Rules configured for strict analysis
 - **Pester tests:** Test configuration in `tests/` directory
@@ -93,6 +99,7 @@ PoshGuard/
 - **MCP integration:** `.github/copilot-mcp.json` for Model Context Protocol servers
 
 ### GitHub Configuration Files
+
 - **Dependabot:** `.github/dependabot.yml` — Standardized across all repos
 - **Workflows:** `.github/workflows/*.yml` — GitHub Actions automation
 - **Templates:** `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*.yml`
@@ -102,9 +109,11 @@ PoshGuard/
 ## Documentation (Copilot — follow these rules)
 
 ### Documentation Hub
+
 - Start at `docs/DOCUMENTATION_INDEX.md`.
 
 ### Docs Structure & Style (enforced)
+
 - All docs live in `docs/` (never under `.github/`).
 - Prefer short, scannable bullets over wide tables; keep lines ≤120 chars (MD013).
 - Use active voice and avoid hedging; keep language plainspoken (Vale enforces this).
@@ -112,11 +121,13 @@ PoshGuard/
 - Update cross‑links when moving docs; avoid broken anchors.
 
 ### Docs CI (must pass on PR)
+
 - Markdownlint (`.github/workflows/docs-ci.yml`) — MD013 line length = 120.
 - Vale style lint (`.vale.ini` + `Styles/`) — active voice, terminology, spelling.
 - Lychee link check (`.lycheeignore` covers local/secret URLs).
 
 ### When adding or editing docs
+
 - Put deep‑dives under `docs/reference/` when appropriate; link from the main hub.
 - Use bullets for configuration/performance and keep examples self‑contained.
 - Run locally: `markdownlint "**/*.md"` and `vale .` before pushing.
@@ -133,6 +144,7 @@ PoshGuard/
 2. **Inclusive Terminology**: Use modern, inclusive language (see Repository Standards above for details)
 
 3. **Function Structure**:
+
    ```powershell
    function Verb-Noun {
        [CmdletBinding()]
@@ -180,9 +192,11 @@ PoshGuard/
 PoshGuard integrates with MCP servers for enhanced AI capabilities:
 
 ### Built-in (GitHub Copilot)
+
 - **github-mcp:** Repository operations, issues, PRs (OAuth, automatic - no config needed)
 
 ### External (Configured)
+
 - **context7:** Version-specific PowerShell documentation (HTTP, needs API key)
   - Provides accurate docs for PSScriptAnalyzer, Pester, PowerShell Core, AST APIs
   - No hallucinations, direct from source
@@ -202,11 +216,13 @@ PoshGuard integrates with MCP servers for enhanced AI capabilities:
 **❌ Personal Access Tokens (PAT) are NOT supported** for GitHub MCP endpoints.
 
 If you encounter the error `"Personal Access Tokens are not supported for this endpoint"`:
+
 1. Remove any `github` server entry from `.github/copilot-mcp.json`
 2. GitHub Copilot uses OAuth automatically - no configuration needed
 3. See [MCP-TROUBLESHOOTING.md](.github/MCP-TROUBLESHOOTING.md) for detailed help
 
 **Environment Variables Required:**
+
 - `COPILOT_MCP_CONTEXT7_API_KEY` — For Context7 documentation access
 - `COPILOT_MCP_OPENAI_API_KEY` — For OpenAI web search capabilities
 
@@ -239,6 +255,7 @@ If you encounter the error `"Personal Access Tokens are not supported for this e
 ### Standards Compliance
 
 PoshGuard implements and validates against 25+ industry standards:
+
 - NIST SP 800-53 Rev 5
 - FedRAMP baselines
 - OWASP ASVS
@@ -252,6 +269,7 @@ PoshGuard implements and validates against 25+ industry standards:
 ## Data Contracts
 
 ### PSScriptAnalyzer Diagnostic Record
+
 ```powershell
 # Standard diagnostic from PSScriptAnalyzer
 @{
@@ -266,6 +284,7 @@ PoshGuard implements and validates against 25+ industry standards:
 ```
 
 ### PoshGuard Fix Result
+
 ```powershell
 # Result from auto-fix operation
 @{
@@ -287,6 +306,7 @@ PoshGuard implements and validates against 25+ industry standards:
 ```
 
 ### PoshGuard Configuration
+
 ```powershell
 # Configuration object (loaded from config files or parameters)
 @{
@@ -331,6 +351,7 @@ Invoke-Pester -CodeCoverage ./PoshGuard/PoshGuard.psm1
 GitHub Actions workflows automate quality gates and releases:
 
 **Workflow Files** (`.github/workflows/`):
+
 - `ci.yml` — Main CI pipeline (PSScriptAnalyzer, Pester tests, packaging)
 - `code-scanning.yml` — Security scanning with SARIF upload to GitHub Security tab
 - `poshguard-quality-gate.yml` — Dogfooding PoshGuard on itself (demo workflow)
@@ -339,6 +360,7 @@ GitHub Actions workflows automate quality gates and releases:
 - `actionlint.yml` — Workflow validation with actionlint
 
 **CI/CD Features:**
+
 1. **Multi-platform testing:** Windows, Linux, macOS (PowerShell 7)
 2. **Quality gates:** PSScriptAnalyzer must pass, Pester tests must pass
 3. **Path-based filtering:** Skips CI for docs-only changes
@@ -346,6 +368,7 @@ GitHub Actions workflows automate quality gates and releases:
 5. **Concurrency control:** Cancel outdated runs automatically
 
 **Triggered by:**
+
 - All PRs and pushes to `main` branch
 - Manual workflow dispatch
 - Dependabot PR creation
@@ -433,6 +456,7 @@ Model Context Protocol (MCP) servers provide enhanced capabilities:
 **Important:** MCP is opt-in and requires explicit user consent. GitHub MCP is built-in and uses OAuth automatically.
 
 **Setup & Troubleshooting:**
+
 - Configuration: See [MCP Integration](#mcp-integration-model-context-protocol) section above
 - Troubleshooting: See [`.github/MCP-TROUBLESHOOTING.md`](.github/MCP-TROUBLESHOOTING.md)
 - Full Guide: See [`docs/MCP-GUIDE.md`](../docs/MCP-GUIDE.md)
@@ -547,6 +571,6 @@ When reviewing code:
 
 ## Contact and Support
 
-- GitHub Issues: https://github.com/cboyd0319/PoshGuard/issues
-- Project Homepage: https://github.com/cboyd0319/PoshGuard
+- GitHub Issues: <https://github.com/cboyd0319/PoshGuard/issues>
+- Project Homepage: <https://github.com/cboyd0319/PoshGuard>
 - License: MIT (see LICENSE file)

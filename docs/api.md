@@ -3,10 +3,12 @@ Module API
 
 Exports
 -------
+
 - `Invoke-PoshGuard` — main entry point to analyze and auto-fix PowerShell code
 
 Signature
 ---------
+
 ```powershell
 Invoke-PoshGuard `
   -Path <string> `
@@ -20,6 +22,7 @@ Invoke-PoshGuard `
 
 Examples
 --------
+
 ```powershell
 # Preview changes
 Invoke-PoshGuard -Path ./script.ps1 -DryRun -ShowDiff
@@ -33,6 +36,7 @@ Invoke-PoshGuard -Path . -DryRun -ExportSarif -SarifOutputPath ./poshguard-resul
 
 Notes
 -----
+
 - For repo usage without installing the module, call `./tools/Apply-AutoFix.ps1` directly.
 - PSScriptAnalyzer settings and quality gates load from `config/` by default.
 
