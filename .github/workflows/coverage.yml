@@ -84,7 +84,11 @@ jobs:
           $summary = "## 📊 Code Coverage Report`n`n"
 
           if ($result.CodeCoverage) {
-            $coveredPercent = [math]::Round(($result.CodeCoverage.CoveragePercent), 2)
+            # Calculate coverage percentage (Pester 5.x uses different property structure)
+            $coveredPercent = if ($result.CodeCoverage.CommandsAnalyzedCount -gt 0) {
+              [math]::Round(($result.CodeCoverage.CommandsExecutedCount / $result.CodeCoverage.CommandsAnalyzedCount * 100), 2)
+            } else { 0 }
+
             $summary += "### Overall Coverage: **$coveredPercent%**`n`n"
             $summary += "- **Covered Commands:** $($result.CodeCoverage.CommandsExecutedCount)`n"
             $summary += "- **Total Commands:** $($result.CodeCoverage.CommandsAnalyzedCount)`n"
@@ -114,7 +118,11 @@ jobs:
 
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-          Write-Host "✓ Coverage analysis complete: $([math]::Round($result.CodeCoverage.CoveragePercent, 2))%" -ForegroundColor Green
+          # Calculate and display final coverage percentage
+          $finalCoverage = if ($result.CodeCoverage.CommandsAnalyzedCount -gt 0) {
+            [math]::Round(($result.CodeCoverage.CommandsExecutedCount / $result.CodeCoverage.CommandsAnalyzedCount * 100), 2)
+          } else { 0 }
+          Write-Host "✓ Coverage analysis complete: $finalCoverage%" -ForegroundColor Green
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
