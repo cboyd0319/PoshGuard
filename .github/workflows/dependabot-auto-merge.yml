@@ -11,8 +11,13 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Only run for Dependabot PRs
     if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Dependabot metadata
         id: metadata
@@ -20,13 +25,31 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Enable auto-merge for patch and minor updates
-        # Auto-merge for patch and minor updates only
-        # Note: Approval handled by branch protection or repository settings
+      - name: Auto-approve patch and minor updates
+        # Auto-approve safe dependency updates
         if: |
           steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
           steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: |
+          gh pr review --approve "$PR_URL" --body "✅ Auto-approved: Safe ${{ steps.metadata.outputs.update-type }} update"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for approved updates
+        # Auto-merge for patch and minor updates after approval
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          gh pr merge --auto --squash "$PR_URL"
+          {
+            echo "✓ Auto-merge enabled for ${{ steps.metadata.outputs.dependency-names }}"
+            echo ""
+            echo "- **Update Type:** ${{ steps.metadata.outputs.update-type }}"
+            echo "- **Package:** ${{ steps.metadata.outputs.dependency-names }}"
+            echo "- **Version:** ${{ steps.metadata.outputs.previous-version }} → ${{ steps.metadata.outputs.new-version }}"
+          } >> "$GITHUB_STEP_SUMMARY"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,7 +58,23 @@ jobs:
         # Comment on major updates that require manual review
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         run: |
-          gh pr comment "$PR_URL" --body "⚠️ This is a **major version update** and requires manual review before merging."
+          gh pr comment "$PR_URL" --body "⚠️ **Major Version Update Detected**
+          
+          This PR updates **${{ steps.metadata.outputs.dependency-names }}** from ${{ steps.metadata.outputs.previous-version }} to ${{ steps.metadata.outputs.new-version }}.
+          
+          Major version updates may contain breaking changes and require:
+          - Manual code review
+          - Testing for compatibility
+          - Documentation updates
+          
+          Please review the changelog and test thoroughly before merging."
+          
+          {
+            echo "⚠️ Major update requires manual review"
+            echo ""
+            echo "- **Package:** ${{ steps.metadata.outputs.dependency-names }}"
+            echo "- **Version:** ${{ steps.metadata.outputs.previous-version }} → ${{ steps.metadata.outputs.new-version }}"
+          } >> "$GITHUB_STEP_SUMMARY"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

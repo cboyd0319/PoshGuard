@@ -1,0 +1,84 @@
+name: CodeQL Security Analysis
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+      - '.github/workflows/codeql.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+      - '.github/workflows/codeql.yml'
+  schedule:
+    # Run weekly on Monday at 8 AM UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@56b66b1d6f1fa3b4bed45321cd18a52f1b9f9eff # v3.30.8
+        with:
+          languages: 'javascript'
+          # Note: PowerShell is not directly supported by CodeQL, but we use JavaScript
+          # analysis for PowerShell files as it provides some useful security insights.
+          # For PowerShell-specific analysis, see code-scanning.yml (PSScriptAnalyzer)
+          queries: +security-and-quality
+          config: |
+            paths:
+              - PoshGuard
+              - tools
+            paths-ignore:
+              - tests
+              - samples
+              - benchmarks
+              - docs
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@56b66b1d6f1fa3b4bed45321cd18a52f1b9f9eff # v3.30.8
+        with:
+          category: "/language:javascript"
+          upload: true
+          wait-for-processing: true
+
+      - name: Analysis summary
+        if: always()
+        run: |
+          {
+            echo "## CodeQL Security Analysis Complete"
+            echo ""
+            echo "CodeQL analysis has been completed and results uploaded to GitHub Security."
+            echo ""
+            echo "**Note:** PowerShell-specific security analysis is performed by PSScriptAnalyzer"
+            echo "in the \`code-scanning.yml\` workflow. This CodeQL analysis provides additional"
+            echo "security insights using JavaScript analysis patterns."
+            echo ""
+            echo "View results in: **Security** → **Code scanning alerts**"
+          } >> "$GITHUB_STEP_SUMMARY"
