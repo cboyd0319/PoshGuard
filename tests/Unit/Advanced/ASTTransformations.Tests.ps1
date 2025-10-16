@@ -468,8 +468,8 @@ $data = "test"
       # Act
       $result = Invoke-BrokenHashAlgorithmFix -Content $input
       
-      # Assert
-      $result | Should -Match '\n\n'
+      # Assert - Check for blank line (cross-platform: Unix LF or Windows CRLF)
+      $result | Should -Match '(\r?\n){2,}'
       $result | Should -Match '\$data = "test"'
     }
 
