@@ -15,10 +15,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    shell: pwsh
-
 jobs:
   analysis:
     name: OSSF Scorecard Analysis
@@ -58,21 +54,3 @@ jobs:
           path: results.sarif
           retention-days: 30
         if: always()
-
-      - name: Add scorecard summary
-        if: always()
-        shell: pwsh
-        run: |
-          @"
-          ## 🏆 OSSF Scorecard Analysis Complete
-
-          Security best practices assessment:
-          - Branch protection
-          - Code review practices
-          - Dependency management
-          - Security policy
-          - Vulnerability disclosure
-          - Token permissions
-
-          View detailed results in the Security tab.
-          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
