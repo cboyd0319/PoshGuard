@@ -84,15 +84,19 @@ jobs:
           $summary = "## 📊 Code Coverage Report`n`n"
 
           if ($result.CodeCoverage) {
-            # Calculate coverage percentage (Pester 5.x uses different property structure)
-            $coveredPercent = if ($result.CodeCoverage.CommandsAnalyzedCount -gt 0) {
-              [math]::Round(($result.CodeCoverage.CommandsExecutedCount / $result.CodeCoverage.CommandsAnalyzedCount * 100), 2)
+            # In Pester 5.x, calculate from CoverageReport property
+            $totalCommands = ($result.CodeCoverage.CoverageReport | Measure-Object -Property NumberOfCommandsAnalyzed -Sum).Sum
+            $executedCommands = ($result.CodeCoverage.CoverageReport | Measure-Object -Property NumberOfCommandsExecuted -Sum).Sum
+            $missedCommands = ($result.CodeCoverage.CoverageReport | Measure-Object -Property NumberOfCommandsMissed -Sum).Sum
+
+            $coveredPercent = if ($totalCommands -gt 0) {
+              [math]::Round(($executedCommands / $totalCommands * 100), 2)
             } else { 0 }
 
             $summary += "### Overall Coverage: **$coveredPercent%**`n`n"
-            $summary += "- **Covered Commands:** $($result.CodeCoverage.CommandsExecutedCount)`n"
-            $summary += "- **Total Commands:** $($result.CodeCoverage.CommandsAnalyzedCount)`n"
-            $summary += "- **Missed Commands:** $($result.CodeCoverage.CommandsMissedCount)`n`n"
+            $summary += "- **Covered Commands:** $executedCommands`n"
+            $summary += "- **Total Commands:** $totalCommands`n"
+            $summary += "- **Missed Commands:** $missedCommands`n`n"
 
             # Per-file coverage details
             if ($result.CodeCoverage.CoverageReport) {
@@ -118,9 +122,11 @@ jobs:
 
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-          # Calculate and display final coverage percentage
-          $finalCoverage = if ($result.CodeCoverage.CommandsAnalyzedCount -gt 0) {
-            [math]::Round(($result.CodeCoverage.CommandsExecutedCount / $result.CodeCoverage.CommandsAnalyzedCount * 100), 2)
+          # Calculate and display final coverage percentage from CoverageReport
+          $totalCmds = ($result.CodeCoverage.CoverageReport | Measure-Object -Property NumberOfCommandsAnalyzed -Sum).Sum
+          $executedCmds = ($result.CodeCoverage.CoverageReport | Measure-Object -Property NumberOfCommandsExecuted -Sum).Sum
+          $finalCoverage = if ($totalCmds -gt 0) {
+            [math]::Round(($executedCmds / $totalCmds * 100), 2)
           } else { 0 }
           Write-Host "✓ Coverage analysis complete: $finalCoverage%" -ForegroundColor Green
 
