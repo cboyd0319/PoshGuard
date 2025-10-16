@@ -39,12 +39,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@56b66b1d6f1fa3b4bed45321cd18a52f1b9f9eff # v3.30.8
+        uses: github/codeql-action/init@f443b600d91635bebf5b0d9ebc620189c0d6fba5 # v4.30.8
         with:
           languages: 'javascript'
           # Note: PowerShell is not directly supported by CodeQL, but we use JavaScript
@@ -62,7 +62,7 @@ jobs:
               - docs
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@56b66b1d6f1fa3b4bed45321cd18a52f1b9f9eff # v3.30.8
+        uses: github/codeql-action/analyze@f443b600d91635bebf5b0d9ebc620189c0d6fba5 # v4.30.8
         with:
           category: "/language:javascript"
           upload: true

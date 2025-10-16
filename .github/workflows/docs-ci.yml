@@ -14,34 +14,48 @@ concurrency:
 
 jobs:
   markdownlint:
+    name: Markdown Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '20'
 
       - name: Install markdownlint-cli
+        shell: bash
         run: npm i -g markdownlint-cli
 
       - name: Run markdownlint
+        shell: bash
         run: |
+          set -euo pipefail
           markdownlint "**/*.md" --ignore "node_modules" --config .markdownlint.json
 
   vale:
+    name: Prose Lint (Vale)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
       - name: Run Vale
-        uses: errata-ai/vale-action@v2
+        uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
         with:
           config: .vale.ini
           files: |
@@ -50,15 +64,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   link-check:
+    name: Link Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v1.10.1
+        uses: lycheeverse/lychee-action@885c65f3dc543b57c898c8099f4e08c8afd178a2 # v2.6.1
         with:
           args: >-
             --no-progress --exclude-file .lycheeignore --accept 200,206,403,429
@@ -66,4 +85,97 @@ jobs:
             **/*.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add docs summary
+        if: always()
+        shell: pwsh
+        run: |
+          @"
+          ## 📚 Documentation CI Complete
+
+          Checks performed:
+          - ✓ Markdown linting (markdownlint)
+          - ✓ Prose quality (Vale)
+          - ✓ Link validation (lychee)
+          - ✓ PowerShell script validation
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+  validate-powershell-scripts:
+    name: Validate PowerShell Scripts in Documentation
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Validate PowerShell script syntax
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          
+          Write-Host "🔍 Validating PowerShell scripts referenced in documentation..."
+          
+          $scriptsFound = 0
+          $scriptsValid = 0
+          $scriptsInvalid = 0
+          
+          # Check tools directory scripts
+          Get-ChildItem -Path "tools" -Filter "*.ps1" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              $scriptsFound++
+              Write-Host "Checking: $($_.FullName)"
+              
+              $errors = $null
+              $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $_.FullName -Raw), [ref]$errors)
+              
+              if ($errors.Count -eq 0) {
+                  $scriptsValid++
+                  Write-Host "  ✓ Valid syntax" -ForegroundColor Green
+              } else {
+                  $scriptsInvalid++
+                  Write-Host "  ✗ Invalid syntax:" -ForegroundColor Red
+                  $errors | ForEach-Object { Write-Host "    - $($_.Message)" -ForegroundColor Red }
+              }
+          }
+          
+          Write-Host ""
+          Write-Host "📊 Validation Summary:"
+          Write-Host "  Total scripts: $scriptsFound"
+          Write-Host "  Valid: $scriptsValid"
+          Write-Host "  Invalid: $scriptsInvalid"
+          
+          if ($scriptsInvalid -gt 0) {
+              Write-Host "❌ Some scripts have syntax errors" -ForegroundColor Red
+              exit 1
+          }
+          
+          Write-Host "✓ All PowerShell scripts have valid syntax" -ForegroundColor Green
+
+      - name: Validate PoshGuard module syntax
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          
+          Write-Host "🔍 Validating PoshGuard module files..."
+          
+          Get-ChildItem -Path "PoshGuard" -Filter "*.ps*1" -Recurse | ForEach-Object {
+              Write-Host "Checking: $($_.Name)"
+              
+              $errors = $null
+              $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $_.FullName -Raw), [ref]$errors)
+              
+              if ($errors.Count -gt 0) {
+                  Write-Host "  ✗ Syntax errors found:" -ForegroundColor Red
+                  $errors | ForEach-Object { Write-Host "    - $($_.Message)" -ForegroundColor Red }
+                  exit 1
+              } else {
+                  Write-Host "  ✓ Valid" -ForegroundColor Green
+              }
+          }
+          
+          Write-Host "✓ All PoshGuard module files have valid syntax" -ForegroundColor Green
 

@@ -1,9 +1,14 @@
 # PoshGuard — PowerShell security and quality auto‑fixes
 
-[![CI Status](https://github.com/cboyd0319/PoshGuard/workflows/CI/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions)
-[![codecov](https://codecov.io/github/cboyd0319/PoshGuard/graph/badge.svg?token=R4DPM6WAKV)](https://codecov.io/github/cboyd0319/PoshGuard)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/PoshGuard.svg)](https://www.powershellgallery.com/packages/PoshGuard)
 [![License](https://img.shields.io/github/license/cboyd0319/PoshGuard.svg)](LICENSE)
+
+[![CI](https://github.com/cboyd0319/PoshGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions/workflows/ci.yml)
+[![Coverage](https://github.com/cboyd0319/PoshGuard/actions/workflows/coverage.yml/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions/workflows/coverage.yml)
+[![codecov](https://codecov.io/github/cboyd0319/PoshGuard/graph/badge.svg?token=R4DPM6WAKV)](https://codecov.io/github/cboyd0319/PoshGuard)
+[![CodeQL](https://github.com/cboyd0319/PoshGuard/actions/workflows/codeql.yml/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions/workflows/codeql.yml)
+[![Scorecard](https://github.com/cboyd0319/PoshGuard/actions/workflows/scorecard.yml/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions/workflows/scorecard.yml)
+[![Docs](https://github.com/cboyd0319/PoshGuard/actions/workflows/docs-ci.yml/badge.svg)](https://github.com/cboyd0319/PoshGuard/actions/workflows/docs-ci.yml)
 
 TL;DR: Install from Gallery and fix scripts with safe, AST‑based transformations. Preview with `-DryRun -ShowDiff`.
 

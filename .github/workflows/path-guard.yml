@@ -8,22 +8,56 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   guard:
+    name: Validate File Organization
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
+
       - name: Validate Markdown file placement
+        shell: pwsh
         run: |
-          set -euo pipefail
-          base="origin/${{ github.base_ref || 'main' }}"
+          $ErrorActionPreference = 'Stop'
+          
+          $base = "origin/${{ github.base_ref || 'main' }}"
           git fetch origin "${{ github.base_ref || 'main' }}"
-          changed=$(git diff --name-only "$base"... || true)
-          md_outside=$(echo "$changed" | grep -E '\.md$' | grep -vE '^(docs/|README\.md$)' || true)
-          if [ -n "$md_outside" ]; then
-            echo "❌ Markdown files outside docs/:"; echo "$md_outside"; exit 1
-          fi
-          echo "✅ No misplaced Markdown files"
+          
+          $changed = git diff --name-only "$base..." | Where-Object { $_ }
+          $md_outside = $changed | Where-Object { $_ -match '\.md$' } | Where-Object { $_ -notmatch '^(docs/|README\.md$)' }
+          
+          if ($md_outside) {
+            Write-Host "❌ Markdown files outside docs/:"
+            $md_outside | ForEach-Object { Write-Host $_ }
+            exit 1
+          }
+          Write-Host "✅ No misplaced Markdown files"
+
+      - name: Add guard summary
+        if: always()
+        shell: pwsh
+        run: |
+          $status = if ("${{ job.status }}" -eq "success") { "✅ All files are correctly organized" } else { "❌ File organization violations detected" }
+          @"
+          ## 🛡️ Path Guard Validation
+
+          $status
+
+          - Markdown files: ✓ docs/ or root README.md only
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append

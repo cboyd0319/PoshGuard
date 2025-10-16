@@ -1,0 +1,74 @@
+# Configuration for PR auto-labeling
+# Labels are applied based on changed files
+
+'📝 documentation':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*'
+      - '*.md'
+      - '.github/**/*.md'
+
+'⚙️ workflows':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**'
+      - '.github/actions/**'
+
+'🧪 tests':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'tests/**/*'
+      - '**/Tests.ps1'
+
+'💻 code':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'PoshGuard/**/*.ps1'
+      - 'PoshGuard/**/*.psm1'
+      - 'PoshGuard/**/*.psd1'
+      - '!PoshGuard/**/*.Tests.ps1'
+
+'🔧 config':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'config/**'
+      - '.github/dependabot.yml'
+      - '.editorconfig'
+
+'🛠️ tools':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'tools/**'
+
+'🔒 security':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'SECURITY.md'
+      - 'docs/SECURITY.md'
+      - 'config/SecurityRules.psd1'
+      - '.github/workflows/code-scanning.yml'
+      - '.github/workflows/codeql.yml'
+
+'📦 dependencies':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'PoshGuard/PoshGuard.psd1'
+      - '.github/dependabot.yml'
+
+'🚀 release':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/CHANGELOG.md'
+      - '.github/workflows/release.yml'
+      - 'PoshGuard/VERSION.txt'
+
+'📊 benchmarks':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'benchmarks/**'
+      - 'tools/Run-Benchmark.ps1'
+
+'🎨 vscode-extension':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'vscode-extension/**'
