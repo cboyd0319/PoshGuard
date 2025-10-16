@@ -40,107 +40,107 @@ jobs:
       contents: read
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      with:
-        fetch-depth: 1
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 1
 
-    - name: Setup PowerShell modules
-      uses: ./.github/actions/setup-powershell
-      with:
-        modules: 'Pester'
-        cache-key-suffix: 'coverage'
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-powershell
+        with:
+          modules: 'Pester'
+          cache-key-suffix: 'coverage'
 
-    - name: Run Pester tests with coverage
-      id: coverage
-      run: |
-        $ErrorActionPreference = 'Stop'
+      - name: Run Pester tests with coverage
+        id: coverage
+        run: |
+          $ErrorActionPreference = 'Stop'
 
-        Write-Host "🧪 Running Pester tests with code coverage..." -ForegroundColor Cyan
+          Write-Host "🧪 Running Pester tests with code coverage..." -ForegroundColor Cyan
 
-        $config = New-PesterConfiguration
-        $config.Run.Path = './tests/'
-        $config.Run.Exit = $false
-        $config.Output.Verbosity = 'Detailed'
-        $config.TestResult.Enabled = $true
-        $config.TestResult.OutputPath = 'TestResults.xml'
-        $config.TestResult.OutputFormat = 'NUnitXml'
-        
-        # Enable code coverage
-        $config.CodeCoverage.Enabled = $true
-        $config.CodeCoverage.OutputPath = 'coverage.xml'
-        $config.CodeCoverage.OutputFormat = 'JaCoCo'
-        $config.CodeCoverage.Path = @(
-          'PoshGuard/*.psm1',
-          'PoshGuard/*.ps1',
-          'tools/lib/**/*.psm1',
-          'tools/lib/**/*.ps1'
-        )
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests/'
+          $config.Run.Exit = $false
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.TestResult.OutputFormat = 'NUnitXml'
 
-        # Run tests
-        $result = Invoke-Pester -Configuration $config
+          # Enable code coverage
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.OutputPath = 'coverage.xml'
+          $config.CodeCoverage.OutputFormat = 'JaCoCo'
+          $config.CodeCoverage.Path = @(
+            'PoshGuard/*.psm1',
+            'PoshGuard/*.ps1',
+            'tools/lib/**/*.psm1',
+            'tools/lib/**/*.ps1'
+          )
 
-        # Generate detailed coverage report
-        $summary = "## 📊 Code Coverage Report`n`n"
-        
-        if ($result.CodeCoverage) {
-          $coveredPercent = [math]::Round(($result.CodeCoverage.CoveragePercent), 2)
-          $summary += "### Overall Coverage: **$coveredPercent%**`n`n"
-          $summary += "- **Covered Commands:** $($result.CodeCoverage.CommandsExecutedCount)`n"
-          $summary += "- **Total Commands:** $($result.CodeCoverage.CommandsAnalyzedCount)`n"
-          $summary += "- **Missed Commands:** $($result.CodeCoverage.CommandsMissedCount)`n`n"
+          # Run tests
+          $result = Invoke-Pester -Configuration $config
 
-          # Per-file coverage details
-          if ($result.CodeCoverage.CoverageReport) {
-            $summary += "### Coverage by File`n`n"
-            $summary += "| File | Coverage | Hit | Missed |`n"
-            $summary += "|------|----------|-----|--------|`n"
-            
-            foreach ($file in $result.CodeCoverage.CoverageReport) {
-              $fileCoverage = if ($file.NumberOfCommandsAnalyzed -gt 0) {
-                [math]::Round(($file.NumberOfCommandsExecuted / $file.NumberOfCommandsAnalyzed * 100), 1)
-              } else { 0 }
-              $fileName = Split-Path $file.File -Leaf
-              $summary += "| ``$fileName`` | $fileCoverage% | $($file.NumberOfCommandsExecuted) | $($file.NumberOfCommandsMissed) |`n"
+          # Generate detailed coverage report
+          $summary = "## 📊 Code Coverage Report`n`n"
+
+          if ($result.CodeCoverage) {
+            $coveredPercent = [math]::Round(($result.CodeCoverage.CoveragePercent), 2)
+            $summary += "### Overall Coverage: **$coveredPercent%**`n`n"
+            $summary += "- **Covered Commands:** $($result.CodeCoverage.CommandsExecutedCount)`n"
+            $summary += "- **Total Commands:** $($result.CodeCoverage.CommandsAnalyzedCount)`n"
+            $summary += "- **Missed Commands:** $($result.CodeCoverage.CommandsMissedCount)`n`n"
+
+            # Per-file coverage details
+            if ($result.CodeCoverage.CoverageReport) {
+              $summary += "### Coverage by File`n`n"
+              $summary += "| File | Coverage | Hit | Missed |`n"
+              $summary += "|------|----------|-----|--------|`n"
+
+              foreach ($file in $result.CodeCoverage.CoverageReport) {
+                $fileCoverage = if ($file.NumberOfCommandsAnalyzed -gt 0) {
+                  [math]::Round(($file.NumberOfCommandsExecuted / $file.NumberOfCommandsAnalyzed * 100), 1)
+                } else { 0 }
+                $fileName = Split-Path $file.File -Leaf
+                $summary += "| ``$fileName`` | $fileCoverage% | $($file.NumberOfCommandsExecuted) | $($file.NumberOfCommandsMissed) |`n"
+              }
             }
           }
-        }
 
-        $summary += "`n### Test Results`n`n"
-        $summary += "- **Total:** $($result.TotalCount)`n"
-        $summary += "- **Passed:** $($result.PassedCount)`n"
-        $summary += "- **Failed:** $($result.FailedCount)`n"
-        $summary += "- **Duration:** $($result.Duration)`n"
+          $summary += "`n### Test Results`n`n"
+          $summary += "- **Total:** $($result.TotalCount)`n"
+          $summary += "- **Passed:** $($result.PassedCount)`n"
+          $summary += "- **Failed:** $($result.FailedCount)`n"
+          $summary += "- **Duration:** $($result.Duration)`n"
 
-        $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-        Write-Host "✓ Coverage analysis complete: $([math]::Round($result.CodeCoverage.CoveragePercent, 2))%" -ForegroundColor Green
+          Write-Host "✓ Coverage analysis complete: $([math]::Round($result.CodeCoverage.CoveragePercent, 2))%" -ForegroundColor Green
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
-      if: always() && hashFiles('coverage.xml') != ''
-      with:
-        files: ./coverage.xml
-        flags: unittests
-        name: poshguard-coverage
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
-        verbose: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        if: always() && hashFiles('coverage.xml') != ''
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: poshguard-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
-    - name: Upload coverage artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      if: always() && hashFiles('coverage.xml') != ''
-      with:
-        name: coverage-report
-        path: coverage.xml
-        retention-days: 30
-        if-no-files-found: ignore
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && hashFiles('coverage.xml') != ''
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 30
+          if-no-files-found: ignore
 
-    - name: Upload test results
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      if: always() && hashFiles('TestResults.xml') != ''
-      with:
-        name: test-results-coverage
-        path: TestResults.xml
-        retention-days: 30
-        if-no-files-found: ignore
+      - name: Upload test results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && hashFiles('TestResults.xml') != ''
+        with:
+          name: test-results-coverage
+          path: TestResults.xml
+          retention-days: 30
+          if-no-files-found: ignore

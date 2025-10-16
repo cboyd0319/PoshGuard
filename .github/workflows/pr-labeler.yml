@@ -41,6 +41,7 @@ jobs:
         if: always()
         shell: bash
         run: |
+          set -euo pipefail
           {
             echo "## 🏷️ PR Auto-Labeling Complete"
             echo ""

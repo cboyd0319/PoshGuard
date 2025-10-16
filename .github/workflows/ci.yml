@@ -159,7 +159,7 @@ jobs:
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputPath = 'TestResults.xml'
           $config.TestResult.OutputFormat = 'NUnitXml'
-          
+
           # Enable code coverage
           $config.CodeCoverage.Enabled = $true
           $config.CodeCoverage.OutputPath = 'coverage.xml'

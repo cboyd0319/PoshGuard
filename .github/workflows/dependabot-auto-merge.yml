@@ -59,7 +59,12 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $status = if ("${{ steps.metadata.outputs.update-type }}" -eq "version-update:semver-major") { "⚠️ **Major update** - requires manual review" } else { "✅ **Auto-merge enabled** for patch/minor update" }
+          $updateType = "${{ steps.metadata.outputs.update-type }}"
+          if ($updateType -eq "version-update:semver-major") {
+            $status = "⚠️ **Major update** - requires manual review"
+          } else {
+            $status = "✅ **Auto-merge enabled** for patch/minor update"
+          }
           @"
           ## 🤖 Dependabot Auto-Merge
 
