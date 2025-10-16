@@ -313,6 +313,189 @@ function Get-MockTimeProvider {
   }
 }
 
+function New-MockSBOM {
+  <#
+  .SYNOPSIS
+      Creates a mock SBOM (Software Bill of Materials)
+  
+  .PARAMETER Format
+      SBOM format (CycloneDX, SPDX)
+  
+  .PARAMETER ComponentCount
+      Number of mock components to include
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [ValidateSet('CycloneDX', 'SPDX')]
+    [string]$Format = 'CycloneDX',
+    
+    [int]$ComponentCount = 2
+  )
+  
+  $components = @()
+  for ($i = 1; $i -le $ComponentCount; $i++) {
+    $components += [PSCustomObject]@{
+      Name = "TestComponent$i"
+      Version = "1.$i.0"
+      Type = 'library'
+      Licenses = @('MIT')
+    }
+  }
+  
+  return [PSCustomObject]@{
+    BOMFormat = $Format
+    SpecVersion = if ($Format -eq 'CycloneDX') { '1.5' } else { '2.3' }
+    Components = $components
+    Dependencies = @()
+    Metadata = @{
+      Timestamp = [DateTime]::Parse('2025-01-01T00:00:00Z')
+    }
+  }
+}
+
+function New-MockVulnerability {
+  <#
+  .SYNOPSIS
+      Creates a mock vulnerability finding
+  
+  .PARAMETER Severity
+      Severity level
+  
+  .PARAMETER CVE
+      CVE identifier
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [ValidateSet('Critical', 'High', 'Medium', 'Low')]
+    [string]$Severity = 'High',
+    
+    [string]$CVE = 'CVE-2024-0001'
+  )
+  
+  return [PSCustomObject]@{
+    ID = $CVE
+    Severity = $Severity
+    Description = 'Test vulnerability description'
+    Remediation = 'Update to latest version'
+    AffectedVersions = @('< 2.0.0')
+    FixedVersion = '2.0.0'
+    CVSS = 7.5
+    References = @('https://nvd.nist.gov/vuln/detail/' + $CVE)
+  }
+}
+
+function New-MockNISTControl {
+  <#
+  .SYNOPSIS
+      Creates a mock NIST SP 800-53 control result
+  
+  .PARAMETER ControlID
+      Control identifier (e.g., 'AC-2')
+  
+  .PARAMETER Compliant
+      Whether control is compliant
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [string]$ControlID = 'AC-2',
+    
+    [bool]$Compliant = $true
+  )
+  
+  return [PSCustomObject]@{
+    ControlID = $ControlID
+    Title = "Test Control: $ControlID"
+    Compliant = $Compliant
+    Findings = if (-not $Compliant) { @('Non-compliance found') } else { @() }
+    Severity = if (-not $Compliant) { 'High' } else { 'None' }
+    Remediation = if (-not $Compliant) { 'Address findings' } else { $null }
+  }
+}
+
+function New-MockMCPResponse {
+  <#
+  .SYNOPSIS
+      Creates a mock Model Context Protocol response
+  
+  .PARAMETER Success
+      Whether the operation succeeded
+  
+  .PARAMETER Result
+      Result data
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [bool]$Success = $true,
+    
+    [object]$Result = @{ data = 'test' }
+  )
+  
+  return [PSCustomObject]@{
+    Success = $Success
+    Result = $Result
+    Error = if (-not $Success) { 'Mock error' } else { $null }
+    Timestamp = [DateTime]::Parse('2025-01-01T00:00:00Z')
+  }
+}
+
+function New-MockRLState {
+  <#
+  .SYNOPSIS
+      Creates a mock Reinforcement Learning state
+  
+  .PARAMETER StateVector
+      State representation vector
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [double[]]$StateVector = @(0.1, 0.2, 0.3)
+  )
+  
+  return [PSCustomObject]@{
+    Vector = $StateVector
+    Hash = ($StateVector -join ',').GetHashCode()
+    Timestamp = [DateTime]::Parse('2025-01-01T00:00:00Z')
+  }
+}
+
+function New-MockMetric {
+  <#
+  .SYNOPSIS
+      Creates a mock metric data point
+  
+  .PARAMETER Name
+      Metric name
+  
+  .PARAMETER Value
+      Metric value
+  
+  .PARAMETER Tags
+      Metric tags/labels
+  #>
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [string]$Name = 'test.metric',
+    
+    [double]$Value = 42.0,
+    
+    [hashtable]$Tags = @{ environment = 'test' }
+  )
+  
+  return [PSCustomObject]@{
+    Name = $Name
+    Value = $Value
+    Tags = $Tags
+    Timestamp = [DateTime]::Parse('2025-01-01T00:00:00Z')
+    Unit = 'count'
+  }
+}
+
 # Export all functions
 Export-ModuleMember -Function @(
   'New-MockDiagnosticRecord',
@@ -322,5 +505,11 @@ Export-ModuleMember -Function @(
   'New-MockAIResponse',
   'New-MockPSScriptAnalyzerResult',
   'New-TestScriptAST',
-  'Get-MockTimeProvider'
+  'Get-MockTimeProvider',
+  'New-MockSBOM',
+  'New-MockVulnerability',
+  'New-MockNISTControl',
+  'New-MockMCPResponse',
+  'New-MockRLState',
+  'New-MockMetric'
 )
