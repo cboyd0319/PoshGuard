@@ -7,11 +7,13 @@ All workflows follow CI/CD best practices: SHA-pinned actions, minimal permissio
 | Workflow | Purpose | Triggers | Timeout | Status |
 |----------|---------|----------|---------|--------|
 | `ci.yml` | Main CI: Lint, test, package | Push/PR to main (PS files) | 15-20 min | ✅ Active |
+| `coverage.yml` | Detailed PowerShell code coverage analysis | Push/PR (PS files), manual | 20 min | ✅ Active |
 | `code-scanning.yml` | Security scanning with SARIF upload | Push/PR (PS files), weekly, manual | 20 min | ✅ Active |
+| `codeql.yml` | CodeQL security analysis | Push/PR (PS files), weekly, manual | 30 min | ✅ Active |
 | `release.yml` | Create releases with SBOM and attestation | Tag push (v*), manual | 15 min | ✅ Active |
 | `poshguard-quality-gate.yml` | Dogfooding: PoshGuard analyzing itself | Push/PR (PS files), manual | 20 min | ✅ Active |
 | `actionlint.yml` | Validate workflow syntax | Push/PR to .github/workflows/ | 5 min | ✅ Active |
-| `dependabot-auto-merge.yml` | Auto-merge safe Dependabot PRs | Dependabot PR events | N/A | ✅ Active |
+| `dependabot-auto-merge.yml` | Auto-merge safe Dependabot PRs | Dependabot PR events | 10 min | ✅ Active |
 
 ## Workflow Details
 
@@ -89,18 +91,52 @@ All workflows follow CI/CD best practices: SHA-pinned actions, minimal permissio
 - **Purpose:** Catches workflow syntax errors, invalid action references, and shellcheck issues
 - **Failure means:** Workflow has syntax errors or validation issues (blocking)
 
-### dependabot-auto-merge.yml - Dependency Automation
-**Automatically merges safe Dependabot updates.**
+### coverage.yml - Detailed Code Coverage
+**Provides detailed PowerShell code coverage analysis and reporting.**
 
 - **Jobs:**
-  1. `dependabot` - Evaluates update type and auto-merges if safe
+  1. `coverage` - Runs Pester tests with comprehensive coverage metrics
+
+- **When it runs:** Push/PR (PowerShell file changes), manual dispatch
+- **Features:**
+  - Per-file coverage breakdown with hit/missed commands
+  - Codecov integration for coverage tracking
+  - Detailed test result summaries
+  - Coverage artifact uploads
+  
+- **Difference from ci.yml:** More detailed coverage reporting and analysis while ci.yml focuses on gate passing
+
+### codeql.yml - CodeQL Security Analysis
+**Advanced security scanning using GitHub CodeQL.**
+
+- **Jobs:**
+  1. `analyze` - CodeQL security and quality analysis
+
+- **When it runs:** 
+  - Push/PR to main (PowerShell file changes)
+  - Weekly on Mondays at 8 AM UTC (scheduled scan)
+  - Manual dispatch
+  
+- **Features:**
+  - Security and quality query packs
+  - Results uploaded to GitHub Security tab
+  - Complements PSScriptAnalyzer scanning
+  
+- **Note:** Uses JavaScript analysis patterns as PowerShell is not directly supported by CodeQL. Provides additional security insights beyond PSScriptAnalyzer.
+
+### dependabot-auto-merge.yml - Dependency Automation
+**Automatically approves and merges safe Dependabot updates.**
+
+- **Jobs:**
+  1. `dependabot` - Evaluates update type, auto-approves and auto-merges if safe
 
 - **When it runs:** When Dependabot opens, synchronizes, or reopens a PR
 - **Auto-merge strategy:**
-  - ✅ Patch updates (1.2.3 → 1.2.4) - auto-merge with squash
-  - ✅ Minor updates (1.2.3 → 1.3.0) - auto-merge with squash
-  - ❌ Major updates (1.2.3 → 2.0.0) - require manual review (adds comment)
+  - ✅ Patch updates (1.2.3 → 1.2.4) - auto-approve and auto-merge with squash
+  - ✅ Minor updates (1.2.3 → 1.3.0) - auto-approve and auto-merge with squash
+  - ❌ Major updates (1.2.3 → 2.0.0) - require manual review (adds detailed comment)
   
+- **Security:** Auto-approval step added before auto-merge for better audit trail
 - **Note:** Depends on CI passing before merge executes
 
 ## Security Best Practices
@@ -132,9 +168,12 @@ All third-party actions are pinned by commit SHA for security and supply chain p
 
 | Action | Version | SHA (First 8 chars) | Used In |
 |--------|---------|---------------------|---------|
-| actions/checkout | v5.0.0 | 7884fcad | ci.yml, release.yml, code-scanning.yml, poshguard-quality-gate.yml |
+| actions/checkout | v5.0.0 | 7884fcad | All workflows |
 | actions/cache | v4.3.0 | 5b8b28c6 | actionlint.yml, setup-powershell action |
-| actions/upload-artifact | v4.6.2 | d0d5ba7e | ci.yml, code-scanning.yml, poshguard-quality-gate.yml |
+| actions/upload-artifact | v4.6.2 | d0d5ba7e | ci.yml, coverage.yml, code-scanning.yml, poshguard-quality-gate.yml |
+| codecov/codecov-action | v5.5.1 | 5a109151 | ci.yml, coverage.yml |
+| github/codeql-action/init | v3.30.8 | 56b66b1d | codeql.yml |
+| github/codeql-action/analyze | v3.30.8 | 56b66b1d | codeql.yml |
 | github/codeql-action/upload-sarif | v3.30.8 | 56b66b1d | code-scanning.yml |
 | actions/github-script | v8 | (latest) | poshguard-quality-gate.yml |
 | anchore/sbom-action | v0.20.6 | (latest) | release.yml |
@@ -144,7 +183,7 @@ All third-party actions are pinned by commit SHA for security and supply chain p
 
 **Note:** PowerShell is pre-installed on all GitHub-hosted runners (Windows, Linux, macOS). No setup action is required. We use a composite action (`.github/actions/setup-powershell`) for module installation and caching.
 
-Last updated: 2025-10-16
+Last updated: 2025-10-16 (Comprehensive workflow analysis and improvements)
 
 ## Performance Optimizations
 
