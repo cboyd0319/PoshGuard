@@ -56,8 +56,8 @@ jobs:
         with:
           fetch-depth: 0  # Full history for better analysis
 
-      - name: Setup PowerShell
-        uses: microsoft/setup-powershell@v2
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-powershell
         with:
           modules: 'PSScriptAnalyzer'
           cache-key-suffix: 'quality-gate'
@@ -315,63 +315,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: report
-            });
-
-  auto-fix:
-    name: Auto-fix Issues (Optional)
-    needs: poshguard-analysis
-    if: github.event_name == 'pull_request' && needs.poshguard-analysis.result == 'failure'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # v5.0.0
-
-      - name: Setup PowerShell
-        uses: microsoft/setup-powershell@v2
-        with:
-          pwsh: true
-
-      - name: Install PoshGuard
-        shell: pwsh
-        run: |
-          Install-Module -Name PoshGuard -Scope CurrentUser -Force
-          Import-Module PoshGuard
-
-      - name: Apply Auto-fixes
-        shell: pwsh
-        run: |
-          Write-Host "🔧 Applying auto-fixes..." -ForegroundColor Cyan
-
-          Get-ChildItem -Path . -Include *.ps1,*.psm1,*.psd1 -Recurse | ForEach-Object {
-            $file = $_.FullName
-            Write-Host "Fixing: $file" -ForegroundColor Yellow
-
-            try {
-              Invoke-PoshGuard -Path $file -Verbose
-              Write-Host "✓ Fixed: $file" -ForegroundColor Green
-            }
-            catch {
-              Write-Warning "Could not fix $file : $_"
-            }
-          }
-
-      - name: Commit fixes
-        run: |
-          git config --global user.name 'PoshGuard Bot'
-          git config --global user.email 'poshguard@users.noreply.github.com'
-          git add -A
-          git diff --staged --quiet || git commit -m "chore: auto-fix code quality issues with PoshGuard"
-          git push
-
-      - name: Comment on PR
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '🤖 PoshGuard has automatically fixed some code quality issues. Please review the changes.'
             });

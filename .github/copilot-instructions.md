@@ -64,7 +64,7 @@ PoshGuard/
 ### Workflow & Automation Standards
 - **Dependabot:** Weekly schedule (Mondays 09:00 UTC), commit prefix `chore(deps):`, grouped updates for Actions/npm
 - **Auto-merge:** Automatic approval for all Dependabot PRs, auto-merge for patch/minor versions only
-- **CI/CD:** GitHub Actions workflows in `.github/workflows/` (see `poshguard-qa.yml`, `dependabot-auto-merge.yml`)
+- **CI/CD:** GitHub Actions workflows in `.github/workflows/` (see `ci.yml`, `dependabot-auto-merge.yml`)
 - **Quality Gates:** All PRs must pass PSScriptAnalyzer, Pester tests before merge
 
 ### File Organization Standards
@@ -309,10 +309,12 @@ Invoke-Pester -CodeCoverage ./PoshGuard/PoshGuard.psm1
 GitHub Actions workflows automate quality gates and releases:
 
 **Workflow Files** (`.github/workflows/`):
-- `poshguard-qa.yml` — Main CI pipeline (PSScriptAnalyzer, Pester tests, multi-platform)
+- `ci.yml` — Main CI pipeline (PSScriptAnalyzer, Pester tests, packaging)
+- `code-scanning.yml` — Security scanning with SARIF upload to GitHub Security tab
+- `poshguard-quality-gate.yml` — Dogfooding PoshGuard on itself (demo workflow)
 - `dependabot-auto-merge.yml` — Auto-merge safe dependency updates
 - `release.yml` — Automated releases with versioning and changelog
-- `poshguard-quality-gate.yml` — Quality checks and performance benchmarks
+- `actionlint.yml` — Workflow validation with actionlint
 
 **CI/CD Features:**
 1. **Multi-platform testing:** Windows, Linux, macOS (PowerShell 7)
