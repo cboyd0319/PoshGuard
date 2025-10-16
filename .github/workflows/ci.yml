@@ -150,7 +150,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
-          Write-Host "🧪 Running Pester tests..." -ForegroundColor Cyan
+          Write-Host "🧪 Running Pester tests with code coverage..." -ForegroundColor Cyan
 
           $config = New-PesterConfiguration
           $config.Run.Path = './tests/'
@@ -159,7 +159,17 @@ jobs:
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputPath = 'TestResults.xml'
           $config.TestResult.OutputFormat = 'NUnitXml'
-          $config.CodeCoverage.Enabled = $false
+          
+          # Enable code coverage
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.OutputPath = 'coverage.xml'
+          $config.CodeCoverage.OutputFormat = 'JaCoCo'
+          $config.CodeCoverage.Path = @(
+            'PoshGuard/*.psm1',
+            'PoshGuard/*.ps1',
+            'tools/lib/**/*.psm1',
+            'tools/lib/**/*.ps1'
+          )
 
           # Run tests
           $result = Invoke-Pester -Configuration $config
@@ -172,6 +182,15 @@ jobs:
           $summary += "- ⏭️ **Skipped:** $($result.SkippedCount)`n"
           $summary += "- ⚠️ **Not Run:** $($result.NotRunCount)`n"
           $summary += "`n**Duration:** $($result.Duration)`n"
+
+          # Add coverage summary if available
+          if ($result.CodeCoverage) {
+            $coveredPercent = [math]::Round(($result.CodeCoverage.CoveragePercent), 2)
+            $summary += "`n### Code Coverage`n`n"
+            $summary += "- **Coverage:** $coveredPercent%`n"
+            $summary += "- **Covered Commands:** $($result.CodeCoverage.CommandsExecutedCount)`n"
+            $summary += "- **Total Commands:** $($result.CodeCoverage.CommandsAnalyzedCount)`n"
+          }
 
           if ($result.FailedCount -gt 0) {
             $summary += "`n### Failed Tests`n`n"
@@ -189,6 +208,9 @@ jobs:
           }
 
           Write-Host "✓ All tests passed!" -ForegroundColor Green
+          if ($result.CodeCoverage) {
+            Write-Host "✓ Code coverage: $([math]::Round($result.CodeCoverage.CoveragePercent, 2))%" -ForegroundColor Green
+          }
 
       - name: Upload test results
         uses: actions/upload-artifact@d0d5ba7887b7f651bea0d47495e1e9e0c210a8ec # v4.6.2
@@ -198,6 +220,17 @@ jobs:
           path: TestResults.xml
           retention-days: 30
           if-no-files-found: ignore
+
+      - name: Upload coverage to CodeCov
+        uses: codecov/codecov-action@v5
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: poshguard-coverage
+          fail_ci_if_error: false
+          verbose: true
 
   package:
     name: Create Package
