@@ -192,7 +192,7 @@ Each module is tested via:
 
 1. **Unit tests** - In `/tests/Phase2-AutoFix.Tests.ps1`
 2. **Integration tests** - Via `Apply-AutoFix.ps1` on sample files
-3. **Benchmarks** - See `/docs/development/benchmarks.md`
+3. **Benchmarks** - See [Run-Benchmark.ps1](../../../tools/Run-Benchmark.ps1)
 
 Run tests:
 
@@ -228,7 +228,7 @@ When adding new fixes:
 5. Add to `Apply-AutoFix.ps1` pipeline
 6. Write tests in `/tests/`
 
-See `/docs/CONTRIBUTING.md` for detailed guidelines.
+See `../../../CONTRIBUTING.md` for detailed guidelines.
 
 ## Version History
 

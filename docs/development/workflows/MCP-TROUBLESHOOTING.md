@@ -178,7 +178,7 @@ Invoke-WebRequest -Uri "https://api.openai.com/v1/models" -Method Get -Headers @
 **Solution:**
 
 1. **Fully restart VS Code:** Use File → Exit (Windows/Linux) or Code → Quit (macOS)
-2. **Don't just reload window:** A window reload is not sufficient
+2. **Do more than reload the window:** A window reload is not sufficient
 3. **Verify GitHub Copilot is enabled:** Check status bar for Copilot icon
 4. **Check Copilot logs:**
    - Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
@@ -359,9 +359,9 @@ If you're still experiencing issues:
 
 ## Reference
 
-- **Main MCP Guide:** [docs/MCP-GUIDE.md](../docs/MCP-GUIDE.md)
-- **Validation Script:** [.github/scripts/Test-MCPConfiguration.ps1](./scripts/Test-MCPConfiguration.ps1)
-- **Configuration File:** [.github/copilot-mcp.json](./copilot-mcp.json)
+- **Main MCP Guide:** [docs/MCP-GUIDE.md](../../MCP-GUIDE.md)
+- **Validation Script:** [.github/scripts/Test-MCPConfiguration.ps1](../../../.github/scripts/Test-MCPConfiguration.ps1)
+- **Configuration File:** [.github/copilot-mcp.json](../../../.github/copilot-mcp.json)
 - **MCP Specification:** [modelcontextprotocol.io](https://modelcontextprotocol.io/)
 
 ## Security Notes

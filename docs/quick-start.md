@@ -110,7 +110,7 @@ Get-Help ./tools/Apply-AutoFix.ps1 -Full
 
 - [README](../README.md)
 - [How It Works](how-it-works.md)
-- [CI Integration](ci-integration.md)
+- [CI Integration](development/ci-integration.md)
 
 ## Tips
 

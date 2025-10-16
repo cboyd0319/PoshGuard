@@ -426,7 +426,7 @@ jobs:
           sarif_file: results.sarif
 ```
 
-See [GitHub SARIF Integration Guide](./GITHUB-SARIF-INTEGRATION.md) for complete documentation.
+See [GitHub SARIF Integration Guide](../reference/GITHUB-SARIF-INTEGRATION.md) for complete documentation.
 
 ## Best Practices
 

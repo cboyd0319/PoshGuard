@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make this project better. This repo uses **tight docs hygiene** and **fast feedback**.
+Thanks for helping make this project better. This repo uses tight docs hygiene and fast feedback.
 
 ## Dev setup
 
@@ -39,6 +39,7 @@ npx linkinator README.md docs/**/*.md
 - [ ] Added/updated tests
 - [ ] Security implications noted (secrets/permissions)
 - [ ] Links valid, badges green
+- [ ] Docs lint-clean (markdownlint, vale)
 
 ## Releasing
 

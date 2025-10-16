@@ -112,7 +112,7 @@ catch {
 - [ ] Secrets use `[SecureString]` or `Get-Secret`
 - [ ] Error messages don't leak sensitive data
 
-**Security Controls Mapping**: See [SECURITY-FRAMEWORK.md](SECURITY-FRAMEWORK.md)
+**Security Controls Mapping**: See [SECURITY-FRAMEWORK.md](../reference/SECURITY-FRAMEWORK.md)
 
 ### 4. Performance Budgets
 

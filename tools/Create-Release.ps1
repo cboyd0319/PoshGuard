@@ -181,8 +181,8 @@ $ReleaseFiles = @(
     'README.md'
     'LICENSE'
     'docs/CHANGELOG.md'
-    'docs/SECURITY.md'
-    'docs/CONTRIBUTING.md'
+    'SECURITY.md'
+    'CONTRIBUTING.md'
 )
 
 # Use Compress-Archive if available, otherwise use zip command

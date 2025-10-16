@@ -14,11 +14,9 @@ Use this page to navigate the docs. Prefer short, runnable examples and link dee
 - How it Works: [how-it-works.md](how-it-works.md)
 - SARIF Integration: [GITHUB-SARIF-INTEGRATION.md](reference/GITHUB-SARIF-INTEGRATION.md)
 
-## Security & Standards
+## Security
 
 - Security Framework: [SECURITY-FRAMEWORK.md](reference/SECURITY-FRAMEWORK.md)
-- Standards Compliance: [STANDARDS-COMPLIANCE.md](reference/STANDARDS-COMPLIANCE.md)
-- UGE Compliance: [UGE-COMPLIANCE.md](reference/UGE-COMPLIANCE.md)
 
 ## Guides
 
@@ -30,18 +28,15 @@ Use this page to navigate the docs. Prefer short, runnable examples and link dee
 
 - Checks Catalog: [checks.md](checks.md)
 - API Reference: [api.md](api.md)
-- Module Metadata: [MODULE_METADATA.md](reference/MODULE_METADATA.md)
-- Standards References: [STANDARDS-REFERENCES.md](reference/STANDARDS-REFERENCES.md)
 
 ## Releases & Roadmap
 
-- Latest Release Notes: [V4.3.0-RELEASE-NOTES.md](V4.3.0-RELEASE-NOTES.md)
-- Version Management: [VERSION-MANAGEMENT.md](VERSION-MANAGEMENT.md)
+- Version Management: [VERSION-MANAGEMENT.md](development/VERSION-MANAGEMENT.md)
 
 ## Development
 
 - Developer Docs: [development/README.md](development/README.md)
-- Engineering Standards: [ENGINEERING-STANDARDS.md](ENGINEERING-STANDARDS.md)
+- Engineering Standards: [ENGINEERING-STANDARDS.md](development/ENGINEERING-STANDARDS.md)
 
 ## Runbooks & Examples
 

@@ -79,7 +79,7 @@ pwsh -File .github/scripts/Test-MCPConfiguration.ps1 -SkipConnectivityTests
 **Troubleshooting:**
 
 If validation fails, see:
-- [.github/MCP-TROUBLESHOOTING.md](../MCP-TROUBLESHOOTING.md)
+- [docs/development/workflows/MCP-TROUBLESHOOTING.md](../../docs/development/workflows/MCP-TROUBLESHOOTING.md)
 - [docs/MCP-GUIDE.md](../../docs/MCP-GUIDE.md)
 
 ## Future Scripts
@@ -106,6 +106,6 @@ When adding new scripts to this directory:
 ## Related Documentation
 
 - [MCP Configuration Guide](../../docs/MCP-GUIDE.md)
-- [MCP Troubleshooting](../MCP-TROUBLESHOOTING.md)
-- [GitHub Copilot Setup](../../docs/COPILOT-SETUP-GUIDE.md)
-- [Contributing Guidelines](../../docs/CONTRIBUTING.md)
+- [MCP Troubleshooting](../../docs/development/workflows/MCP-TROUBLESHOOTING.md)
+- [GitHub Copilot Setup](../../docs/development/workflows/copilot-instructions.md)
+- [Contributing Guidelines](../../CONTRIBUTING.md)

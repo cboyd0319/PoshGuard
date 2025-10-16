@@ -183,7 +183,7 @@ npx -y @playwright/mcp@latest
 
 ## Troubleshooting
 
-For comprehensive troubleshooting, see **[.github/MCP-TROUBLESHOOTING.md](../.github/MCP-TROUBLESHOOTING.md)**
+For comprehensive troubleshooting, see **[MCP Troubleshooting](development/workflows/MCP-TROUBLESHOOTING.md)**
 
 ### Quick Diagnostics
 
@@ -208,7 +208,7 @@ pwsh -File .github/scripts/Test-MCPConfiguration.ps1
 # Verify environment variables are set
 Get-ChildItem Env: | Where-Object Name -like "COPILOT_MCP_*"
 
-# Restart VS Code completely (not just reload window)
+# Restart VS Code completely (do more than reload the window)
 # File → Exit (Windows/Linux) or Code → Quit (macOS)
 ```
 
@@ -251,7 +251,7 @@ The GitHub MCP server is not needed in `.github/copilot-mcp.json`. GitHub Copilo
 }
 ```
 
-For more details, see [.github/MCP-TROUBLESHOOTING.md](../.github/MCP-TROUBLESHOOTING.md).
+For more details, see [MCP Troubleshooting](development/workflows/MCP-TROUBLESHOOTING.md).
 
 ### MCP servers not working in PoshGuard
 
@@ -438,7 +438,7 @@ Or edit `config/poshguard.json`:
 
 ## Resources
 
-- **[GitHub Copilot Setup Guide](COPILOT-SETUP-GUIDE.md)** - Complete Copilot configuration walkthrough
+- **[GitHub Copilot Setup Guide](development/workflows/copilot-instructions.md)** - Complete Copilot configuration walkthrough
 - **[Model Context Protocol](https://modelcontextprotocol.io/)** - Official MCP specification
 - **[GitHub Copilot Docs](https://docs.github.com/copilot)** - GitHub's official documentation
 - **[PowerShell AST Documentation](https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.language)** - .NET AST reference

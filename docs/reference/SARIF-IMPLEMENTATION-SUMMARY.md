@@ -303,9 +303,9 @@ For new users:
 ### Documentation
 
 - [Full SARIF Guide](./GITHUB-SARIF-INTEGRATION.md)
-- [Workflow Documentation](../.github/workflows/README.md)
-- [CI Integration Guide](./ci-integration.md)
-- [Example Workflow](./examples/github-code-scanning-workflow.yml)
+- [Workflow Documentation](../../.github/workflows/README.md)
+- [CI Integration Guide](../development/ci-integration.md)
+- [Example Workflow](../examples/github-code-scanning-workflow.yml)
 
 ### External Resources
 

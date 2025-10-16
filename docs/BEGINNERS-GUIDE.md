@@ -303,7 +303,7 @@ if ($connected) {
 1. **Read**: [How It Works](how-it-works.md) - Understand what's happening
 2. **Try**: Run PoshGuard on your scripts
 3. **Explore**: Check the `samples/` folder for more examples
-4. **Integrate**: Add PoshGuard to your workflow (see [CI/CD Integration](ci-integration.md))
+4. **Integrate**: Add PoshGuard to your workflow (see [CI/CD Integration](development/ci-integration.md))
 
 ### Pro Tips
 

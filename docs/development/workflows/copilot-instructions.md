@@ -219,14 +219,14 @@ If you encounter the error `"Personal Access Tokens are not supported for this e
 
 1. Remove any `github` server entry from `.github/copilot-mcp.json`
 2. GitHub Copilot uses OAuth automatically - no configuration needed
-3. See [MCP-TROUBLESHOOTING.md](.github/MCP-TROUBLESHOOTING.md) for detailed help
+3. See [MCP-TROUBLESHOOTING.md](MCP-TROUBLESHOOTING.md) for detailed help
 
 **Environment Variables Required:**
 
 - `COPILOT_MCP_CONTEXT7_API_KEY` — For Context7 documentation access
 - `COPILOT_MCP_OPENAI_API_KEY` — For OpenAI web search capabilities
 
-**Troubleshooting:** See [`.github/MCP-TROUBLESHOOTING.md`](.github/MCP-TROUBLESHOOTING.md) for common issues and solutions
+**Troubleshooting:** See [`MCP-TROUBLESHOOTING.md`](MCP-TROUBLESHOOTING.md) for common issues and solutions
 
 ## Key Features and Implementation Details
 
@@ -458,8 +458,8 @@ Model Context Protocol (MCP) servers provide enhanced capabilities:
 **Setup & Troubleshooting:**
 
 - Configuration: See [MCP Integration](#mcp-integration-model-context-protocol) section above
-- Troubleshooting: See [`.github/MCP-TROUBLESHOOTING.md`](.github/MCP-TROUBLESHOOTING.md)
-- Full Guide: See [`docs/MCP-GUIDE.md`](../docs/MCP-GUIDE.md)
+- Troubleshooting: See [`MCP-TROUBLESHOOTING.md`](MCP-TROUBLESHOOTING.md)
+- Full Guide: See [`docs/MCP-GUIDE.md`](../../MCP-GUIDE.md)
 
 ## Documentation
 
@@ -509,7 +509,7 @@ When adding new features or modifying existing ones:
 6. **Backup Files:** Always create backups before applying fixes
    - Format: `{filename}.{timestamp}.bak`
    - Cleanup: Document backup retention policy
-   - Rollback: Provide easy restore mechanism
+   - Rollback: Provide a simple restore mechanism
 
 7. **Idempotent Fixes:** All auto-fixes must be idempotent
    - Running fix twice should be safe and produce same result
@@ -545,7 +545,7 @@ Common issues and solutions:
 - [PowerShell AST Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language)
 - [PSScriptAnalyzer Rules](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/rules/readme)
 - [Pester Documentation](https://pester.dev/)
-- [PoshGuard Documentation](../docs/README.md)
+- [PoshGuard Documentation](../../README.md)
 
 ## Code Review Checklist
 

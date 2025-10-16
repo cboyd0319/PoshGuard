@@ -39,7 +39,6 @@ When releasing a new version, the following files **MUST** be updated to maintai
 
 | File | Location | Update Type |
 |------|----------|-------------|
-| **MODULE_METADATA.md** | `.github/MODULE_METADATA.md` | Version references, release notes |
 | **README.md** | `README.md` | Version badge (if applicable) |
 | **ROADMAP.md** | `docs/ROADMAP.md` | Status line with current version |
 
@@ -125,18 +124,11 @@ None / List any breaking changes
 
 ### Step 4: Update Documentation
 
-```powershell
-# Update MODULE_METADATA.md
-# - Version references in gallery descriptions
-# - Release notes template
-# - Last Updated date
+Update relevant docs with the new version where applicable:
 
-# Update ROADMAP.md
-# - Status line: "v4.4.0 production-ready"
-
-# Update implementation-summary.md if needed
-# - Current version reference
-```
+- `docs/CHANGELOG.md` (see Step 3)
+- `docs/ROADMAP.md` (status line with current version, if used)
+- `README.md` (badges or examples referencing versioned artifacts, if any)
 
 ### Step 5: Update Tool Scripts
 
@@ -186,7 +178,6 @@ Before creating a release, verify:
 - [ ] VERSION.txt contains correct version
 - [ ] PoshGuard.psd1 ModuleVersion matches VERSION.txt
 - [ ] CHANGELOG.md has entry for new version
-- [ ] MODULE_METADATA.md references updated
 - [ ] ROADMAP.md status line updated
 - [ ] Tool scripts updated (Apply-AutoFix.ps1, Restore-Backup.ps1, Start-InteractiveTutorial.ps1)
 - [ ] Configuration files updated (config/poshguard.json, benchmarks/latest.json)

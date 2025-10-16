@@ -258,7 +258,7 @@ It 'Should handle invalid syntax gracefully' {
 2. **Single-Line Test Content**: Avoided multiline string issues in tests
 3. **InModuleScope Mocking**: Clean isolation for module internals
 4. **Incremental Testing**: Test each module as created, caught issues early
-5. **Consistent Naming**: "Should [action] [result]" pattern very readable
+5. **Consistent Naming**: "Should [action] [result]" pattern is readable
 
 ### Challenges Overcome
 
@@ -272,7 +272,7 @@ It 'Should handle invalid syntax gracefully' {
 
 1. **Check Function Signatures First**: Use `(Get-Command).Parameters` before writing tests
 2. **Avoid Multiline Here-Strings**: Use single-line or properly escaped strings
-3. **Test with Minimal Valid Content**: Not just happy paths
+3. **Test with Minimal Valid Content**: Not only happy paths
 4. **Mock External Calls**: Never rely on real network/filesystem/time
 5. **Use TestDrive Extensively**: Clean isolation for file operations
 6. **Verify on Multiple Platforms**: Use CI to catch platform-specific issues
@@ -329,7 +329,7 @@ It 'Should handle invalid syntax gracefully' {
 ### Primary Documents
 - [TEST_PLAN.md](./TEST_PLAN.md) - Testing strategy
 - [tests/README.md](../tests/README.md) - Developer guide
-- [Pester Architect Persona](../problem_statement.md) - Original requirements
+- [COMPREHENSIVE_TEST_STRATEGY.md](../tests/COMPREHENSIVE_TEST_STRATEGY.md) - Original requirements and strategy
 
 ### External Resources
 - [Pester Documentation](https://pester.dev)

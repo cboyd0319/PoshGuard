@@ -24,6 +24,4 @@ PoshGuard Docs
 - Quick Start: quick-start.md
 - How it Works: how-it-works.md
 - Security Framework: SECURITY-FRAMEWORK.md
-- Standards Compliance: STANDARDS-COMPLIANCE.md
 - Module API: api.md
-

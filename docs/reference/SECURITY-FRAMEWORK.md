@@ -306,7 +306,7 @@ PoshGuard operates as a local file processing tool with no authentication requir
 
 ### Security Issue Disclosure
 
-**Process**: See [SECURITY.md](../SECURITY.md) for responsible disclosure  
+**Process**: See [SECURITY.md](../../SECURITY.md) for responsible disclosure  
 **Response SLA**: Critical issues < 48 hours, High < 7 days  
 **Communication**: Security advisories via GitHub Security Advisories
 

@@ -203,7 +203,7 @@ Located in `tests/Helpers/TestHelpers.psm1`:
 ## CI/CD Integration
 
 ### GitHub Actions
-Located at `.github/workflows/pester-tests.yml`:
+Located at `../.github/workflows/pester-tests.yml`:
 
 - **Platforms**: Ubuntu, Windows, macOS
 - **PowerShell**: 7.4+
@@ -348,7 +348,7 @@ It 'Should expand <Alias> to <Expected>' -TestCases @(
 - [TEST_PLAN.md](../docs/TEST_PLAN.md) - Comprehensive testing strategy
 - [Pester Documentation](https://pester.dev)
 - [PSScriptAnalyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/RuleDocumentation)
-- [GitHub Actions Workflow](.github/workflows/pester-tests.yml)
+- [GitHub Actions Workflow](../.github/workflows/pester-tests.yml)
 
 ## Contributing
 
