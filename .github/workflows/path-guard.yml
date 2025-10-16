@@ -40,7 +40,7 @@ jobs:
           git fetch origin "${{ github.base_ref || 'main' }}"
 
           $changed = git diff --name-only "$base..." | Where-Object { $_ }
-          $md_outside = $changed | Where-Object { $_ -match '\.md$' } | Where-Object { $_ -notmatch '^(docs/|README\.md$)' }
+          $md_outside = $changed | Where-Object { $_ -match '\.md$' } | Where-Object { $_ -notmatch '^(docs/|README\.md$|\.github/)' }
 
           if ($md_outside) {
             Write-Host "❌ Markdown files outside docs/:"
