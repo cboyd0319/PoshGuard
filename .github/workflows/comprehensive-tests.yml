@@ -1,0 +1,160 @@
+name: Comprehensive Test Suite
+on:
+  push:
+    branches: [ main, develop, 'copilot/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        pwsh: ["7.4.4"]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        uses: PowerShell/PowerShell-For-GitHub-Actions@v1
+        with:
+          version: ${{ matrix.pwsh }}
+      
+      - name: Install Pester and PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Write-Host "Installing testing modules..." -ForegroundColor Cyan
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0 -SkipPublisherCheck
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+          
+          Write-Host "Installed Pester $(Get-Module Pester -ListAvailable | Select-Object -First 1 -ExpandProperty Version)" -ForegroundColor Green
+          Write-Host "Installed PSScriptAnalyzer $(Get-Module PSScriptAnalyzer -ListAvailable | Select-Object -First 1 -ExpandProperty Version)" -ForegroundColor Green
+      
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Write-Host "Running PSScriptAnalyzer..." -ForegroundColor Cyan
+          
+          $results = Invoke-ScriptAnalyzer -Path ./tools/lib -Settings ./.psscriptanalyzer.psd1 -Recurse -ErrorAction Continue
+          
+          if ($results) {
+            Write-Host "PSScriptAnalyzer found $($results.Count) issues:" -ForegroundColor Yellow
+            $results | Format-Table -AutoSize
+            
+            # Only fail on Error severity
+            $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+            if ($errors) {
+              Write-Error "PSScriptAnalyzer found $($errors.Count) error(s)"
+              exit 1
+            }
+            else {
+              Write-Host "No errors found, only warnings/info" -ForegroundColor Green
+            }
+          }
+          else {
+            Write-Host "PSScriptAnalyzer passed with no issues" -ForegroundColor Green
+          }
+      
+      - name: Run Unit Tests
+        shell: pwsh
+        run: |
+          Write-Host "Running comprehensive unit tests..." -ForegroundColor Cyan
+          
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests/Unit'
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath = 'test-results.xml'
+          
+          # Enable code coverage on Linux only (fastest)
+          if ($IsLinux) {
+            Write-Host "Enabling code coverage on Linux..." -ForegroundColor Cyan
+            $config.CodeCoverage.Enabled = $true
+            $config.CodeCoverage.Path = './tools/lib/*.psm1'
+            $config.CodeCoverage.OutputFormat = 'JaCoCo'
+            $config.CodeCoverage.OutputPath = 'coverage.xml'
+          }
+          
+          $result = Invoke-Pester -Configuration $config
+          
+          Write-Host ""
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host "Test Summary" -ForegroundColor Cyan
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host "Total:        $($result.TotalCount)" -ForegroundColor White
+          Write-Host "Passed:       $($result.PassedCount)" -ForegroundColor Green
+          Write-Host "Failed:       $($result.FailedCount)" -ForegroundColor $(if ($result.FailedCount -gt 0) { 'Red' } else { 'Green' })
+          Write-Host "Skipped:      $($result.SkippedCount)" -ForegroundColor Yellow
+          Write-Host "Duration:     $($result.Duration.ToString('mm\:ss\.fff'))" -ForegroundColor White
+          
+          if ($IsLinux -and $result.CodeCoverage) {
+            $coverage = $result.CodeCoverage
+            $coveragePercent = 0
+            if ($coverage.CommandsAnalyzedCount -gt 0) {
+              $coveragePercent = ($coverage.CommandsExecutedCount / $coverage.CommandsAnalyzedCount) * 100
+            }
+            Write-Host "Coverage:     $($coveragePercent.ToString('F2'))%" -ForegroundColor $(if ($coveragePercent -ge 90) { 'Green' } elseif ($coveragePercent -ge 80) { 'Yellow' } else { 'Red' })
+          }
+          Write-Host "========================================" -ForegroundColor Cyan
+          
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) test(s) failed"
+            exit 1
+          }
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: test-results.xml
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+      
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest' && always()
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: poshguard-unit-tests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Download Test Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          merge-multiple: true
+          path: test-results
+      
+      - name: Generate Summary
+        shell: pwsh
+        run: |
+          Write-Host "All tests completed across all platforms" -ForegroundColor Green
+          
+          $testFiles = Get-ChildItem -Path ./test-results -Filter *.xml -ErrorAction SilentlyContinue
+          if ($testFiles) {
+            Write-Host "Found $($testFiles.Count) test result file(s)" -ForegroundColor Cyan
+          }
