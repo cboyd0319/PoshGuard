@@ -183,7 +183,7 @@ All third-party actions are pinned by commit SHA for security and supply chain p
 
 **Note:** PowerShell is pre-installed on all GitHub-hosted runners (Windows, Linux, macOS). No setup action is required. We use a composite action (`.github/actions/setup-powershell`) for module installation and caching.
 
-Last updated: 2025-10-16 (Comprehensive workflow analysis and improvements)
+Last updated: 2025-10-16 (Fixed YAML formatting issues and added missing shell safety directives)
 
 ## Performance Optimizations
 

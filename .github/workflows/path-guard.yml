@@ -35,13 +35,13 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           $base = "origin/${{ github.base_ref || 'main' }}"
           git fetch origin "${{ github.base_ref || 'main' }}"
-          
+
           $changed = git diff --name-only "$base..." | Where-Object { $_ }
           $md_outside = $changed | Where-Object { $_ -match '\.md$' } | Where-Object { $_ -notmatch '^(docs/|README\.md$)' }
-          
+
           if ($md_outside) {
             Write-Host "❌ Markdown files outside docs/:"
             $md_outside | ForEach-Object { Write-Host $_ }
