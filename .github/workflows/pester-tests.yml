@@ -1,0 +1,128 @@
+name: Pester Tests
+
+on:
+  push:
+    branches: [ main, develop, 'copilot/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} - PowerShell ${{ matrix.pwsh }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        pwsh: ['7.4']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PowerShell ${{ matrix.pwsh }}
+        uses: PowerShell/PowerShell-For-GitHub-Actions@v1
+        with:
+          version: ${{ matrix.pwsh }}
+          
+      - name: Display PowerShell version
+        shell: pwsh
+        run: |
+          $PSVersionTable
+          Write-Host "PowerShell $($PSVersionTable.PSVersion) on $($PSVersionTable.OS)"
+          
+      - name: Install required modules
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Write-Host "Installing Pester..."
+          Install-Module -Name Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0 -SkipPublisherCheck
+          Write-Host "Installing PSScriptAnalyzer..."
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -MinimumVersion 1.24.0 -SkipPublisherCheck
+          Write-Host "Modules installed successfully"
+          Get-Module -Name Pester,PSScriptAnalyzer -ListAvailable | Format-Table Name,Version
+          
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Write-Host "Running PSScriptAnalyzer on src files..."
+          $analysisResults = Invoke-ScriptAnalyzer -Path ./tools/lib -Settings ./.psscriptanalyzer.psd1 -Recurse -Severity Error,Warning
+          if ($analysisResults) {
+            $analysisResults | Format-Table -AutoSize
+            Write-Host "::warning::PSScriptAnalyzer found $($analysisResults.Count) issue(s)"
+            # Don't fail the build on warnings for now, just report them
+          } else {
+            Write-Host "✅ No PSScriptAnalyzer issues found"
+          }
+          
+      - name: Run Pester tests with code coverage
+        shell: pwsh
+        run: |
+          Write-Host "Running Pester tests..."
+          
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          
+          # Code coverage configuration
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.Path = @(
+            './tools/lib/Core.psm1',
+            './tools/lib/Security.psm1',
+            './tools/lib/BestPractices.psm1',
+            './tools/lib/Formatting.psm1',
+            './tools/lib/Advanced.psm1'
+          )
+          $config.CodeCoverage.OutputFormat = 'JaCoCo'
+          $config.CodeCoverage.OutputPath = 'coverage.xml'
+          
+          $result = Invoke-Pester -Configuration $config
+          
+          Write-Host ""
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host "Test Summary" -ForegroundColor Cyan
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host "Total: $($result.TotalCount)" -ForegroundColor White
+          Write-Host "Passed: $($result.PassedCount)" -ForegroundColor Green
+          Write-Host "Failed: $($result.FailedCount)" -ForegroundColor Red
+          Write-Host "Skipped: $($result.SkippedCount)" -ForegroundColor Yellow
+          Write-Host "Duration: $($result.Duration)" -ForegroundColor White
+          
+          if ($result.CodeCoverage) {
+            $coverage = $result.CodeCoverage
+            $coveredPercent = if ($coverage.NumberOfCommandsExecuted -gt 0) {
+              [math]::Round(($coverage.NumberOfCommandsExecuted / $coverage.NumberOfCommandsAnalyzed) * 100, 2)
+            } else { 0 }
+            Write-Host ""
+            Write-Host "Code Coverage: $coveredPercent% ($($coverage.NumberOfCommandsExecuted)/$($coverage.NumberOfCommandsAnalyzed) commands)" -ForegroundColor Cyan
+          }
+          
+          if ($result.FailedCount -gt 0) {
+            Write-Host ""
+            Write-Host "❌ Tests failed!" -ForegroundColor Red
+            exit 1
+          }
+          
+          Write-Host ""
+          Write-Host "✅ All tests passed!" -ForegroundColor Green
+          
+      - name: Upload code coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-${{ matrix.os }}-pwsh-${{ matrix.pwsh }}
+          fail_ci_if_error: false
+          
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-pwsh-${{ matrix.pwsh }}
+          path: |
+            coverage.xml
+            TestResults.xml
+          retention-days: 30
