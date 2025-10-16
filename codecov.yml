@@ -24,17 +24,10 @@ comment:
   require_changes: false
 
 ignore:
-  - "tests/**"
-  - "tools/*.ps1"           # Ignore tool scripts but not lib/
-  - "tools/Apply-*.ps1"
-  - "tools/Create-*.ps1"
-  - "tools/Prepare-*.ps1"
-  - "tools/Restore-*.ps1"
-  - "tools/Run-*.ps1"
-  - "tools/Show-*.ps1"
-  - "tools/Start-*.ps1"
-  - "tools/analyze.py"
-  - "samples/**"
-  - "vscode-extension/**"
-  - "benchmarks/**"
-  - "docs/**"
+  - "tests/**"              # Test files (not production code)
+  - "tools/*.ps1"           # CLI utility scripts (Apply-AutoFix, Create-Release, etc.)
+  - "tools/*.py"            # Python utility scripts
+  - "samples/**"            # Example/demo scripts
+  - "vscode-extension/**"   # Separate VS Code extension project
+  - "benchmarks/**"         # Benchmark data
+  - "docs/**"               # Documentation
