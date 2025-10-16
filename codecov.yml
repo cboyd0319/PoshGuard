@@ -25,7 +25,15 @@ comment:
 
 ignore:
   - "tests/**"
-  - "tools/**"
+  - "tools/*.ps1"           # Ignore tool scripts but not lib/
+  - "tools/Apply-*.ps1"
+  - "tools/Create-*.ps1"
+  - "tools/Prepare-*.ps1"
+  - "tools/Restore-*.ps1"
+  - "tools/Run-*.ps1"
+  - "tools/Show-*.ps1"
+  - "tools/Start-*.ps1"
+  - "tools/analyze.py"
   - "samples/**"
   - "vscode-extension/**"
   - "benchmarks/**"
