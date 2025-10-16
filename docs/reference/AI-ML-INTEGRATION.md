@@ -57,7 +57,7 @@ PoshGuard v4.0.0 introduces **world-class AI/ML capabilities** for intelligent c
 
 Every fix PoshGuard applies includes a **confidence score (0.0-1.0)** calculated using machine learning techniques that analyze multiple quality factors.
 
-**Reference**: ISO/IEC 5055 | https://www.iso.org/standard/80623.html | High | Automated source code quality measures standard.
+**Reference**: ISO/IEC 5055 | <https://www.iso.org/standard/80623.html> | High | Automated source code quality measures standard.
 
 ### Scoring Algorithm
 
@@ -142,13 +142,13 @@ function Update-MLModel {
 - **Best practices** from Microsoft PowerShell docs
 - **Community knowledge** from Context7 and other MCP servers
 
-**Reference**: Model Context Protocol | https://modelcontextprotocol.io | High | Open standard for AI context management.
+**Reference**: Model Context Protocol | <https://modelcontextprotocol.io> | High | Open standard for AI context management.
 
 ### Context7 Integration
 
 Context7 is an MCP server that provides up-to-date PowerShell code examples and documentation.
 
-**Reference**: Context7 MCP Server | https://github.com/upstash/context7 | High | Live code examples and documentation access.
+**Reference**: Context7 MCP Server | <https://github.com/upstash/context7> | High | Live code examples and documentation access.
 
 #### Setup
 
@@ -409,18 +409,21 @@ function Get-CodeIntent {
 ### Use Cases
 
 1. **Smart Naming Suggestions**
+
    ```powershell
    # Detected: Function performs validation but named "Process-Data"
    # Suggestion: Rename to "Test-DataValidity" (Confidence: 0.88)
    ```
 
 2. **Intent-Based Security Analysis**
+
    ```powershell
    # Detected: Function intent is "Query" but includes mutation operations
    # Warning: Unexpected side effects in query function (Security Risk: MEDIUM)
    ```
 
 3. **Automated Documentation**
+
    ```powershell
    # Generate synopsis from intent
    .SYNOPSIS
@@ -437,6 +440,7 @@ function Get-CodeIntent {
 For organizations that cannot use cloud AI services, PoshGuard supports local language models:
 
 **Supported Models**:
+
 - **Ollama** (recommended): Free, straightforward setup
 - **llama.cpp**: Lightweight C++ implementation  
 - **GPT4All**: Desktop application with API
@@ -747,11 +751,11 @@ Reset-ConfidenceWeights
 
 ## References & Citations
 
-1. **Model Context Protocol** | https://modelcontextprotocol.io | High | Open standard for AI context management
-2. **Context7** | https://github.com/upstash/context7 | High | Live code examples MCP server
-3. **ISO/IEC 5055** | https://www.iso.org/standard/80623.html | High | Automated source code quality measures
-4. **Ollama** | https://ollama.ai | High | Local LLM platform for privacy-first AI
-5. **FastMCP** | https://github.com/Krolikov-K/FastMCP-PowerShell | Medium | PowerShell MCP client implementation
+1. **Model Context Protocol** | <https://modelcontextprotocol.io> | High | Open standard for AI context management
+2. **Context7** | <https://github.com/upstash/context7> | High | Live code examples MCP server
+3. **ISO/IEC 5055** | <https://www.iso.org/standard/80623.html> | High | Automated source code quality measures
+4. **Ollama** | <https://ollama.ai> | High | Local LLM platform for privacy-first AI
+5. **FastMCP** | <https://github.com/Krolikov-K/FastMCP-PowerShell> | Medium | PowerShell MCP client implementation
 
 ---
 

@@ -7,6 +7,7 @@ This document details the improvements made to the GitHub Actions workflows for 
 ### CI Workflow (`.github/workflows/ci.yml`)
 
 #### Issues Fixed
+
 1. **PSScriptAnalyzer Path Bug** - Original workflow tried to pass array of files to `-Path` parameter, which doesn't work
 2. **SARIF Export** - Original workflow used non-existent parameters (`-OutFile`, `-Format Sarif`, `-SaveDenyList`)
 3. **Sample File Inclusion** - Samples with intentional violations were being analyzed
@@ -18,6 +19,7 @@ This document details the improvements made to the GitHub Actions workflows for 
 #### Improvements Made
 
 **Trigger Optimization:**
+
 ```yaml
 on:
   push:
@@ -26,21 +28,25 @@ on:
   pull_request:
     paths: ['**.ps1', '**.psm1', '**.psd1', 'tests/**', 'config/**', '.github/workflows/ci.yml']
 ```
+
 - Only runs on PowerShell file changes
 - Prevents unnecessary runs on documentation-only changes
 - Reduces CI costs and execution time
 
 **Concurrency Control:**
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 ```
+
 - Cancels outdated runs when new commits are pushed
 - Saves compute resources
 - Provides faster feedback on latest code
 
 **Dependency Caching:**
+
 ```yaml
 - name: Cache PSScriptAnalyzer
   uses: actions/cache@v4
@@ -48,11 +54,13 @@ concurrency:
     path: ~\Documents\PowerShell\Modules\PSScriptAnalyzer
     key: ${{ runner.os }}-psscriptanalyzer-${{ hashFiles('**/PSScriptAnalyzerSettings.psd1') }}
 ```
+
 - Caches PSScriptAnalyzer and Pester modules
 - Reduces installation time from ~30s to ~5s on cache hit
 - Cache invalidates when settings change
 
 **Fixed Linting:**
+
 ```yaml
 - name: Run PSScriptAnalyzer
   run: |
@@ -73,12 +81,14 @@ concurrency:
       }
     }
 ```
+
 - Analyzes specific directories instead of trying to pass file array
 - Excludes sample files with intentional violations
 - Exports results as JSON artifact instead of broken SARIF export
 - Fails on Error-level violations only
 
 **Enhanced Testing:**
+
 ```yaml
 - name: Run Pester Tests
   run: |
@@ -91,17 +101,20 @@ concurrency:
     
     Invoke-Pester -Configuration $config
 ```
+
 - Uses Pester 5 configuration API
 - Exports test results as XML
 - Uploads results as artifact for review
 
 **Optimized Packaging:**
+
 ```yaml
 package:
   needs: [lint, test]
   runs-on: ubuntu-latest
   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 ```
+
 - Only runs on main branch pushes (not on PRs)
 - Saves ~2-3 minutes on PR builds
 - Prevents unnecessary artifact creation
@@ -109,6 +122,7 @@ package:
 ### Release Workflow (`.github/workflows/release.yml`)
 
 #### Issues Fixed
+
 1. **No Version Validation** - Any tag format would trigger release
 2. **No Release Notes Extraction** - Used entire CHANGELOG as release body
 3. **Missing Checksums** - No file integrity verification
@@ -117,6 +131,7 @@ package:
 #### Improvements Made
 
 **Version Validation:**
+
 ```yaml
 validate:
   runs-on: ubuntu-latest
@@ -132,22 +147,26 @@ validate:
           exit 1
         fi
 ```
+
 - Validates semantic versioning format
 - Fails fast on invalid tags
 - Prevents accidental releases
 
 **Checksums:**
+
 ```yaml
 - name: Create Release Package
   run: |
     zip -r poshguard-$VERSION.zip ...
     sha256sum poshguard-$VERSION.zip > poshguard-$VERSION.zip.sha256
 ```
+
 - Generates SHA256 checksums for verification
 - Included in release assets
 - Enables integrity validation
 
 **Release Notes Extraction:**
+
 ```yaml
 - name: Extract Release Notes
   run: |
@@ -158,16 +177,19 @@ validate:
       echo "Release v$VERSION" > release-notes.md
     fi
 ```
+
 - Extracts version-specific notes from CHANGELOG
 - Fallback to generic message if version not found
 - Creates focused, relevant release notes
 
 **Prerelease Detection:**
+
 ```yaml
 - name: Create GitHub Release
   with:
     prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
 ```
+
 - Automatically detects alpha/beta/rc versions
 - Marks as prerelease in GitHub
 - Prevents users from accidentally using unstable versions
@@ -191,6 +213,7 @@ No action required - workflows are backward compatible with existing releases.
 ### For CI/CD Integration Users
 
 If you're using the example workflows from `docs/development/ci-integration.md`:
+
 1. Update to use path filters for efficiency
 2. Add caching for faster runs
 3. Use concurrency controls to save resources
@@ -234,6 +257,7 @@ The workflow used `github.rest.checks.create()` API to create check runs. This A
 #### Improvements Made
 
 **Removed Redundant Check Creation:**
+
 ```yaml
 # REMOVED - This step is not needed and causes failures
 - name: Set Check Status
@@ -245,12 +269,14 @@ The workflow used `github.rest.checks.create()` API to create check runs. This A
 ```
 
 **Why This Fix Works:**
+
 - Workflow status is automatically reported via job success/failure
 - PR comments already provide detailed quality reports
 - Artifacts contain comprehensive analysis results
 - The explicit check creation was redundant and caused failures
 
 **Fixed YAML Syntax:**
+
 ```powershell
 # BEFORE - Caused YAML parser errors
 $report = @"
@@ -264,11 +290,13 @@ $report += "- **Total Files**: ${{ steps.analysis.outputs.total_files }}`n"
 ```
 
 **Why This Fix Was Needed:**
+
 - YAML parsers interpret `-` at start of lines as list items
 - PowerShell here-strings in `run: |` blocks can confuse YAML parsers
 - String concatenation avoids ambiguity and passes validation
 
 **Benefits:**
+
 - ✅ Workflow passes GitHub Actions validation (actionlint)
 - ✅ No more "Personal Access Tokens not supported" errors
 - ✅ Maintains all reporting functionality

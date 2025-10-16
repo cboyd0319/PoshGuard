@@ -11,16 +11,21 @@ Input Script → PSScriptAnalyzer Detection → AST Parsing → Rule Matching �
 ## Components
 
 ### Apply-AutoFix.ps1
+
 Main entry point. Orchestrates analysis, fix selection, and application.
 
 ### Core.psm1
+
 Foundation utilities: backup, logging, file operations, diff generation.
 
 ### Security.psm1
+
 8 security fixes: password handling, credential management, injection prevention.
 
 ### BestPractices.psm1
+
 28 best practice fixes organized in 6 submodules:
+
 - Syntax: positional params, verbs, reserved chars
 - Naming: singular nouns, approved verbs
 - Scoping: global vars, declared vars
@@ -29,7 +34,9 @@ Foundation utilities: backup, logging, file operations, diff generation.
 - UsagePatterns: empty catches, help messages
 
 ### Formatting.psm1
+
 11 formatting fixes organized in 6 submodules:
+
 - Whitespace: indentation, consistency, trailing spaces
 - Aliases: cmdlet aliases, global aliases
 - Casing: cmdlet/parameter casing
@@ -38,7 +45,9 @@ Foundation utilities: backup, logging, file operations, diff generation.
 - Runspaces: runspace pool management
 
 ### Advanced.psm1
+
 24 advanced fixes organized in 9 submodules:
+
 - ASTTransformations: pipeline processing, ShouldProcess
 - ParameterManagement: mandatory params, switch defaults
 - CodeAnalysis: empty members, built-in cmdlets
@@ -67,6 +76,7 @@ Foundation utilities: backup, logging, file operations, diff generation.
 ## Extension Points
 
 Add new fix by:
+
 1. Create submodule in appropriate category (`./tools/lib/{Category}/{RuleName}.psm1`)
 2. Implement `Invoke-{RuleName}Fix` function with AST parsing
 3. Import in category facade module

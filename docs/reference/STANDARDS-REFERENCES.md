@@ -30,7 +30,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 1. OWASP (Open Web Application Security Project)
 
 #### OWASP ASVS 5.0 (Application Security Verification Standard)
-- **URL**: https://owasp.org/www-project-application-security-verification-standard/
+
+- **URL**: <https://owasp.org/www-project-application-security-verification-standard/>
 - **Confidence**: High
 - **Description**: The gold standard for application security requirements with 3 verification levels
 - **PoshGuard Coverage**: 74/74 applicable controls (100% Level 1 compliance)
@@ -49,7 +50,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `OWASP ASVS V5.1.1 - Validate all input at trust boundaries`
 
 #### OWASP Top 10 2023
-- **URL**: https://owasp.org/Top10/
+
+- **URL**: <https://owasp.org/Top10/>
 - **Confidence**: High
 - **Description**: Ten most critical web application security risks
 - **PoshGuard Coverage**: Complete detection for all applicable categories
@@ -68,7 +70,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `OWASP Top 10 2023 - A03:2023-Injection`
 
 #### OWASP Proactive Controls v4
-- **URL**: https://owasp.org/www-project-proactive-controls/
+
+- **URL**: <https://owasp.org/www-project-proactive-controls/>
 - **Confidence**: High
 - **Description**: Top 10 proactive security controls for developers
 - **Key Controls**:
@@ -84,7 +87,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
   - C10: Handle All Errors and Exceptions
 
 #### OWASP SAMM (Software Assurance Maturity Model)
-- **URL**: https://owaspsamm.org/
+
+- **URL**: <https://owaspsamm.org/>
 - **Confidence**: High
 - **Description**: Framework to formulate and implement software security strategy
 - **PoshGuard Alignment**: Level 2-3 maturity in security practices
@@ -94,7 +98,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 2. CWE (Common Weakness Enumeration)
 
 #### CWE Top 25 Most Dangerous Software Weaknesses
-- **URL**: https://cwe.mitre.org/top25/
+
+- **URL**: <https://cwe.mitre.org/top25/>
 - **Confidence**: High
 - **Description**: Industry-standard list of most dangerous software weaknesses
 - **PoshGuard Detection**: 18/25 applicable to PowerShell
@@ -115,7 +120,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `CWE-78: OS Command Injection`
 
 #### CWE/SANS Top 25 Software Errors
-- **URL**: https://www.sans.org/top25-software-errors/
+
+- **URL**: <https://www.sans.org/top25-software-errors/>
 - **Confidence**: High
 - **Description**: SANS Institute's prioritization of CWE weaknesses
 - **PoshGuard Coverage**: Comprehensive detection across all categories
@@ -125,7 +131,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 3. NIST (National Institute of Standards and Technology)
 
 #### NIST Cybersecurity Framework (CSF) 2.0
-- **URL**: https://www.nist.gov/cyberframework
+
+- **URL**: <https://www.nist.gov/cyberframework>
 - **Confidence**: High
 - **Description**: Risk-based approach to managing cybersecurity risk
 - **PoshGuard Coverage**: 15/15 applicable subcategories (100%)
@@ -139,7 +146,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `NIST CSF PR.DS-1 - Data at rest is protected`
 
 #### NIST SP 800-53 Rev. 5 (Security and Privacy Controls)
-- **URL**: https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final
+
+- **URL**: <https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final>
 - **Confidence**: High
 - **Description**: Comprehensive catalog of security and privacy controls
 - **PoshGuard Alignment**: Implements controls in families:
@@ -152,7 +160,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `NIST SP 800-53 AC-3 - Access Enforcement`
 
 #### NIST SP 800-218 (Secure Software Development Framework)
-- **URL**: https://csrc.nist.gov/publications/detail/sp/800-218/final
+
+- **URL**: <https://csrc.nist.gov/publications/detail/sp/800-218/final>
 - **Confidence**: High
 - **Description**: Recommendations for integrating security into SDLC
 - **PoshGuard Alignment**: Supports all phases of SSDF
@@ -162,7 +171,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 4. CIS (Center for Internet Security)
 
 #### CIS Benchmarks for PowerShell
-- **URL**: https://www.cisecurity.org/cis-benchmarks
+
+- **URL**: <https://www.cisecurity.org/cis-benchmarks>
 - **Confidence**: High
 - **Description**: Configuration baselines for secure PowerShell usage
 - **PoshGuard Coverage**: 10/10 applicable controls (100%)
@@ -181,7 +191,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `CIS Benchmark PS-3.3 - Validate and sanitize user input`
 
 #### CIS Critical Security Controls v8
-- **URL**: https://www.cisecurity.org/controls/v8
+
+- **URL**: <https://www.cisecurity.org/controls/v8>
 - **Confidence**: High
 - **Description**: Prioritized set of actions for cyber defense
 - **PoshGuard Coverage**: Supports controls 2, 3, 16
@@ -195,7 +206,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 5. SWEBOK v4.0 (Software Engineering Body of Knowledge)
 
-- **URL**: https://www.computer.org/education/bodies-of-knowledge/software-engineering
+- **URL**: <https://www.computer.org/education/bodies-of-knowledge/software-engineering>
 - **Confidence**: High
 - **Description**: IEEE Computer Society's guide to software engineering knowledge
 - **PoshGuard Coverage**: 15/15 knowledge areas (100%)
@@ -223,7 +234,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 6. ISO/IEC Standards
 
 #### ISO/IEC 27001:2022 (Information Security Management)
-- **URL**: https://www.iso.org/standard/27001
+
+- **URL**: <https://www.iso.org/standard/27001>
 - **Confidence**: High
 - **Description**: International standard for information security management systems
 - **PoshGuard Coverage**: 18/18 Annex A controls (100%)
@@ -236,7 +248,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 - **Example**: `ISO/IEC 27001:2022 A.8.3 - Information security in development and support processes`
 
 #### ISO/IEC 5055:2021 (Software Quality Measures)
-- **URL**: https://www.iso.org/standard/80623.html
+
+- **URL**: <https://www.iso.org/standard/80623.html>
 - **Confidence**: High
 - **Description**: Automated source code quality measures
 - **PoshGuard Alignment**: Implements quality measures for reliability, security, maintainability
@@ -247,7 +260,8 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
   - Maintainability metrics
 
 #### ISO/IEC 25010:2011 (Systems and Software Quality Models)
-- **URL**: https://www.iso.org/standard/35733.html
+
+- **URL**: <https://www.iso.org/standard/35733.html>
 - **Confidence**: High
 - **Description**: Quality model for evaluating software products
 - **Quality Characteristics**:
@@ -267,20 +281,23 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 7. FIPS (Federal Information Processing Standards)
 
 #### FIPS 140-3 (Cryptographic Module Validation)
-- **URL**: https://csrc.nist.gov/publications/detail/fips/140/3/final
+
+- **URL**: <https://csrc.nist.gov/publications/detail/fips/140/3/final>
 - **Confidence**: High
 - **Description**: Security requirements for cryptographic modules
 - **PoshGuard Enforcement**: Recommends FIPS-approved algorithms
 
 #### FIPS 180-4 (Secure Hash Standard)
-- **URL**: https://csrc.nist.gov/publications/detail/fips/180/4/final
+
+- **URL**: <https://csrc.nist.gov/publications/detail/fips/180/4/final>
 - **Confidence**: High
 - **Description**: Specifications for secure hash algorithms
 - **Approved Algorithms**: SHA-224, SHA-256, SHA-384, SHA-512, SHA-512/224, SHA-512/256
 - **PoshGuard Recommendation**: SHA-256 or higher
 
 #### FIPS 197 (Advanced Encryption Standard)
-- **URL**: https://csrc.nist.gov/publications/detail/fips/197/final
+
+- **URL**: <https://csrc.nist.gov/publications/detail/fips/197/final>
 - **Confidence**: High
 - **Description**: Specification for AES encryption
 - **PoshGuard Recommendation**: AES-256 for encryption
@@ -290,17 +307,20 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 8. RFC Standards (Internet Engineering Task Force)
 
 #### RFC 2119 (Key Words for Requirements)
-- **URL**: https://www.rfc-editor.org/rfc/rfc2119
+
+- **URL**: <https://www.rfc-editor.org/rfc/rfc2119>
 - **Description**: Defines MUST, SHOULD, MAY terminology
 - **PoshGuard Usage**: Documentation and requirement specifications
 
 #### RFC 5246 (TLS 1.2)
-- **URL**: https://www.rfc-editor.org/rfc/rfc5246
+
+- **URL**: <https://www.rfc-editor.org/rfc/rfc5246>
 - **Description**: Transport Layer Security protocol version 1.2
 - **PoshGuard Recommendation**: Minimum TLS 1.2 for web requests
 
 #### RFC 8446 (TLS 1.3)
-- **URL**: https://www.rfc-editor.org/rfc/rfc8446
+
+- **URL**: <https://www.rfc-editor.org/rfc/rfc8446>
 - **Description**: Transport Layer Security protocol version 1.3
 - **PoshGuard Recommendation**: Preferred version for new implementations
 
@@ -310,7 +330,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 9. MITRE ATT&CK Framework
 
-- **URL**: https://attack.mitre.org/
+- **URL**: <https://attack.mitre.org/>
 - **Confidence**: High
 - **Description**: Knowledge base of adversary tactics and techniques
 - **PoshGuard Coverage**: 7/8 applicable PowerShell techniques (87.5%)
@@ -327,7 +347,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 10. MITRE CWE (Common Weakness Enumeration)
 
-- **URL**: https://cwe.mitre.org/
+- **URL**: <https://cwe.mitre.org/>
 - **Confidence**: High
 - **Description**: Community-developed list of software and hardware weakness types
 - **See CWE section above for details**
@@ -339,13 +359,15 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 ### 11. Cloud Security Alliance (CSA)
 
 #### CSA Cloud Controls Matrix (CCM) v4
-- **URL**: https://cloudsecurityalliance.org/research/cloud-controls-matrix/
+
+- **URL**: <https://cloudsecurityalliance.org/research/cloud-controls-matrix/>
 - **Confidence**: High
 - **Description**: Cybersecurity control framework for cloud computing
 - **PoshGuard Coverage**: Applicable controls for DevSecOps domain
 
 #### CSA Security Guidance v4.0
-- **URL**: https://cloudsecurityalliance.org/research/guidance/
+
+- **URL**: <https://cloudsecurityalliance.org/research/guidance/>
 - **Confidence**: High
 - **Description**: Best practices for secure cloud computing
 - **PoshGuard Alignment**: Implements secure development practices
@@ -354,14 +376,14 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 12. AWS Security Best Practices
 
-- **URL**: https://aws.amazon.com/security/best-practices/
+- **URL**: <https://aws.amazon.com/security/best-practices/>
 - **Confidence**: High
 - **Description**: Amazon Web Services security recommendations
 - **PoshGuard Features**: Detects AWS credential leaks, recommends secrets management
 
 ### 13. Azure Security Best Practices
 
-- **URL**: https://docs.microsoft.com/azure/security/fundamentals/best-practices-and-patterns
+- **URL**: <https://docs.microsoft.com/azure/security/fundamentals/best-practices-and-patterns>
 - **Confidence**: High
 - **Description**: Microsoft Azure security guidance
 - **PoshGuard Features**: Detects Azure Storage keys, recommends Key Vault
@@ -372,7 +394,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 14. PCI-DSS v4.0 (Payment Card Industry Data Security Standard)
 
-- **URL**: https://www.pcisecuritystandards.org/
+- **URL**: <https://www.pcisecuritystandards.org/>
 - **Confidence**: High
 - **Description**: Security standards for organizations handling credit cards
 - **PoshGuard Coverage**: 7/9 applicable requirements (77.8%)
@@ -390,7 +412,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 15. HIPAA Security Rule
 
-- **URL**: https://www.hhs.gov/hipaa/for-professionals/security/
+- **URL**: <https://www.hhs.gov/hipaa/for-professionals/security/>
 - **Confidence**: High
 - **Description**: Standards for protecting health information
 - **PoshGuard Coverage**: 6/8 applicable standards (75%)
@@ -408,7 +430,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 16. SOC 2 Type II (Service Organization Control)
 
-- **URL**: https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report
+- **URL**: <https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report>
 - **Confidence**: High
 - **Description**: Audit framework for service organizations
 - **PoshGuard Coverage**: 10/10 trust service criteria (100%)
@@ -427,7 +449,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 17. Google SRE (Site Reliability Engineering)
 
-- **URL**: https://sre.google/
+- **URL**: <https://sre.google/>
 - **Confidence**: Medium
 - **Description**: Google's approach to production system reliability
 - **PoshGuard Alignment**: Implements SRE principles
@@ -450,7 +472,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 18. MITRE Systems Engineering Guide
 
-- **URL**: https://www.mitre.org/publications/systems-engineering-guide
+- **URL**: <https://www.mitre.org/publications/systems-engineering-guide>
 - **Confidence**: Medium
 - **Description**: Comprehensive guide to systems engineering practices
 - **PoshGuard Alignment**: Follows systems thinking and lifecycle best practices
@@ -460,7 +482,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 19. Fielding's REST Dissertation
 
-- **URL**: https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+- **URL**: <https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm>
 - **Confidence**: High
 - **Description**: Architectural Styles and the Design of Network-based Software Architectures
 - **Key Concepts**: REST constraints, uniform interface, statelessness, cacheability
@@ -470,7 +492,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 20. Apigee Web API Design
 
-- **URL**: https://pages.apigee.com/rs/apigee/images/api-design-ebook-2012-03.pdf
+- **URL**: <https://pages.apigee.com/rs/apigee/images/api-design-ebook-2012-03.pdf>
 - **Confidence**: Medium
 - **Description**: Pragmatic REST API design guide
 - **Key Practices**: Resource-oriented design, nouns not verbs, pagination, versioning
@@ -482,30 +504,33 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 21. PSScriptAnalyzer
 
-- **URL**: https://github.com/PowerShell/PSScriptAnalyzer
+- **URL**: <https://github.com/PowerShell/PSScriptAnalyzer>
 - **Confidence**: High
 - **Description**: Microsoft's official PowerShell static analysis tool
 - **PoshGuard Relationship**: Implements 100% of general-purpose PSSA rules (60/60)
-- **Rules Documentation**: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules
+- **Rules Documentation**: <https://github.com/PowerShell/PSScriptAnalyzer/tree/main/docs/Rules>
 
 ---
 
 ### 22. PowerShell Best Practices
 
 #### PowerShell Practice and Style Guide
-- **URL**: https://poshcode.gitbook.io/powershell-practice-and-style/
+
+- **URL**: <https://poshcode.gitbook.io/powershell-practice-and-style/>
 - **Confidence**: High
 - **Description**: Community-driven PowerShell style guide
 - **PoshGuard Alignment**: Enforces style guide recommendations
 
 #### PowerShell Approved Verbs
-- **URL**: https://docs.microsoft.com/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands
+
+- **URL**: <https://docs.microsoft.com/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands>
 - **Confidence**: High
 - **Description**: Official list of approved PowerShell cmdlet verbs
 - **PoshGuard Rule**: PSUseApprovedVerbs
 
 #### PowerShell Security Best Practices
-- **URL**: https://docs.microsoft.com/powershell/scripting/security/overview
+
+- **URL**: <https://docs.microsoft.com/powershell/scripting/security/overview>
 - **Confidence**: High
 - **Description**: Microsoft's official PowerShell security guidance
 - **Key Topics**:
@@ -519,7 +544,7 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 
 ### 23. Model Context Protocol (MCP)
 
-- **URL**: https://modelcontextprotocol.io/
+- **URL**: <https://modelcontextprotocol.io/>
 - **Confidence**: Medium
 - **Description**: Protocol for AI model context integration
 - **PoshGuard Features**: Optional MCP integration for enhanced code examples and best practices
@@ -534,11 +559,13 @@ This document provides **THE MOST COMPLETE** collection of security, quality, an
 **Format**: `{Standard} {Version/Control} | {URL} | {Confidence Level} | {Brief Description}`
 
 **Example**:
+
 ```
 OWASP ASVS 5.0 V5.1.1 | https://owasp.org/ASVS | High | Validate all input at trust boundaries
 ```
 
 **Confidence Levels**:
+
 - **High**: Official specifications, primary sources, widely adopted standards
 - **Medium**: Reputable community sources, industry best practices
 - **Low**: Experimental, emerging standards, limited adoption
@@ -558,18 +585,21 @@ PoshGuard maintains alignment with the latest versions of all referenced standar
 ## Additional Resources
 
 ### Training and Certification
+
 - OWASP Application Security Verification Standard (ASVS) Training
 - NIST Cybersecurity Framework Implementation
 - ISO/IEC 27001 Lead Implementer
 - CIS Controls Assessment
 
 ### Tools and Resources
+
 - OWASP ZAP (Zed Attack Proxy)
 - NIST National Vulnerability Database (NVD)
 - MITRE ATT&CK Navigator
 - CWE/SANS Top 25 Software Errors List
 
 ### Communities
+
 - OWASP Chapter Meetings
 - PowerShell.org Community
 - Microsoft PowerShell GitHub

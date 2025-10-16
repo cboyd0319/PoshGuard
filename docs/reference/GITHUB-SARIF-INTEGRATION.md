@@ -328,6 +328,7 @@ on:
 **Cause**: Missing `security-events: write` permission
 
 **Solution**: Add to workflow:
+
 ```yaml
 permissions:
   security-events: write
@@ -338,6 +339,7 @@ permissions:
 **Cause**: Empty or malformed SARIF file
 
 **Solution**: Verify SARIF structure:
+
 ```powershell
 Get-Content results.sarif | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
@@ -345,6 +347,7 @@ Get-Content results.sarif | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ### Issue: "Results not showing in Security tab"
 
 **Possible causes**:
+
 1. Workflow didn't complete successfully
 2. SARIF file is empty
 3. Results are filtered out by GitHub
@@ -354,6 +357,7 @@ Get-Content results.sarif | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ### Issue: ConvertToSARIF module not found
 
 **Solution**: Install the module:
+
 ```powershell
 Install-Module ConvertToSARIF -Force -AcceptLicense
 ```
@@ -422,5 +426,6 @@ Once SARIF is uploaded, you get:
 ## Support
 
 For issues or questions:
+
 - [GitHub Issues](https://github.com/cboyd0319/PoshGuard/issues)
 - [Discussions](https://github.com/cboyd0319/PoshGuard/discussions)

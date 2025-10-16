@@ -96,12 +96,12 @@ Select these when publishing:
 
 | Link Type | URL |
 |-----------|-----|
-| Project Home | https://github.com/cboyd0319/PoshGuard |
-| License | https://github.com/cboyd0319/PoshGuard/blob/main/LICENSE |
-| Icon | https://raw.githubusercontent.com/cboyd0319/PoshGuard/main/.github/social-preview.png |
-| Release Notes | https://github.com/cboyd0319/PoshGuard/blob/main/CHANGELOG.md |
-| Documentation | https://github.com/cboyd0319/PoshGuard/blob/main/README.md |
-| Issues | https://github.com/cboyd0319/PoshGuard/issues |
+| Project Home | <https://github.com/cboyd0319/PoshGuard> |
+| License | <https://github.com/cboyd0319/PoshGuard/blob/main/LICENSE> |
+| Icon | <https://raw.githubusercontent.com/cboyd0319/PoshGuard/main/.github/social-preview.png> |
+| Release Notes | <https://github.com/cboyd0319/PoshGuard/blob/main/CHANGELOG.md> |
+| Documentation | <https://github.com/cboyd0319/PoshGuard/blob/main/README.md> |
+| Issues | <https://github.com/cboyd0319/PoshGuard/issues> |
 
 ## Publishing Commands
 
@@ -167,13 +167,14 @@ Invoke-PoshGuard -Path ./samples/before-security-issues.ps1 -DryRun
 
 **Last Updated**: 2025-10-11
 
-**Project Site**: https://github.com/cboyd0319/PoshGuard
+**Project Site**: <https://github.com/cboyd0319/PoshGuard>
 
 **License**: MIT
 
 **Tags**: security, formatter, linting, powershell, powershell-module, static-analysis, ast, code-quality, code-refactoring, security-hardening, pester, psscriptanalyzer, auto-fix
 
 **Commands**:
+
 - Invoke-PoshGuard
 - Invoke-AutoFix
 - Restore-PoshGuardBackup
@@ -185,18 +186,23 @@ Invoke-PoshGuard -Path ./samples/before-security-issues.ps1 -DryRun
 ## Common Publishing Issues
 
 ### Issue: "Module already exists"
+
 **Solution**: Increment version in PoshGuard.psd1
 
 ### Issue: "Invalid manifest"
+
 **Solution**: Run `Test-ModuleManifest ./PoshGuard.psd1` and fix errors
 
 ### Issue: "Missing required functions"
+
 **Solution**: Ensure FunctionsToExport lists all public functions
 
 ### Issue: "Icon URL not accessible"
+
 **Solution**: Use raw.githubusercontent.com URL, not regular GitHub URL
 
 ### Issue: "Tags not appearing"
+
 **Solution**: Tags must be in PrivateData.PSData.Tags array
 
 ## Post-Publication Checklist

@@ -11,12 +11,14 @@ Each PSScriptAnalyzer rule maps to a specific AST transformation pattern. Here's
 **Rule**: Replace PowerShell aliases with full cmdlet names for clarity and compatibility.
 
 **AST Pattern Detection**:
+
 ```powershell
 # Input code
 $files = gci C:\Temp | ? { $_.Length -gt 1MB }
 ```
 
 **AST Structure**:
+
 ```
 PipelineAst
 ├── CommandAst: "gci" (alias detected)
@@ -26,6 +28,7 @@ PipelineAst
 ```
 
 **Transformation Logic**:
+
 1. Parse script into AST using `[System.Management.Automation.Language.Parser]::ParseFile()`
 2. Invoke PSScriptAnalyzer to find alias violations
 3. For each violation, locate the CommandAst node
@@ -34,12 +37,14 @@ PipelineAst
 6. Preserve all parameters and pipeline structure
 
 **Output Code**:
+
 ```powershell
 # Fixed code
 $files = Get-ChildItem C:\Temp | Where-Object { $_.Length -gt 1MB }
 ```
 
 **Before/After Diff**:
+
 ```diff
 --- before
 +++ after
@@ -55,6 +60,7 @@ $files = Get-ChildItem C:\Temp | Where-Object { $_.Length -gt 1MB }
 **Rule**: Replace plain text password parameters with SecureString type.
 
 **AST Pattern Detection**:
+
 ```powershell
 # Input code
 function Connect-Server {
@@ -66,6 +72,7 @@ function Connect-Server {
 ```
 
 **AST Structure**:
+
 ```
 FunctionDefinitionAst: "Connect-Server"
 └── ParamBlockAst
@@ -76,6 +83,7 @@ FunctionDefinitionAst: "Connect-Server"
 ```
 
 **Transformation Logic**:
+
 1. Detect parameter with name matching `*Password*`, `*Pwd*`, `*Pass*`
 2. Check if type is `[string]` (plain text)
 3. Replace TypeConstraintAst with `[SecureString]`
@@ -83,6 +91,7 @@ FunctionDefinitionAst: "Connect-Server"
 5. Add comment indicating the security improvement
 
 **Output Code**:
+
 ```powershell
 # Fixed code
 function Connect-Server {
@@ -94,6 +103,7 @@ function Connect-Server {
 ```
 
 **Before/After Diff**:
+
 ```diff
 --- before
 +++ after
@@ -114,6 +124,7 @@ function Connect-Server {
 **Rule**: Add error handling to empty catch blocks.
 
 **AST Pattern Detection**:
+
 ```powershell
 # Input code
 try {
@@ -124,6 +135,7 @@ catch {
 ```
 
 **AST Structure**:
+
 ```
 TryStatementAst
 ├── StatementBlockAst (try body)
@@ -133,6 +145,7 @@ TryStatementAst
 ```
 
 **Transformation Logic**:
+
 1. Find TryStatementAst nodes
 2. Iterate through CatchClauseAst children
 3. Check if StatementBlockAst.Statements.Count == 0
@@ -142,6 +155,7 @@ TryStatementAst
 5. Preserve catch type constraints if specified
 
 **Output Code**:
+
 ```powershell
 # Fixed code
 try {
@@ -153,6 +167,7 @@ catch {
 ```
 
 **Before/After Diff**:
+
 ```diff
 --- before
 +++ after
@@ -211,6 +226,7 @@ Every fix follows this pipeline:
 PoshGuard includes utilities for common AST operations:
 
 ### Find Nodes by Type
+
 ```powershell
 function Find-AstNode {
     param(
@@ -225,6 +241,7 @@ $commandNodes = Find-AstNode -Ast $scriptAst -NodeType ([CommandAst])
 ```
 
 ### Get Node Context
+
 ```powershell
 function Get-NodeContext {
     param([Ast]$Node)
@@ -238,6 +255,7 @@ function Get-NodeContext {
 ```
 
 ### Replace Node Text
+
 ```powershell
 function Update-NodeText {
     param(
@@ -272,6 +290,7 @@ PoshGuard ensures safe transformations through:
 | Validation | O(n) | 50-200ms |
 
 Where:
+
 - `n` = lines of code in script
 - `m` = number of violations detected
 
@@ -288,6 +307,7 @@ To add a new rule fix:
 5. **Update coverage** in README.md
 
 Example template:
+
 ```powershell
 function Fix-CustomRule {
     param(

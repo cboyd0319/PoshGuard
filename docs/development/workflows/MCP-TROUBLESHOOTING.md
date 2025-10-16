@@ -73,6 +73,7 @@ For permanent setup, add to your shell profile:
 **GitHub Actions/CI:**
 
 Set as repository secrets in GitHub Settings → Secrets and variables → Actions:
+
 - `COPILOT_MCP_CONTEXT7_API_KEY`
 - `COPILOT_MCP_OPENAI_API_KEY`
 
@@ -239,6 +240,7 @@ Invoke-RestMethod -Uri "https://api.openai.com/v1/usage" -Headers @{
 **Issue:** API key invalid or expired
 
 **Solution:**
+
 1. Get a new API key from [context7.com](https://context7.com)
 2. Update environment variable: `$env:COPILOT_MCP_CONTEXT7_API_KEY = "new-key"`
 3. Restart VS Code
@@ -248,6 +250,7 @@ Invoke-RestMethod -Uri "https://api.openai.com/v1/usage" -Headers @{
 **Issue:** uvx command hangs or fails
 
 **Solution:**
+
 1. Update uv: `pip install --upgrade uv`
 2. Clear uv cache: `uv cache clean`
 3. Test manually: `uvx openai-websearch-mcp --version`
@@ -255,6 +258,7 @@ Invoke-RestMethod -Uri "https://api.openai.com/v1/usage" -Headers @{
 **Issue:** OpenAI API errors
 
 **Solution:**
+
 1. Verify API key: Check it's a valid OpenAI API key starting with `sk-`
 2. Check billing: Ensure your OpenAI account has credits
 3. Test API directly:
@@ -270,6 +274,7 @@ Invoke-RestMethod -Uri "https://api.openai.com/v1/models" -Headers @{
 **Issue:** npx fails to install or run mcp-fetch-server
 
 **Solution:**
+
 1. Clear npm cache: `npm cache clean --force`
 2. Update npm: `npm install -g npm@latest`
 3. Test manually: `npx -y mcp-fetch-server@latest --version`
@@ -279,6 +284,7 @@ Invoke-RestMethod -Uri "https://api.openai.com/v1/models" -Headers @{
 **Issue:** Browser automation fails
 
 **Solution:**
+
 1. Install browser binaries: `npx playwright install`
 2. Install system dependencies: `npx playwright install-deps`
 3. Test manually:
@@ -338,6 +344,7 @@ env | grep COPILOT_MCP
 If you're still experiencing issues:
 
 1. **Run the diagnostic script:**
+
    ```powershell
    pwsh -File .github/scripts/Test-MCPConfiguration.ps1 -Verbose > mcp-diagnostics.txt
    ```

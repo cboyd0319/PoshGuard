@@ -10,4 +10,4 @@ VS Code extension for PoshGuard - The world's best PowerShell code quality tool.
 - Security scanning
 - Quality metrics
 
-See full documentation at: https://github.com/cboyd0319/PoshGuard
+See full documentation at: <https://github.com/cboyd0319/PoshGuard>

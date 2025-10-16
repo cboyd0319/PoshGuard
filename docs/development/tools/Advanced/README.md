@@ -20,14 +20,17 @@ Advanced/
 ## Submodules
 
 ### 1. ASTTransformations.psm1
+
 **Purpose:** Complex AST-based code transformations requiring deep parsing
 
 **Functions:**
+
 - `Invoke-WmiToCimFix` - Converts deprecated WMI cmdlets to CIM cmdlets
 - `Invoke-BrokenHashAlgorithmFix` - Replaces MD5/SHA1 with SHA256
 - `Invoke-LongLinesFix` - Wraps long lines intelligently
 
 **Use Cases:**
+
 - Modernizing legacy PowerShell code
 - Security compliance (replacing weak cryptography)
 - Code readability improvements
@@ -35,15 +38,18 @@ Advanced/
 ---
 
 ### 2. AttributeManagement.psm1
+
 **Purpose:** Manages PowerShell function attributes and decorators
 
 **Functions:**
+
 - `Invoke-SupportsShouldProcessFix` - Adds SupportsShouldProcess to CmdletBinding
 - `Invoke-ShouldProcessForStateChangingFix` - Detects state-changing functions
 - `Invoke-CmdletCorrectlyFix` - Adds [CmdletBinding()] where needed
 - `Invoke-ProcessBlockForPipelineFix` - Adds process{} for pipeline functions
 
 **Use Cases:**
+
 - PowerShell advanced function compliance
 - WhatIf/Confirm support
 - Pipeline processing correctness
@@ -51,15 +57,18 @@ Advanced/
 ---
 
 ### 3. ParameterManagement.psm1
+
 **Purpose:** Parameter validation, typing, and cleanup
 
 **Functions:**
+
 - `Invoke-ReservedParamsFix` - Renames reserved parameter names
 - `Invoke-SwitchParameterDefaultFix` - Removes switch parameter defaults
 - `Invoke-UnusedParameterFix` - Comments out unused parameters
 - `Invoke-NullHelpMessageFix` - Fixes empty HelpMessage attributes
 
 **Use Cases:**
+
 - Parameter naming conflicts
 - Dead code removal
 - Parameter validation
@@ -67,14 +76,17 @@ Advanced/
 ---
 
 ### 4. CodeAnalysis.psm1
+
 **Purpose:** Code safety analysis and improvements
 
 **Functions:**
+
 - `Invoke-SafetyFix` - Adds -ErrorAction Stop to I/O cmdlets
 - `Invoke-DuplicateLineFix` - Removes duplicate consecutive lines
 - `Invoke-CmdletParameterFix` - Fixes Write-Output → Write-Host for colors
 
 **Use Cases:**
+
 - Error handling improvements
 - Code deduplication
 - Runtime error prevention
@@ -82,13 +94,16 @@ Advanced/
 ---
 
 ### 5. Documentation.psm1
+
 **Purpose:** Generate and improve PowerShell documentation
 
 **Functions:**
+
 - `Invoke-CommentHelpFix` - Adds comment-based help templates
 - `Invoke-OutputTypeCorrectlyFix` - Suggests [OutputType()] attributes
 
 **Use Cases:**
+
 - Get-Help compliance
 - IntelliSense improvements
 - Type inference support
@@ -98,6 +113,7 @@ Advanced/
 ## Usage
 
 ### Direct Submodule Import
+
 ```powershell
 # Import specific submodule
 Import-Module ./tools/lib/Advanced/ASTTransformations.psm1
@@ -108,6 +124,7 @@ $fixed = Invoke-WmiToCimFix -Content $code
 ```
 
 ### Facade Module Import (Recommended)
+
 ```powershell
 # Import all Advanced modules via facade
 Import-Module ./tools/lib/Advanced.psm1
@@ -134,18 +151,21 @@ Get-Command -Module Advanced
 ## Migration Guide
 
 ### Before (Monolithic)
+
 ```powershell
 Import-Module ./tools/lib/Advanced.psm1
 Invoke-WmiToCimFix -Content $code
 ```
 
 ### After (Same - Backward Compatible)
+
 ```powershell
 Import-Module ./tools/lib/Advanced.psm1
 Invoke-WmiToCimFix -Content $code
 ```
 
 ### After (Optimized - Selective Loading)
+
 ```powershell
 Import-Module ./tools/lib/Advanced/ASTTransformations.psm1
 Invoke-WmiToCimFix -Content $code
@@ -154,6 +174,7 @@ Invoke-WmiToCimFix -Content $code
 ## Testing
 
 All modules have been validated:
+
 - ✅ Module loading (no errors)
 - ✅ Function exports (all 16 functions)
 - ✅ Function execution (WmiToCim, Safety, DuplicateLine)
@@ -169,6 +190,7 @@ All modules have been validated:
 ## Contributing
 
 When adding new Advanced functions:
+
 1. Determine which submodule fits best (functional cohesion)
 2. If no fit, consider creating new submodule
 3. Update facade module's `$FunctionsToExport` array

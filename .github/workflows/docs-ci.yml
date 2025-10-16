@@ -81,7 +81,7 @@ jobs:
         with:
           args: >-
             --no-progress --exclude-file .lycheeignore --accept 200,206,403,429
-            --retry-wait-time 2 --max-concurrency 10 --timeout 20s
+            --retry-wait-time 2 --max-concurrency 10 --timeout 20
             **/*.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,21 +117,21 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "🔍 Validating PowerShell scripts referenced in documentation..."
-          
+
           $scriptsFound = 0
           $scriptsValid = 0
           $scriptsInvalid = 0
-          
+
           # Check tools directory scripts
           Get-ChildItem -Path "tools" -Filter "*.ps1" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
               $scriptsFound++
               Write-Host "Checking: $($_.FullName)"
-              
+
               $errors = $null
               $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $_.FullName -Raw), [ref]$errors)
-              
+
               if ($errors.Count -eq 0) {
                   $scriptsValid++
                   Write-Host "  ✓ Valid syntax" -ForegroundColor Green
@@ -141,33 +141,33 @@ jobs:
                   $errors | ForEach-Object { Write-Host "    - $($_.Message)" -ForegroundColor Red }
               }
           }
-          
+
           Write-Host ""
           Write-Host "📊 Validation Summary:"
           Write-Host "  Total scripts: $scriptsFound"
           Write-Host "  Valid: $scriptsValid"
           Write-Host "  Invalid: $scriptsInvalid"
-          
+
           if ($scriptsInvalid -gt 0) {
               Write-Host "❌ Some scripts have syntax errors" -ForegroundColor Red
               exit 1
           }
-          
+
           Write-Host "✓ All PowerShell scripts have valid syntax" -ForegroundColor Green
 
       - name: Validate PoshGuard module syntax
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          
+
           Write-Host "🔍 Validating PoshGuard module files..."
-          
+
           Get-ChildItem -Path "PoshGuard" -Filter "*.ps*1" -Recurse | ForEach-Object {
               Write-Host "Checking: $($_.Name)"
-              
+
               $errors = $null
               $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $_.FullName -Raw), [ref]$errors)
-              
+
               if ($errors.Count -gt 0) {
                   Write-Host "  ✗ Syntax errors found:" -ForegroundColor Red
                   $errors | ForEach-Object { Write-Host "    - $($_.Message)" -ForegroundColor Red }
@@ -176,6 +176,5 @@ jobs:
                   Write-Host "  ✓ Valid" -ForegroundColor Green
               }
           }
-          
-          Write-Host "✓ All PoshGuard module files have valid syntax" -ForegroundColor Green
 
+          Write-Host "✓ All PoshGuard module files have valid syntax" -ForegroundColor Green

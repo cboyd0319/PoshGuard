@@ -11,6 +11,7 @@ PoshGuard now supports exporting code analysis results in SARIF (Static Analysis
 **File**: `.github/workflows/code-scanning.yml`
 
 A comprehensive workflow that:
+
 - Runs PSScriptAnalyzer on all PowerShell files
 - Converts results to SARIF format
 - Uploads to GitHub Security tab
@@ -19,6 +20,7 @@ A comprehensive workflow that:
 - Caches modules for performance
 
 **Key Features**:
+
 - Proper permissions (`security-events: write`)
 - Path-based filtering (only runs on PowerShell changes)
 - Concurrency controls
@@ -29,16 +31,19 @@ A comprehensive workflow that:
 **File**: `tools/Apply-AutoFix.ps1`
 
 Added parameters:
+
 - `-ExportSarif`: Enable SARIF export
 - `-SarifOutputPath`: Specify output file (default: `./poshguard-results.sarif`)
 
 **Features**:
+
 - Automatic ConvertToSARIF module import
 - Collects PSScriptAnalyzer violations
 - Creates valid SARIF 2.1.0 format files
 - Handles empty results gracefully
 
 **Example**:
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path ./src -DryRun -ExportSarif
 ```
@@ -48,10 +53,12 @@ Added parameters:
 **File**: `PoshGuard/PoshGuard.psm1`
 
 Updated `Invoke-PoshGuard` function with same parameters:
+
 - `-ExportSarif`
 - `-SarifOutputPath`
 
 **Example**:
+
 ```powershell
 Invoke-PoshGuard -Path ./src -DryRun -ExportSarif
 ```
@@ -61,6 +68,7 @@ Invoke-PoshGuard -Path ./src -DryRun -ExportSarif
 Created comprehensive documentation:
 
 **Main Guide**: `docs/reference/GITHUB-SARIF-INTEGRATION.md` (11KB)
+
 - What is SARIF
 - Quick start guide
 - Complete workflow examples
@@ -71,27 +79,32 @@ Created comprehensive documentation:
 - Best practices
 
 **Workflow Documentation**: `.github/workflows/README.md` (6KB)
+
 - Overview of all workflows
 - Usage instructions
 - Local testing guide
 - Troubleshooting section
 
 **CI Integration**: `docs/development/ci-integration.md` (Updated)
+
 - Added SARIF section
 - Example workflow
 - Reference to full guide
 
 **Example Workflow**: `docs/examples/github-code-scanning-workflow.yml`
+
 - Minimal copy-paste example
 - Fully commented
 - Ready to use
 
 **README**: `README.md` (Updated)
+
 - Added SARIF to feature list v4.3.0
 
 ### 5. Configuration
 
 **File**: `.gitignore` (Updated)
+
 - Added SARIF output file patterns
 - Prevents committing generated SARIF files
 
@@ -100,6 +113,7 @@ Created comprehensive documentation:
 ### SARIF Format
 
 PoshGuard generates SARIF 2.1.0 format files that include:
+
 - Schema reference: `https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json`
 - Tool information (PSScriptAnalyzer)
 - Rule definitions with help URIs
@@ -112,6 +126,7 @@ PoshGuard generates SARIF 2.1.0 format files that include:
 ### Dependencies
 
 Required modules:
+
 1. **PSScriptAnalyzer** (≥1.21.0): Code analysis engine
 2. **ConvertToSARIF** (1.0.0): SARIF format converter
 
@@ -202,6 +217,7 @@ Both are installed automatically in the workflow.
 ### GitHub Security Tab
 
 Once the workflow runs:
+
 1. **Security Tab**: Navigate to repository → Security
 2. **Code Scanning**: Click "Code scanning alerts"
 3. **View Alerts**: See all findings organized by severity
@@ -211,6 +227,7 @@ Once the workflow runs:
 ### Pull Request Integration
 
 For PRs with new issues:
+
 - Automatic PR comments
 - Inline code annotations
 - Links to rule documentation
@@ -219,6 +236,7 @@ For PRs with new issues:
 ### Scheduled Scans
 
 Weekly scans (Sundays 6 AM UTC):
+
 - Catch new vulnerabilities
 - Track code quality trends
 - No manual intervention needed
@@ -252,6 +270,7 @@ Weekly scans (Sundays 6 AM UTC):
 ## Usage Statistics
 
 From testing:
+
 - **SARIF File Size**: 1-3 KB typical
 - **Generation Time**: < 5 seconds for small projects
 - **Workflow Duration**: 2-4 minutes typical (cached)
@@ -268,11 +287,13 @@ From testing:
 ## Migration Path
 
 For existing users:
+
 1. Pull latest changes
 2. Workflow runs automatically (no config needed)
 3. Optional: Use `-ExportSarif` locally for CI/CD integration
 
 For new users:
+
 1. Copy `docs/examples/github-code-scanning-workflow.yml` to `.github/workflows/`
 2. Push to repository
 3. Check Security tab after workflow runs
@@ -280,17 +301,20 @@ For new users:
 ## Support & Resources
 
 ### Documentation
+
 - [Full SARIF Guide](./GITHUB-SARIF-INTEGRATION.md)
 - [Workflow Documentation](../.github/workflows/README.md)
 - [CI Integration Guide](./ci-integration.md)
 - [Example Workflow](./examples/github-code-scanning-workflow.yml)
 
 ### External Resources
+
 - [SARIF Specification](https://docs.oasis-open.org/sarif/sarif/v2.1.0/)
 - [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning)
 - [ConvertToSARIF Module](https://github.com/microsoft/ConvertTo-SARIF)
 
 ### Getting Help
+
 - [GitHub Issues](https://github.com/cboyd0319/PoshGuard/issues)
 - [Discussions](https://github.com/cboyd0319/PoshGuard/discussions)
 

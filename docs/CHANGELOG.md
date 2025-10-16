@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial release of PoshGuard
 
 ## [4.3.0] - 2025-10-13
 
 ### Added
+
 - Comprehensive standardization across repositories
 - Inclusive terminology throughout
 - Modern build configurations

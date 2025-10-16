@@ -3,6 +3,7 @@
 Long-form, deep-dive documentation lives here. The root `docs/` stays lean; guides and quick starts link into this section.
 
 Contents:
+
 - MODULE_METADATA.md — Module metadata and exports
 - STANDARDS-REFERENCES.md — Standards mapping and citations
 - SECURITY-FRAMEWORK.md — Security model and secret detection

@@ -3,6 +3,7 @@
 ## v3.1.0 - Beyond PSSA (Q4 2025)
 
 Community-requested rules:
+
 - TODO/FIXME detection
 - Unused namespace detection
 - ASCII character warnings

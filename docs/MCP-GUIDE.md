@@ -115,12 +115,14 @@ Disable-MCPIntegration
 **What it does:** Pulls version-specific, accurate documentation from library sources. No more "that method doesn't exist" surprises.
 
 **Setup:**
+
 ```powershell
 # Get API key from https://context7.com
 $env:COPILOT_MCP_CONTEXT7_API_KEY = "your-key"
 ```
 
 **Use case:**
+
 ```
 @workspace Use Context7 to get the latest PSScriptAnalyzer rule documentation
 ```
@@ -130,6 +132,7 @@ $env:COPILOT_MCP_CONTEXT7_API_KEY = "your-key"
 **What it does:** Searches the web using OpenAI's search capabilities. Gets you current information, not training data from 2023.
 
 **Setup:**
+
 ```powershell
 # Requires OpenAI API key
 $env:COPILOT_MCP_OPENAI_API_KEY = "sk-..."
@@ -139,6 +142,7 @@ uvx --version
 ```
 
 **Use case:**
+
 ```
 @workspace Search for recent PowerShell 7.4 breaking changes
 ```
@@ -148,12 +152,14 @@ uvx --version
 **What it does:** Retrieves web content and makes it available to Copilot. Useful for analyzing real-world examples.
 
 **Setup:**
+
 ```bash
 # No setup needed - uses npx to run on demand
 npx -y mcp-fetch-server@latest
 ```
 
 **Use case:**
+
 ```
 @workspace Fetch https://github.com/PowerShell/PSScriptAnalyzer and summarize their coding patterns
 ```
@@ -163,12 +169,14 @@ npx -y mcp-fetch-server@latest
 **What it does:** Automates browser interactions. Great for testing web-based tools or scraping structured data.
 
 **Setup:**
+
 ```bash
 # No setup needed - uses npx to run on demand
 npx -y @playwright/mcp@latest
 ```
 
 **Use case:**
+
 ```
 @workspace Use Playwright to test if our HTML report renders correctly in Chrome
 ```
@@ -188,12 +196,14 @@ pwsh -File .github/scripts/Test-MCPConfiguration.ps1
 ### MCP not working in Copilot
 
 **Check:**
+
 1. GitHub Copilot extension enabled? (Look at VS Code status bar)
 2. Environment variables set? (Restart VS Code after setting)
 3. Node.js installed? (`node --version`)
 4. Python/uvx installed? (`uvx --version`)
 
 **Fix:**
+
 ```powershell
 # Verify environment variables are set
 Get-ChildItem Env: | Where-Object Name -like "COPILOT_MCP_*"
@@ -215,6 +225,7 @@ Get-ChildItem Env: | Where-Object Name -like "COPILOT_MCP_*"
 The GitHub MCP server is not needed in `.github/copilot-mcp.json`. GitHub Copilot has built-in GitHub integration that works automatically. Simply remove the `github` server entry from your configuration.
 
 **Correct configuration:**
+
 ```json
 {
   "mcpServers": {
@@ -227,6 +238,7 @@ The GitHub MCP server is not needed in `.github/copilot-mcp.json`. GitHub Copilo
 ```
 
 **Do not include:**
+
 ```json
 {
   "github": {
@@ -244,6 +256,7 @@ For more details, see [.github/MCP-TROUBLESHOOTING.md](../.github/MCP-TROUBLESHO
 ### MCP servers not working in PoshGuard
 
 **Check:**
+
 ```powershell
 # Verify MCP is enabled
 Get-MCPStatus
@@ -256,6 +269,7 @@ Get-Content ./config/poshguard.json | Select-String "consent_given"
 ```
 
 **Fix:**
+
 ```powershell
 # Re-enable with consent
 Enable-MCPIntegration -ServerType All -ConsentGiven -Force
@@ -269,6 +283,7 @@ Invoke-WebRequest -Uri "https://api.context7.com/health" -Method GET
 **Fix:**
 
 **Windows:**
+
 ```powershell
 # Install Node.js
 winget install OpenJS.NodeJS.LTS
@@ -281,6 +296,7 @@ pip install uvx
 ```
 
 **macOS:**
+
 ```bash
 # Install Node.js
 brew install node
@@ -293,6 +309,7 @@ pip3 install uvx
 ```
 
 **Linux:**
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install nodejs npm python3 python3-pip
@@ -321,6 +338,7 @@ pip3 install uvx
 3. **Get inline suggestions:**
 
 Type a comment describing what you want, and Copilot suggests code:
+
 ```powershell
 # Create a function that replaces aliases with full cmdlet names using AST
 ```
@@ -400,6 +418,7 @@ Disable-MCPIntegration
 ```
 
 Or edit `config/poshguard.json`:
+
 ```json
 {
   "mcp": {

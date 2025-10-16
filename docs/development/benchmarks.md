@@ -55,6 +55,7 @@ Invoke-ScriptAnalyzer -Path samples -Recurse -Settings Default |
 ```
 
 **Automated alternative**:
+
 ```powershell
 ./tools/Run-Benchmark.ps1 -Path ./samples/ -OutputFormat both
 ```
@@ -246,6 +247,7 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
 ### To Reproduce
 
 1. Clone at specific version:
+
    ```bash
    git clone https://github.com/cboyd0319/PoshGuard.git
    cd PoshGuard
@@ -253,17 +255,20 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
    ```
 
 2. Install exact module versions:
+
    ```powershell
    Install-Module PSScriptAnalyzer -RequiredVersion 1.24.0 -Force
    Install-Module Pester -RequiredVersion 5.5.0 -Force
    ```
 
 3. Run benchmark:
+
    ```powershell
    ./tools/Run-Benchmark.ps1 -Path ./samples/ -OutputFormat both
    ```
 
 **If you discover cases that don't fully auto-fix**, open an issue with:
+
 - The script (or minimal repro)
 - Rule IDs that failed
 - Expected vs. actual behavior
@@ -290,16 +295,18 @@ diff ./samples/before-security-issues.ps1 ./samples/after-security-issues.ps1
 ### CI Integration
 
 Benchmarks run automatically on:
+
 - ✅ Every push to main
 - ✅ Every pull request
 - ✅ Nightly builds
 - ✅ Release tags
 
-Results published to: https://github.com/cboyd0319/PoshGuard/actions
+Results published to: <https://github.com/cboyd0319/PoshGuard/actions>
 
 ### Monitoring
 
 Track performance trends:
+
 - Fix success rate over time
 - Average processing time
 - Memory usage patterns
@@ -308,6 +315,7 @@ Track performance trends:
 ## Conclusion
 
 PoshGuard v3.0.0 demonstrates:
+
 - **100% success rate** on synthetic test corpus
 - **Zero regressions** in validation testing
 - **Consistent performance** (~325ms per file)

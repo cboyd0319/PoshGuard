@@ -29,6 +29,7 @@ This enables **continuous improvement** and **data-driven decisions** about code
 **Purpose**: Quantify the quality of each fix with a 0.0-1.0 score
 
 **Algorithm**:
+
 ```
 Confidence Score = (0.5 × Syntax Valid) +
                    (0.2 × AST Preserved) +
@@ -39,12 +40,14 @@ Confidence Score = (0.5 × Syntax Valid) +
 **Components**:
 
 #### Syntax Validation (50% weight)
+
 - **1.0**: Zero parse errors
 - **0.0**: Parse errors present
 
 The fixed code must be syntactically valid. This is non-negotiable.
 
 #### AST Structure Preservation (20% weight)
+
 - **1.0**: Same number of functions before/after
 - **0.5**: Off by 1 function
 - **0.0**: Significantly different structure
@@ -52,6 +55,7 @@ The fixed code must be syntactically valid. This is non-negotiable.
 Good fixes preserve the code's structure - they don't add/remove functions unless necessary.
 
 #### Minimal Changes (20% weight)
+
 - **1.0**: ≤ 10% lines changed
 - **0.75**: ≤ 40% lines changed
 - **0.5**: ≤ 60% lines changed  
@@ -61,12 +65,14 @@ Good fixes preserve the code's structure - they don't add/remove functions unles
 Surgical fixes that change only what's necessary are more trustworthy.
 
 #### No Side Effects (10% weight)
+
 - **1.0**: No dangerous patterns introduced
 - **0.0**: Introduced `Invoke-Expression`, `Start-Process`, `Remove-Item -Recurse`, etc.
 
 Fixes shouldn't introduce new risks.
 
 **Example**:
+
 ```powershell
 $original = @'
 function Test {
@@ -85,6 +91,7 @@ $score = Get-FixConfidenceScore -OriginalContent $original -FixedContent $fixed
 ```
 
 **Interpretation**:
+
 - **0.9-1.0**: Excellent - Deploy with confidence
 - **0.7-0.89**: Good - Review recommended
 - **0.5-0.69**: Moderate - Manual review required
@@ -97,6 +104,7 @@ $score = Get-FixConfidenceScore -OriginalContent $original -FixedContent $fixed
 **Purpose**: Track success/failure rates and performance for each rule
 
 **Metrics Collected**:
+
 ```powershell
 @{
     Attempts = 0           # Total fix attempts
@@ -113,6 +121,7 @@ $score = Get-FixConfidenceScore -OriginalContent $original -FixedContent $fixed
 ```
 
 **Usage**:
+
 ```powershell
 # Track a successful fix
 Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' `
@@ -130,6 +139,7 @@ Add-RuleMetric -RuleName 'PSAvoidEmptyCatchBlock' `
 ```
 
 **Analysis**:
+
 ```powershell
 $summary = Get-MetricsSummary
 
@@ -154,6 +164,7 @@ foreach ($rule in $problemRules) {
 **Purpose**: Monitor overall performance across a fixing session
 
 **Session Metrics**:
+
 - Session duration
 - Total files processed
 - Total fix attempts/successes/failures
@@ -161,6 +172,7 @@ foreach ($rule in $problemRules) {
 - Rules executed
 
 **Usage**:
+
 ```powershell
 Initialize-MetricsTracking  # Start of session
 
@@ -179,6 +191,7 @@ Write-Host "Files Processed: $($summary.OverallStats.TotalFiles)"
 **Purpose**: Track fix performance per file
 
 **File Metrics**:
+
 ```powershell
 @{
     FilePath = ''
@@ -192,6 +205,7 @@ Write-Host "Files Processed: $($summary.OverallStats.TotalFiles)"
 ```
 
 **Usage**:
+
 ```powershell
 Add-FileMetric -FilePath 'MyScript.ps1' `
                -ViolationCount 10 `
@@ -201,6 +215,7 @@ Add-FileMetric -FilePath 'MyScript.ps1' `
 ```
 
 **Analysis**:
+
 ```powershell
 $summary = Get-MetricsSummary
 
@@ -483,12 +498,15 @@ Enhanced Metrics adds minimal overhead:
 ### Core Functions
 
 #### Initialize-MetricsTracking
+
 ```powershell
 Initialize-MetricsTracking
 ```
+
 Resets metrics store and starts new session. Call once at start of session.
 
 #### Add-RuleMetric
+
 ```powershell
 Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' `
                -Success $true `
@@ -497,15 +515,19 @@ Add-RuleMetric -RuleName 'PSAvoidUsingCmdletAliases' `
                -FilePath 'script.ps1' `
                -ErrorMessage 'Optional error message'
 ```
+
 Records metrics for a single rule execution.
 
 #### Get-FixConfidenceScore
+
 ```powershell
 $score = Get-FixConfidenceScore -OriginalContent $before -FixedContent $after
 ```
+
 Calculates confidence score (0.0-1.0) for a fix.
 
 #### Add-FileMetric
+
 ```powershell
 Add-FileMetric -FilePath 'script.ps1' `
                -ViolationCount 10 `
@@ -513,24 +535,31 @@ Add-FileMetric -FilePath 'script.ps1' `
                -DurationMs 1500 `
                -AvgConfidence 0.87
 ```
+
 Records metrics for a file processing.
 
 #### Get-MetricsSummary
+
 ```powershell
 $summary = Get-MetricsSummary
 ```
+
 Returns comprehensive metrics summary object.
 
 #### Show-MetricsSummary
+
 ```powershell
 Show-MetricsSummary
 ```
+
 Pretty-prints metrics to console with color coding.
 
 #### Export-MetricsReport
+
 ```powershell
 Export-MetricsReport -OutputPath './metrics/report.json'
 ```
+
 Exports metrics to JSON file.
 
 ---
@@ -538,12 +567,14 @@ Exports metrics to JSON file.
 ## Best Practices
 
 ### 1. Always Initialize
+
 ```powershell
 # Start of session
 Initialize-MetricsTracking
 ```
 
 ### 2. Track Every Fix Attempt
+
 ```powershell
 # Even failures - they provide insight
 try {
@@ -555,6 +586,7 @@ try {
 ```
 
 ### 3. Calculate Confidence for All Fixes
+
 ```powershell
 $confidence = Get-FixConfidenceScore -OriginalContent $original -FixedContent $fixed
 # Use confidence to decide whether to apply fix
@@ -564,12 +596,14 @@ if ($confidence -ge 0.7) {
 ```
 
 ### 4. Export Metrics for Analysis
+
 ```powershell
 # End of session
 Export-MetricsReport -OutputPath "./metrics/$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
 ```
 
 ### 5. Review Problem Rules
+
 ```powershell
 $summary = Get-MetricsSummary
 foreach ($rule in $summary.ProblemRules) {
@@ -592,6 +626,7 @@ foreach ($rule in $summary.ProblemRules) {
 **Cause**: Large files or complex AST operations
 
 **Solution**: 
+
 - Optimize AST traversals
 - Cache parsed ASTs when possible
 - Consider parallel processing
@@ -606,11 +641,12 @@ foreach ($rule in $summary.ProblemRules) {
 
 ## References
 
-1. **Google SRE Book** | https://sre.google/books/ | High | SLO/SLI framework
-2. **Four Golden Signals** | https://sre.google/sre-book/monitoring-distributed-systems/ | High | Latency, traffic, errors, saturation
-3. **Observability Engineering** | https://www.oreilly.com/library/view/observability-engineering/9781492076438/ | Medium | Modern observability practices
+1. **Google SRE Book** | <https://sre.google/books/> | High | SLO/SLI framework
+2. **Four Golden Signals** | <https://sre.google/sre-book/monitoring-distributed-systems/> | High | Latency, traffic, errors, saturation
+3. **Observability Engineering** | <https://www.oreilly.com/library/view/observability-engineering/9781492076438/> | Medium | Modern observability practices
 
 ---
 
 **Version History**:
+
 - v3.3.0 (2025-10-12): Initial release with confidence scoring and per-rule metrics

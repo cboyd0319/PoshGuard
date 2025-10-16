@@ -68,18 +68,21 @@ Dependabot updates npm dependencies for the VS Code extension:
 ### Auto-Merge Logic
 
 **Patch updates (1.2.3 → 1.2.4):**
+
 - Low risk: Bug fixes, security patches
 - Auto-merge: ✅ Enabled
 - CI required: ✅ Must pass
 - Human review: ❌ Not required
 
 **Minor updates (1.2.3 → 1.3.0):**
+
 - Medium risk: New features, backward compatible
 - Auto-merge: ✅ Enabled
 - CI required: ✅ Must pass
 - Human review: ❌ Not required
 
 **Major updates (1.2.3 → 2.0.0):**
+
 - High risk: Breaking changes
 - Auto-merge: ❌ Disabled
 - CI required: ✅ Must pass
@@ -123,6 +126,7 @@ jobs:
 ```
 
 **Key features:**
+
 - Only runs on Dependabot PRs (`github.actor == 'dependabot[bot]'`)
 - Auto-approves all Dependabot PRs
 - Enables auto-merge for patch/minor (after CI)
@@ -167,6 +171,7 @@ updates:
 ```
 
 **Settings explained:**
+
 - `interval: "weekly"` - Check once per week (not daily—reduces noise)
 - `day: "monday"` - Monday mornings when you're fresh
 - `time: "09:00"` - 9 AM UTC (adjust mentally for your timezone)
@@ -256,6 +261,7 @@ ignore:
 ```
 
 Options:
+
 - `version-update:semver-major` - Ignore major versions
 - `version-update:semver-minor` - Ignore minor versions
 - `version-update:semver-patch` - Ignore patch versions (not recommended)
@@ -265,11 +271,13 @@ Options:
 ### Dependabot not creating PRs
 
 **Check:**
+
 1. Dependabot enabled? → Settings → Security → Dependabot
 2. Configuration valid? → `.github/dependabot.yml` syntax
 3. Rate limits hit? → GitHub API rate limits
 
 **Fix:**
+
 ```bash
 # Validate dependabot.yml
 cat .github/dependabot.yml | yq eval '.'
@@ -281,12 +289,14 @@ cat .github/dependabot.yml | yq eval '.'
 ### Auto-merge not working
 
 **Check:**
+
 1. Branch protection rules? → May require reviews
 2. CI checks failing? → Auto-merge waits for green CI
 3. Major update? → These don't auto-merge
 4. Permissions? → Workflow needs `contents: write`, `pull-requests: write`
 
 **Fix:**
+
 ```yaml
 # Verify workflow has permissions
 permissions:
@@ -299,6 +309,7 @@ permissions:
 **Problem:** 10+ PRs, hard to review.
 
 **Fix:**
+
 ```yaml
 # Reduce limit in dependabot.yml
 open-pull-requests-limit: 5
@@ -315,6 +326,7 @@ open-pull-requests-limit: 5
 **Problem:** Dependabot PR has conflicts.
 
 **Fix:**
+
 ```bash
 # Dependabot can rebase automatically
 gh pr comment <PR-NUMBER> --body "@dependabot rebase"
@@ -366,18 +378,21 @@ Add to workflow:
 ## Change Log Integration
 
 Dependabot PRs include:
+
 - Release notes from upstream
 - Changelog entries
 - Commit details
 - CVE information (for security fixes)
 
 **Viewing:**
+
 ```bash
 gh pr view <PR-NUMBER>
 # Scroll to "Release Notes" section
 ```
 
 **Adding to project changelog:**
+
 ```markdown
 ## [Unreleased]
 
@@ -407,6 +422,7 @@ gh pr view <PR-NUMBER>
 ### GitHub UI
 
 **Insights → Dependency graph → Dependabot:**
+
 - View all open PRs
 - Check for updates manually
 - See ignored dependencies
@@ -428,6 +444,7 @@ gh api /repos/:owner/:repo/dependabot/alerts
 ### Automation
 
 **Slack notifications:**
+
 ```yaml
 # Add to dependabot-auto-merge.yml
 - name: Notify Slack
@@ -448,11 +465,13 @@ gh api /repos/:owner/:repo/dependabot/alerts
 ## Support
 
 **Questions?**
+
 - Open an issue
 - Check Security tab for alerts
 - Review Insights → Dependency graph
 
 **Problems with auto-merge?**
+
 - Check workflow runs: Actions tab
 - Review branch protection: Settings → Branches
 - Verify permissions: `.github/workflows/dependabot-auto-merge.yml`

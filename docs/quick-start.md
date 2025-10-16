@@ -5,12 +5,14 @@
 ## Install
 
 PowerShell Gallery:
+
 ```powershell
 Install-Module PoshGuard -Scope CurrentUser
 Import-Module PoshGuard
 ```
 
 From source:
+
 ```powershell
 git clone https://github.com/cboyd0319/PoshGuard.git
 cd PoshGuard
@@ -20,18 +22,21 @@ Import-Module ./tools/lib/Core.psm1
 ## Usage
 
 Preview (safe):
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -DryRun
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1 -ShowDiff
 ```
 
 Apply fixes:
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path ./MyScript.ps1
 ./tools/Apply-AutoFix.ps1 -Path ./src/ -Recurse
 ```
 
 Rollback:
+
 ```powershell
 ./tools/Restore-Backup.ps1 -BackupPath .backup/MyScript.ps1.20251011_140523.bak
 ```
@@ -39,16 +44,19 @@ Rollback:
 ## Common Scenarios
 
 Pre-commit:
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse
 ```
 
 CI/CD:
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path . -NonInteractive -OutputFormat jsonl
 ```
 
 Skip rules:
+
 ```powershell
 ./tools/Apply-AutoFix.ps1 -Path ./script.ps1 -Skip @('PSAvoidUsingWriteHost')
 ```
@@ -66,6 +74,7 @@ cd samples/
 ```
 
 Before:
+
 ```powershell
 function Connect-Service {
     param([string]$Password)
@@ -75,6 +84,7 @@ function Connect-Service {
 ```
 
 After:
+
 ```powershell
 function Connect-Service {
     param([SecureString]$Password)

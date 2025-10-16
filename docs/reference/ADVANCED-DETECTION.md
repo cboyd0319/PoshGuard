@@ -31,6 +31,7 @@ Based on software engineering best practices (SWEBOK KA-10: Software Quality).
 **Reference**: McCabe Cyclomatic Complexity | [IEEE](https://ieeexplore.ieee.org/document/1702388) | High | Proven correlation between complexity and defect density
 
 **What it detects**:
+
 ```powershell
 function Process-Data {
     param($data)
@@ -43,11 +44,13 @@ function Process-Data {
 ```
 
 **Why it matters**: Functions with high cyclomatic complexity are:
+
 - Harder to test (need 12+ test cases)
 - More likely to contain bugs (20-50% higher defect rate)
 - Difficult to understand and modify
 
 **Remediation**:
+
 ```powershell
 function Process-Data {
     param($data)
@@ -69,6 +72,7 @@ function Process-Data {
 **Reference**: Code Complete 2nd Edition | Steve McConnell | High | Deep nesting exponentially increases cognitive load
 
 **What it detects**:
+
 ```powershell
 if ($condition1) {
     if ($condition2) {
@@ -84,11 +88,13 @@ if ($condition1) {
 ```
 
 **Why it matters**: Deep nesting indicates:
+
 - Poor decomposition (extract functions)
 - Difficult to follow logic
 - High cognitive complexity
 
 **Remediation**:
+
 ```powershell
 function Test-Condition1 { ... }
 function Test-Condition2 { ... }
@@ -109,6 +115,7 @@ if (-not (Test-Condition1 -and Test-Condition2)) {
 **What it detects**: Functions exceeding 50 lines of code
 
 **Why it matters**:
+
 - Single Responsibility Principle violation
 - Harder to name accurately
 - Lower reusability
@@ -123,6 +130,7 @@ if (-not (Test-Condition1 -and Test-Condition2)) {
 **Reference**: Code Complete | Medium | High parameter count indicates coupling
 
 **What it detects**:
+
 ```powershell
 function New-Report {
     param($Name, $Path, $Format, $Author, $Date, $Version, $Tags, $Category)
@@ -131,6 +139,7 @@ function New-Report {
 ```
 
 **Remediation**:
+
 ```powershell
 # Use parameter object
 class ReportConfig {
@@ -162,6 +171,7 @@ Based on PowerShell performance best practices and profiling data.
 **Performance Impact**: O(n²) vs O(n)
 
 **What it detects**:
+
 ```powershell
 $result = ""
 foreach ($item in $items) {
@@ -170,10 +180,12 @@ foreach ($item in $items) {
 ```
 
 **Why it matters**: String concatenation creates a new string object each time. For 1000 items:
+
 - String concatenation: ~500ms (n² growth)
 - Using -join: ~5ms (linear growth)
 
 **Remediation**:
+
 ```powershell
 # Option 1: Use -join (fastest)
 $result = $items -join ""
@@ -193,6 +205,7 @@ $result = $sb.ToString()
 **Performance Impact**: O(n²) memory allocation
 
 **What it detects**:
+
 ```powershell
 $results = @()
 foreach ($item in $items) {
@@ -201,12 +214,14 @@ foreach ($item in $items) {
 ```
 
 **Why it matters**: Arrays are fixed-size. Each += operation:
+
 1. Creates new array (size + 1)
 2. Copies all existing elements
 3. Adds new element
 4. Discards old array
 
 **Remediation**:
+
 ```powershell
 # Option 1: ArrayList (fastest for simple scenarios)
 $results = [System.Collections.ArrayList]::new()
@@ -231,6 +246,7 @@ $results = $items | ForEach-Object { Process-Item $_ }
 **Performance Impact**: 2-10x slowdown
 
 **What it detects**:
+
 ```powershell
 Get-Process | 
     Sort-Object CPU |      # Sorts ALL processes
@@ -240,6 +256,7 @@ Get-Process |
 **Why it matters**: Sorting 1000 items then filtering to 10 is wasteful.
 
 **Remediation**:
+
 ```powershell
 Get-Process | 
     Where-Object { $_.CPU -gt 10 } |  # Filter first (reduce dataset)
@@ -260,6 +277,7 @@ Aligned with OWASP Top 10 2021 and OWASP ASVS 5.0.
 **CWE**: CWE-78
 
 **What it detects**:
+
 ```powershell
 $userInput = Read-Host "Enter filename"
 Start-Process -FilePath "cmd.exe" -ArgumentList "/c del $userInput"
@@ -269,6 +287,7 @@ Start-Process -FilePath "cmd.exe" -ArgumentList "/c del $userInput"
 **Why it matters**: Allows attackers to execute arbitrary commands
 
 **Remediation**:
+
 ```powershell
 # 1. Validate input
 $allowedPattern = '^[a-zA-Z0-9_.-]+$'
@@ -291,6 +310,7 @@ Start-Process -FilePath "cmd.exe" -ArgumentList @("/c", "del", $userInput)
 **CWE**: CWE-22
 
 **What it detects**:
+
 ```powershell
 $file = "../../../etc/passwd"
 Get-Content -Path $file  # Can access files outside intended directory
@@ -299,6 +319,7 @@ Get-Content -Path $file  # Can access files outside intended directory
 **Why it matters**: Allows reading/writing files outside allowed boundaries
 
 **Remediation**:
+
 ```powershell
 # Resolve and validate path
 $basePath = "C:\AllowedDir"
@@ -320,6 +341,7 @@ Get-Content -Path $resolvedPath
 **CWE**: CWE-502
 
 **What it detects**:
+
 ```powershell
 $data = Get-Content "untrusted.xml"
 $object = Import-Clixml $data  # Can execute code during deserialization
@@ -328,6 +350,7 @@ $object = Import-Clixml $data  # Can execute code during deserialization
 **Why it matters**: Deserialization can execute arbitrary code
 
 **Remediation**:
+
 ```powershell
 # 1. Only deserialize trusted data
 # 2. Use safer formats (JSON instead of XML)
@@ -348,6 +371,7 @@ if (-not (Test-Json -Json $data -Schema $schema)) {
 **OWASP ASVS**: V7.1.4 - Error Logging
 
 **What it detects**:
+
 ```powershell
 try {
     Remove-Item "important.txt"
@@ -357,11 +381,13 @@ try {
 ```
 
 **Why it matters**: Security incidents require audit trails for:
+
 - Forensics
 - Compliance (GDPR, SOC 2, ISO 27001)
 - Detecting attacks
 
 **Remediation**:
+
 ```powershell
 try {
     Remove-Item "important.txt"
@@ -393,12 +419,14 @@ Based on Clean Code principles and industry best practices.
 **Severity**: Information
 
 **What it detects**:
+
 ```powershell
 $timeout = 3600  # What does 3600 mean?
 if ($retries -gt 42) { }  # Why 42?
 ```
 
 **Remediation**:
+
 ```powershell
 $TIMEOUT_SECONDS = 3600  # 1 hour
 $MAX_RETRIES = 42        # Based on SLA requirements
@@ -410,12 +438,14 @@ $MAX_RETRIES = 42        # Based on SLA requirements
 **Severity**: Information
 
 **What it detects**:
+
 ```powershell
 $x = Get-Process  # What is x?
 $t = Get-Date     # What is t?
 ```
 
 **Remediation**:
+
 ```powershell
 $processes = Get-Process
 $currentTime = Get-Date
@@ -429,11 +459,13 @@ $currentTime = Get-Date
 **What it detects**: Functions without `.SYNOPSIS` or `.DESCRIPTION`
 
 **Why it matters**:
+
 - `Get-Help` returns nothing
 - New team members can't understand usage
 - Violates PowerShell best practices
 
 **Remediation**:
+
 ```powershell
 function Get-UserData {
     <#
@@ -593,20 +625,23 @@ function Test-CustomPattern {
 ## References
 
 ### Academic & Industry Standards
-1. **McCabe Cyclomatic Complexity** | https://ieeexplore.ieee.org/document/1702388 | High | Proven metric for code complexity
-2. **SWEBOK v4.0** | https://computer.org/swebok | High | Software Quality knowledge area (KA-10)
+
+1. **McCabe Cyclomatic Complexity** | <https://ieeexplore.ieee.org/document/1702388> | High | Proven metric for code complexity
+2. **SWEBOK v4.0** | <https://computer.org/swebok> | High | Software Quality knowledge area (KA-10)
 3. **Clean Code** | Robert C. Martin, 2008 | High | Industry-standard maintainability practices
 4. **Code Complete 2nd Ed** | Steve McConnell, 2004 | High | Construction quality guidelines
 
 ### Security Standards
-5. **OWASP Top 10 2021** | https://owasp.org/Top10 | High | Current web application risks
-6. **OWASP ASVS 5.0** | https://owasp.org/ASVS | High | Application security verification
-7. **MITRE ATT&CK** | https://attack.mitre.org | High | Adversarial tactics and techniques
-8. **CWE Top 25** | https://cwe.mitre.org/top25 | High | Most dangerous software weaknesses
+
+5. **OWASP Top 10 2021** | <https://owasp.org/Top10> | High | Current web application risks
+6. **OWASP ASVS 5.0** | <https://owasp.org/ASVS> | High | Application security verification
+7. **MITRE ATT&CK** | <https://attack.mitre.org> | High | Adversarial tactics and techniques
+8. **CWE Top 25** | <https://cwe.mitre.org/top25> | High | Most dangerous software weaknesses
 
 ### Performance
-9. **PowerShell Performance** | https://docs.microsoft.com/powershell | Medium | Official performance guidance
-10. **Big O Notation** | https://en.wikipedia.org/wiki/Big_O_notation | High | Algorithm complexity analysis
+
+9. **PowerShell Performance** | <https://docs.microsoft.com/powershell> | Medium | Official performance guidance
+10. **Big O Notation** | <https://en.wikipedia.org/wiki/Big_O_notation> | High | Algorithm complexity analysis
 
 ---
 
@@ -625,4 +660,5 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for full guidelines.
 ---
 
 **Version History**:
+
 - v3.3.0 (2025-10-12): Initial release with 50+ detection rules

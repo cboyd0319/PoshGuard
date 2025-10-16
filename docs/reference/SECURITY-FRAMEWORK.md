@@ -9,7 +9,7 @@
 
 PoshGuard implements security controls aligned with **OWASP Application Security Verification Standard (ASVS) v5.0** Level 1 requirements. This document maps PoshGuard's auto-fix rules to specific ASVS controls and establishes our security baseline.
 
-**Source**: OWASP ASVS 5.0 | https://owasp.org/www-project-application-security-verification-standard/ | High | Concrete app-sec verification requirements by security level and category.
+**Source**: OWASP ASVS 5.0 | <https://owasp.org/www-project-application-security-verification-standard/> | High | Concrete app-sec verification requirements by security level and category.
 
 ## Security Architecture
 
@@ -49,11 +49,12 @@ PoshGuard implements security controls aligned with **OWASP Application Security
 | Backup file exposure | MEDIUM | LOW | Restricted permissions, automatic cleanup | V8.3.1 |
 | DoS via large file processing | MEDIUM | MEDIUM | File size limits (10MB default), timeout enforcement | V11.1.5 |
 
-**Methodology**: OWASP Threat Modeling | https://owasp.org/www-community/Threat_Modeling | High | Structured approach to identifying security risks.
+**Methodology**: OWASP Threat Modeling | <https://owasp.org/www-community/Threat_Modeling> | High | Structured approach to identifying security risks.
 
 ## OWASP ASVS Control Mappings
 
 ### V2: Authentication (N/A for PoshGuard)
+
 PoshGuard operates as a local file processing tool with no authentication requirements.
 
 ### V5: Validation, Sanitization and Encoding
@@ -152,48 +153,56 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Security Controls Implementation
 
 ### 1. Credential Management
+
 **Rule**: PSAvoidUsingPlainTextForPassword  
 **ASVS**: V2.1.1, V2.1.3  
 **Implementation**: Converts [string] password parameters to [SecureString]  
 **Severity**: CRITICAL
 
 ### 2. Secure String Handling
+
 **Rule**: PSAvoidUsingConvertToSecureStringWithPlainText  
 **ASVS**: V2.1.11, V8.3.1  
 **Implementation**: Comments out dangerous plaintext→SecureString conversions  
 **Severity**: CRITICAL
 
 ### 3. Parameter Validation
+
 **Rule**: PSAvoidUsingUsernameAndPasswordParams  
 **ASVS**: V2.1.1  
 **Implementation**: Flags functions with both Username and Password parameters  
 **Severity**: HIGH
 
 ### 4. Code Injection Prevention
+
 **Rule**: PSAvoidUsingInvokeExpression  
 **ASVS**: V5.2.1, V5.2.2  
 **Implementation**: Adds warnings and suggests safer alternatives (& operator, splatting)  
 **Severity**: HIGH
 
 ### 5. Error Handling
+
 **Rule**: PSAvoidUsingEmptyCatchBlock  
 **ASVS**: V7.1.1, V7.1.2  
 **Implementation**: Adds logging to empty catch blocks  
 **Severity**: MEDIUM
 
 ### 6. Global Namespace Pollution
+
 **Rule**: PSAvoidGlobalVars, PSAvoidGlobalFunctions, PSAvoidGlobalAliases  
 **ASVS**: V11.1.4 (Business Logic)  
 **Implementation**: Converts global scope to script scope  
 **Severity**: MEDIUM
 
 ### 7. Hash Algorithm Security
+
 **Rule**: PSAvoidUsingBrokenHashAlgorithms  
 **ASVS**: V6.2.1 (Cryptography)  
 **Implementation**: Flags MD5, SHA1 usage, suggests SHA256+  
 **Severity**: MEDIUM
 
 ### 8. Computer Name Hardcoding
+
 **Rule**: PSAvoidUsingComputerNameHardcoded  
 **ASVS**: V11.1.1 (Business Logic)  
 **Implementation**: Suggests parameterization for hardcoded computer names  
@@ -202,24 +211,28 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Defense-in-Depth Layers
 
 ### Layer 1: Input Validation
+
 - File extension Allowlist (.ps1, .psm1, .psd1)
 - AST syntax validation
 - File size enforcement (10MB default)
 - Path traversal prevention
 
 ### Layer 2: Secure Processing
+
 - Read-only by default (`-DryRun` mode)
 - Automatic backups before modifications
 - AST-based transformations (no string manipulation)
 - No external API calls or network access
 
 ### Layer 3: Output Protection
+
 - Atomic file operations (write to .tmp, then move)
 - Backup retention policy (default: 1 day)
 - Error message sanitization
 - JSONL structured logging with correlation IDs
 
 ### Layer 4: Observability
+
 - Trace ID for request correlation
 - Structured logging (JSONL format)
 - No PII or credentials in logs
@@ -228,6 +241,7 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Security Best Practices
 
 ### Secure Defaults
+
 - ✅ Dry-run mode available for preview
 - ✅ Automatic backups enabled by default
 - ✅ Verbose logging disabled by default
@@ -235,12 +249,14 @@ PoshGuard operates as a local file processing tool with no authentication requir
 - ✅ No credential storage
 
 ### Least Privilege
+
 - ✅ Reads files with current user permissions
 - ✅ Writes only when explicitly authorized
 - ✅ No elevation required
 - ✅ Scoped to working directory
 
 ### Auditability
+
 - ✅ Every operation logged with trace ID
 - ✅ Before/after state captured in backups
 - ✅ JSONL format for machine parsing
@@ -249,33 +265,38 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Compliance Considerations
 
 ### Data Protection Regulations
+
 **GDPR**: No personal data collected or processed  
 **CCPA**: No consumer data handling  
 **HIPAA**: No PHI processing  
 **PCI-DSS**: No payment card data
 
 ### Security Frameworks
+
 **NIST CSF**: Aligns with Protect (PR) and Detect (DE) functions  
 **ISO 27001**: Follows secure development lifecycle principles  
 **CIS Controls**: Implements secure configuration management (Control 5)
 
-**Reference**: NIST Cybersecurity Framework | https://www.nist.gov/cyberframework | High | Risk-based approach to managing cybersecurity risk.
+**Reference**: NIST Cybersecurity Framework | <https://www.nist.gov/cyberframework> | High | Risk-based approach to managing cybersecurity risk.
 
 ## Security Testing
 
 ### Static Analysis
+
 - ✅ PSScriptAnalyzer with strict rules
 - ✅ Zero tolerance for security violations
 - ✅ CI/CD integration with SARIF output
 - ✅ Code scanning with GitHub Advanced Security
 
 ### Manual Testing
+
 - ✅ Path traversal attempts
 - ✅ Malformed AST injection tests
 - ✅ Large file DoS scenarios
 - ✅ Permission boundary validation
 
 ### Continuous Monitoring
+
 - ✅ Automated security scanning in CI
 - ✅ Dependency vulnerability checks (Dependabot)
 - ✅ SBOM generation for supply chain security
@@ -284,11 +305,13 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Incident Response
 
 ### Security Issue Disclosure
+
 **Process**: See [SECURITY.md](../SECURITY.md) for responsible disclosure  
 **Response SLA**: Critical issues < 48 hours, High < 7 days  
 **Communication**: Security advisories via GitHub Security Advisories
 
 ### Vulnerability Remediation
+
 1. **Assess**: CVSS scoring, exploitability analysis
 2. **Patch**: Develop and test fix
 3. **Release**: Emergency release if critical
@@ -298,6 +321,7 @@ PoshGuard operates as a local file processing tool with no authentication requir
 ## Future Enhancements
 
 ### Planned Security Features (v3.1+)
+
 - [ ] Digital signatures for release artifacts
 - [ ] SLSA Build Level 3 compliance
 - [ ] Supply chain security with Sigstore
@@ -306,17 +330,18 @@ PoshGuard operates as a local file processing tool with no authentication requir
 - [ ] SIEM integration (Splunk, ELK)
 
 ### Security Roadmap Alignment
+
 **Target**: OWASP ASVS Level 2 compliance by v4.0.0  
 **Timeline**: Q3 2026  
 **Investment**: Enhanced cryptographic controls, secure key management
 
 ## References
 
-1. **OWASP ASVS 5.0** | https://owasp.org/www-project-application-security-verification-standard/ | High | Application security verification requirements
-2. **SWEBOK v4.0** | https://www.computer.org/education/bodies-of-knowledge/software-engineering | High | Software engineering best practices and knowledge areas
-3. **NIST SP 800-53** | https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final | High | Security and privacy controls for information systems
-4. **CWE Top 25** | https://cwe.mitre.org/top25/ | High | Most dangerous software weaknesses
-5. **PowerShell Security Best Practices** | https://docs.microsoft.com/en-us/powershell/scripting/security | Medium | Microsoft official security guidance
+1. **OWASP ASVS 5.0** | <https://owasp.org/www-project-application-security-verification-standard/> | High | Application security verification requirements
+2. **SWEBOK v4.0** | <https://www.computer.org/education/bodies-of-knowledge/software-engineering> | High | Software engineering best practices and knowledge areas
+3. **NIST SP 800-53** | <https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final> | High | Security and privacy controls for information systems
+4. **CWE Top 25** | <https://cwe.mitre.org/top25/> | High | Most dangerous software weaknesses
+5. **PowerShell Security Best Practices** | <https://docs.microsoft.com/en-us/powershell/scripting/security> | Medium | Microsoft official security guidance
 
 ---
 

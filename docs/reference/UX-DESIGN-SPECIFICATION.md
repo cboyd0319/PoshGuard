@@ -13,6 +13,7 @@
 **Mission**: Make PowerShell code quality tools accessible to EVERYONE — from complete beginners to enterprise security teams — through world-class CLI UX design.
 
 **What We're Solving**: Terminal-based tools are traditionally intimidating, cryptic, and error-prone. PoshGuard breaks this mold by delivering:
+
 - ✅ **Zero technical knowledge required** — Your grandmother could use it
 - ✅ **Visual clarity** — Information hierarchy rivals modern web apps
 - ✅ **Safety-first** — Preview before action, automatic backups, instant rollback
@@ -20,6 +21,7 @@
 - ✅ **Delightful** — Positive, encouraging, celebrates success
 
 **Key Metrics** (Baseline → Target):
+
 - Task success rate: 65% → 95%
 - Time-to-first-fix: 12 min → 3 min
 - Error rate: 28% → 5%
@@ -27,6 +29,7 @@
 - Support tickets: 100/month → 15/month
 
 **Business Impact**:
+
 - 🎯 **60% reduction** in onboarding time
 - 🎯 **85% fewer** support requests
 - 🎯 **40% increase** in adoption (beginner → advanced users)
@@ -41,6 +44,7 @@
 ### Problem Statement
 
 **Context**: PowerShell developers struggle with code quality tools because:
+
 1. PSScriptAnalyzer detects issues but provides minimal fix guidance
 2. Manual fixes are time-consuming and error-prone
 3. Fear of breaking working code prevents adoption
@@ -48,6 +52,7 @@
 5. No visual feedback makes progress unclear
 
 **User Pain Points**:
+
 - 😰 **Beginners**: "I don't understand what this error means"
 - 😩 **Intermediate**: "I know there's an issue but not how to fix it"
 - 😤 **Advanced**: "These errors are noise — where are the real security issues?"
@@ -56,16 +61,19 @@
 ### Target Users & JTBD
 
 #### Primary Persona 1: "Sarah the Script Beginner"
+
 **Demographics**: Junior IT admin, 3 months PowerShell experience  
 **Technical Proficiency**: Low  
 **Goals**: Write working scripts without breaking production
 
 **Jobs-to-be-Done**:
+
 1. **When** writing PowerShell scripts, **I want to** know if my code has issues **so I can** fix them before deployment
 2. **When** seeing an error, **I want to** understand what's wrong in plain language **so I can** learn and improve
 3. **When** fixing code, **I want to** preview changes **so I can** avoid breaking anything
 
 **Pain Points**:
+
 - Doesn't understand technical jargon (AST, cmdlet binding, pipeline)
 - Fears making changes (no rollback confidence)
 - Needs step-by-step guidance with examples
@@ -73,16 +81,19 @@
 **Success Criteria**: Can fix 80% of common issues without help
 
 #### Primary Persona 2: "Mike the Security Engineer"
+
 **Demographics**: Security team lead, 5 years PowerShell experience  
 **Technical Proficiency**: High  
 **Goals**: Enforce security standards across 200+ scripts
 
 **Jobs-to-be-Done**:
+
 1. **When** auditing scripts, **I want to** identify security vulnerabilities **so I can** prevent breaches
 2. **When** enforcing standards, **I want to** auto-fix safe issues **so I can** focus on complex problems
 3. **When** reporting to management, **I want to** show compliance metrics **so I can** demonstrate value
 
 **Pain Points**:
+
 - Manual review doesn't scale
 - Needs audit trail for compliance
 - Must balance security with developer velocity
@@ -90,16 +101,19 @@
 **Success Criteria**: Reduce security review time by 70%
 
 #### Secondary Persona 3: "Emma the DevOps Lead"
+
 **Demographics**: Platform team, 8 years automation experience  
 **Technical Proficiency**: Expert  
 **Goals**: Integrate quality gates into CI/CD pipeline
 
 **Jobs-to-be-Done**:
+
 1. **When** code is committed, **I want to** enforce quality standards **so we can** prevent production issues
 2. **When** builds fail, **I want to** clear error messages **so developers can** self-service fixes
 3. **When** measuring quality, **I want to** track trends over time **so we can** improve continuously
 
 **Pain Points**:
+
 - Needs deterministic CI/CD integration
 - Must minimize false positives
 - Requires structured output for tooling
@@ -109,16 +123,19 @@
 ### Red Routes (Critical User Journeys)
 
 **Priority 1: First-Time Fix** (80% of users)
+
 ```
 Discover → Install → Run with DryRun → Review changes → Apply fixes → Celebrate success
 ```
 
 **Priority 2: Troubleshoot Error** (60% of users)
+
 ```
 See error → Understand issue → Get fix suggestions → Apply fix → Verify resolution
 ```
 
 **Priority 3: CI/CD Integration** (30% of users)
+
 ```
 Setup pipeline → Configure rules → Run on PR → Review report → Block/approve merge
 ```
@@ -148,6 +165,7 @@ Setup pipeline → Configure rules → Run on PR → Review report → Block/app
 #### North Star Metric
 
 **Primary**: **Time from "I have an issue" to "Issue fixed"**  
+
 - Baseline: 18 minutes (8 min understand + 10 min fix)
 - Target: 5 minutes (2 min understand + 3 min fix)
 - Measurement: Timestamp between error detection and successful fix
@@ -166,18 +184,21 @@ Setup pipeline → Configure rules → Run on PR → Review report → Block/app
 ### Assumptions (Validated where noted)
 
 **User Knowledge**:
+
 - ✅ VALIDATED: 68% of users have <1 year PowerShell experience
 - ✅ VALIDATED: 82% prefer visual interfaces over plain text
 - ⚠️ ASSUMPTION: Users understand basic terminal navigation (cd, ls)
 - ⚠️ ASSUMPTION: Users can copy/paste commands
 
 **Technical Environment**:
+
 - ✅ VALIDATED: 90% use Windows PowerShell 5.1 or PowerShell 7+
 - ⚠️ ASSUMPTION: Terminal supports Unicode (emojis, box-drawing)
 - ⚠️ ASSUMPTION: Minimum 80x24 terminal size
 - ✅ VALIDATED: 35% use dark themes, 28% light, 37% system default
 
 **Behavior**:
+
 - ✅ VALIDATED: 91% use -DryRun first (safe by default works)
 - ⚠️ ASSUMPTION: Users read first 3 lines of output fully
 - ⚠️ ASSUMPTION: Users skim remaining output for icons/colors
@@ -311,11 +332,13 @@ END (User has confidence to proceed)
 ```
 
 **Success Criteria**:
+
 - User understands what will change (comprehension check: 90%)
 - User feels safe proceeding (anxiety score: <3/10)
 - User knows exact next action (90% choose correct command)
 
 **Error Variants**:
+
 - **No issues found**: Celebrate + suggest next steps
 - **Parse error**: Explain syntax must be valid + link to resources
 - **Permission denied**: Show how to fix permissions or use alternate path
@@ -381,11 +404,13 @@ END (User has improved code + confidence)
 ```
 
 **Success Criteria**:
+
 - Fixes applied without data loss (100%)
 - User knows where backup is (recall: 85%)
 - User knows how to rollback if needed (95%)
 
 **Error Variants**:
+
 - **Backup fails**: STOP, don't proceed, show fix
 - **Fix causes syntax error**: Rollback automatically, alert user
 - **Permission denied**: Explain, suggest solutions
@@ -432,6 +457,7 @@ END (User can self-service 85% of errors)
 ```
 
 **Success Criteria**:
+
 - User understands error (comprehension: 90%)
 - User can fix without external help (85%)
 - User finds help resources (100%)
@@ -714,12 +740,14 @@ States:
 ### Focus Order & Keyboard Navigation
 
 **Principle**: CLI tools are keyboard-first by nature. Optimize for:
+
 - Tab completion (where supported)
 - Arrow keys for history (native PowerShell)
 - Clear prompts with default options
 - Escape to cancel operations (where applicable)
 
 **Focus Flow** (for interactive prompts):
+
 ```
 1. Command input (initial focus)
 2. Parameter inputs (if prompted)
@@ -728,6 +756,7 @@ States:
 ```
 
 **Keyboard Shortcuts** (standard PowerShell):
+
 | Key | Action |
 |-----|--------|
 | `Ctrl+C` | Cancel operation (safe exit) |
@@ -740,11 +769,13 @@ States:
 ### Touch Targets (Terminal Context)
 
 **CLI Adaptation**: No mouse interaction, but consider:
+
 - **Clickable links**: Modern terminals support Ctrl+Click on URLs
 - **Copy-paste friendly**: All commands/paths are plain text
 - **Screen reader friendly**: Linear top-to-bottom flow
 
 **Target Size Guidelines**:
+
 - Minimum line height: 1.5em (readability)
 - Interactive prompts: Clearly marked with icons
 - Spacing between sections: 2 blank lines minimum
@@ -754,6 +785,7 @@ States:
 **Performance Budget**: CLI must feel instant
 
 **Timings**:
+
 | Element | Duration | Easing | Reduced Motion Alternative |
 |---------|----------|--------|----------------------------|
 | Progress bar update | 100ms | Linear | Show percentage only |
@@ -762,12 +794,14 @@ States:
 | Error shake | N/A | N/A | Red color only |
 
 **Reduced Motion** (respect prefers-reduced-motion):
+
 - No spinner animations
 - Progress shown as percentages only
 - No color transitions
 - Static indicators only
 
 **Animation Guidelines**:
+
 - ✅ DO: Use progress bars for long operations (>2 sec)
 - ✅ DO: Update status text in-place
 - ❌ DON'T: Animate colors or positions
@@ -792,6 +826,7 @@ Long operations (>10 sec):
 ```
 
 **Async Operation Handling**:
+
 - Show progress immediately (<200ms)
 - Update progress at least every 500ms
 - Always show estimated time for >10 sec operations
@@ -1064,6 +1099,7 @@ $script:Emojis = @{
 **Purpose**: Major section headers, banners, critical announcements
 
 **Anatomy**:
+
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║  [Icon] [Title]                                                  ║
@@ -1072,6 +1108,7 @@ $script:Emojis = @{
 ```
 
 **Props/Variants**:
+
 - `title` (required): Main heading text
 - `icon` (optional): Emoji or symbol
 - `subtitle` (optional): Secondary information
@@ -1079,6 +1116,7 @@ $script:Emojis = @{
 - `width` (optional): Default 72, Max 80
 
 **States**:
+
 - **Default**: Cyan/blue double-line border
 - **Success**: Green double-line border
 - **Warning**: Yellow double-line border
@@ -1086,12 +1124,14 @@ $script:Emojis = @{
 - **Minimal**: Single-line border (CI/CD mode)
 
 **Usage Rules**:
+
 - ✅ DO: Use for app banner, major milestones, completion screens
 - ✅ DO: Keep title to single line (<68 chars)
 - ❌ DON'T: Use for routine information (use Info Box instead)
 - ❌ DON'T: Stack multiple header boxes
 
 **Example Code**:
+
 ```powershell
 function Show-HeaderBox {
     param(
@@ -1130,6 +1170,7 @@ function Show-HeaderBox {
 **Purpose**: General information, tips, warnings, errors
 
 **Anatomy**:
+
 ```
 ╭─ [Icon] [Title] ─────────────────────────────────────────────────╮
 │                                                                   │
@@ -1141,6 +1182,7 @@ function Show-HeaderBox {
 ```
 
 **Props/Variants**:
+
 - `title` (required): Box heading
 - `content` (required): Main text (string or array)
 - `icon` (optional): Emoji indicator
@@ -1148,6 +1190,7 @@ function Show-HeaderBox {
 - `width` (optional): Default 72
 
 **States**:
+
 - **Info**: Cyan single-line border, ℹ️ icon
 - **Tip**: Yellow single-line border, 💡 icon
 - **Warning**: Yellow/orange, ⚠️ icon
@@ -1155,6 +1198,7 @@ function Show-HeaderBox {
 - **Success**: Green, ✅ icon
 
 **Usage Rules**:
+
 - ✅ DO: Use for explanations, guidance, next steps
 - ✅ DO: Keep content scannable (bullets, short lines)
 - ✅ DO: Include actionable next steps
@@ -1162,6 +1206,7 @@ function Show-HeaderBox {
 - ❌ DON'T: Nest boxes
 
 **Example Code**:
+
 ```powershell
 function Show-InfoBox {
     param(
@@ -1207,11 +1252,13 @@ function Show-InfoBox {
 **Purpose**: Show operation progress for multi-step tasks
 
 **Anatomy**:
+
 ```
 [Label]: ━━━━━━━━━━━━━━░░░░░░░░░░░░ 45% (9/20 items)
 ```
 
 **Props/Variants**:
+
 - `label` (required): What's being processed
 - `current` (required): Current count
 - `total` (required): Total count
@@ -1219,12 +1266,14 @@ function Show-InfoBox {
 - `showPercentage` (optional): Boolean (default true)
 
 **States**:
+
 - **In Progress**: Cyan/blue filled portion
 - **Complete**: Green filled portion
 - **Error**: Red filled portion
 - **Paused**: Yellow filled portion
 
 **Usage Rules**:
+
 - ✅ DO: Use for operations >2 seconds
 - ✅ DO: Update at least every 500ms
 - ✅ DO: Show estimated time remaining for >10 sec operations
@@ -1232,6 +1281,7 @@ function Show-InfoBox {
 - ❌ DON'T: Animate the bar (terminal limitations)
 
 **Example Code**:
+
 ```powershell
 function Show-ProgressBar {
     param(
@@ -1267,6 +1317,7 @@ function Show-ProgressBar {
 **Purpose**: Show inline status for items in lists
 
 **Anatomy**:
+
 ```
 [Icon] [Status Text]
 ✅ Fix applied successfully
@@ -1276,11 +1327,13 @@ function Show-ProgressBar {
 ```
 
 **Props/Variants**:
+
 - `status` (required): Success, Error, Warning, Info, Processing
 - `message` (required): Status message
 - `detail` (optional): Additional context
 
 **States**:
+
 - **Success**: ✅ Green
 - **Error**: ❌ Red
 - **Warning**: ⚠️ Yellow
@@ -1289,12 +1342,14 @@ function Show-ProgressBar {
 - **Skipped**: ⏭️ Gray
 
 **Usage Rules**:
+
 - ✅ DO: Keep messages under 60 characters
 - ✅ DO: Use consistent icons for same states
 - ❌ DON'T: Use without icon (accessibility)
 - ❌ DON'T: Change icon meanings
 
 **Example Code**:
+
 ```powershell
 function Show-Status {
     param(
@@ -1331,6 +1386,7 @@ function Show-Status {
 **Purpose**: Ask user for input or confirmation
 
 **Anatomy**:
+
 ```
 ╭─ ❓ [Question] ───────────────────────────────────────────────────╮
 │                                                                   │
@@ -1347,17 +1403,20 @@ Your choice [1-N, or Q to quit]:
 ```
 
 **Props/Variants**:
+
 - `question` (required): Question text
 - `options` (required): Array of choices
 - `defaultChoice` (optional): Default selection
 - `allowQuit` (optional): Show quit option
 
 **States**:
+
 - **Waiting**: Yellow border, blinking cursor
 - **Answered**: Green border, selected option highlighted
 - **Cancelled**: Gray, shows cancelled message
 
 **Usage Rules**:
+
 - ✅ DO: Provide clear, numbered options
 - ✅ DO: Highlight default choice
 - ✅ DO: Allow 'Q' to quit
@@ -1369,6 +1428,7 @@ Your choice [1-N, or Q to quit]:
 **Purpose**: Display code examples with syntax highlighting
 
 **Anatomy**:
+
 ```
 ╭─ 📝 Example: [Title] ────────────────────────────────────────────╮
 │                                                                   │
@@ -1379,17 +1439,20 @@ Your choice [1-N, or Q to quit]:
 ```
 
 **Props/Variants**:
+
 - `code` (required): Code string
 - `title` (optional): Example title
 - `language` (optional): PowerShell, Bash, etc.
 - `showLineNumbers` (optional): Boolean
 
 **States**:
+
 - **Default**: Gray border, cyan code
 - **Error Example**: Red highlights
 - **Success Example**: Green highlights
 
 **Usage Rules**:
+
 - ✅ DO: Indent code 4 spaces from border
 - ✅ DO: Keep examples under 10 lines
 - ✅ DO: Include comments for clarity
@@ -1413,6 +1476,7 @@ Your choice [1-N, or Q to quit]:
 | Deny | "No, go back" | "Cancel" | Negative action |
 
 **Principles**:
+
 - Use verbs ("Apply", "Preview") not nouns ("Application", "Preview Mode")
 - Be specific ("Apply Fixes" not "OK")
 - Front-load the action ("Fix 5 issues" not "Issues: 5 to fix")
@@ -1438,6 +1502,7 @@ Your choice [1-N, or Q to quit]:
 | **Success** | "✅ Perfect! Found 15 PowerShell files ready to analyze." | Encouraging |
 
 **Principles**:
+
 - Start with icon (visual anchor)
 - State the problem - Provide specific solution
 - Keep under 100 characters
@@ -1445,6 +1510,7 @@ Your choice [1-N, or Q to quit]:
 ### Empty State Copy
 
 #### No Issues Found
+
 ```
 ╭─ 🎉 Excellent News! ──────────────────────────────────────────────╮
 │                                                                   │
@@ -1460,6 +1526,7 @@ Your choice [1-N, or Q to quit]:
 ```
 
 #### No Files in Directory
+
 ```
 ╭─ ⚠️ No PowerShell Files Found ────────────────────────────────────╮
 │                                                                   │
@@ -1479,6 +1546,7 @@ Your choice [1-N, or Q to quit]:
 ### Error Messages
 
 #### Syntax Error in Script
+
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║  ❌ ERROR: Can't Parse Script                                    ║
@@ -1504,6 +1572,7 @@ Your choice [1-N, or Q to quit]:
 ```
 
 #### Backup Failed
+
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║  ❌ CRITICAL: Backup Failed                                      ║
@@ -1530,6 +1599,7 @@ Your choice [1-N, or Q to quit]:
 ### Success Messages
 
 #### Fixes Applied
+
 ```
 ╭─ 🎉 Success! ─────────────────────────────────────────────────────╮
 │                                                                   │
@@ -1545,6 +1615,7 @@ Your choice [1-N, or Q to quit]:
 ### Inclusive Language Notes
 
 **DO Use**:
+
 - "They/their" instead of "he/she"
 - "Developer" instead of "ninja/rockstar/guru"
 - "Primary/replica" instead of "master/slave"
@@ -1552,11 +1623,13 @@ Your choice [1-N, or Q to quit]:
 - "Main branch" instead of "master branch"
 
 **Avoid**:
+
 - Ableist language ("sanity check" → "confidence check")
 - Violent metaphors ("kill process" → "stop process")
 - Cultural assumptions (dates, names, idioms)
 
 **Tone**:
+
 - Encouraging, never condescending
 - Professional, never stuffy
 - Friendly, never overly casual
@@ -1573,18 +1646,21 @@ Your choice [1-N, or Q to quit]:
 #### Participant Criteria
 
 **Inclusion**:
+
 - 0-6 months PowerShell experience
 - Never used PoshGuard before
 - Comfortable with basic terminal commands (cd, ls)
 - Mix of roles: IT admin, developer, student, security engineer
 
 **Exclusion**:
+>
 - >2 years PowerShell experience (not representative of target)
 - Previous PoshGuard users (no fresh perspective)
 
 #### Test Tasks
 
 **Task 1: First Preview (Critical Path)**
+
 - **Setup**: Provide sample script with 5 known issues
 - **Task**: "Preview what PoshGuard would fix without making changes"
 - **Success Criteria**: User runs with -DryRun flag within 5 minutes
@@ -1592,6 +1668,7 @@ Your choice [1-N, or Q to quit]:
 - **Target**: 95% success, <3 min average, anxiety <4/10
 
 **Task 2: Understand Output**
+
 - **Setup**: Show DryRun output
 - **Task**: "Explain what changes will be made"
 - **Success Criteria**: User correctly identifies 4/5 issues
@@ -1599,6 +1676,7 @@ Your choice [1-N, or Q to quit]:
 - **Target**: 90% comprehension, 85% confidence
 
 **Task 3: Apply Fixes**
+
 - **Setup**: Same script
 - **Task**: "Apply the fixes you previewed"
 - **Success Criteria**: User removes -DryRun and runs successfully
@@ -1606,6 +1684,7 @@ Your choice [1-N, or Q to quit]:
 - **Target**: 90% success, <2 min, 1 attempt
 
 **Task 4: Error Recovery**
+
 - **Setup**: Provide invalid path
 - **Task**: "Try to fix a file that doesn't exist"
 - **Success Criteria**: User reads error message and corrects path
@@ -1613,6 +1692,7 @@ Your choice [1-N, or Q to quit]:
 - **Target**: 85% resolve without help, <3 min
 
 **Task 5: Rollback (Optional)**
+
 - **Setup**: User has applied fixes
 - **Task**: "Undo the changes you made"
 - **Success Criteria**: User locates backup or uses restore command
@@ -1622,6 +1702,7 @@ Your choice [1-N, or Q to quit]:
 #### Test Script (Moderator Guide)
 
 **Introduction** (2 minutes):
+
 ```
 "Thank you for helping us test PoshGuard. This is a tool that helps
 improve PowerShell code quality. Don't worry if you're not a PowerShell
@@ -1637,6 +1718,7 @@ Any questions before we start?"
 ```
 
 **Task Administration**:
+
 1. Read task aloud
 2. Answer clarifying questions only
 3. Note: time started, verbalizations, struggles, successes
@@ -1644,12 +1726,14 @@ Any questions before we start?"
 5. After completion: "How confident are you in what you did?" (1-10)
 
 **Post-Task Questions**:
+
 - What was easiest about that task?
 - What was hardest?
 - Was anything surprising or unexpected?
 - How could we make this better?
 
 **Conclusion** (3 minutes):
+
 ```
 "Thank you! Just a few final questions:
 
@@ -1673,6 +1757,7 @@ Any questions before we start?"
 ### A/B Test Candidates
 
 #### Test 1: DryRun Default Behavior
+
 - **Hypothesis**: Making DryRun the default will increase first-time user confidence
 - **Variant A** (Control): Current behavior (DryRun is a flag)
 - **Variant B**: DryRun is default, must pass -Apply to make changes
@@ -1682,6 +1767,7 @@ Any questions before we start?"
 - **Sample Size**: 50 users per variant
 
 #### Test 2: Error Message Format
+
 - **Hypothesis**: Structured error format with clear "How to Fix" section increases self-service recovery
 - **Variant A** (Control): Current structured format
 - **Variant B**: Simplified format with fewer sections
@@ -1691,6 +1777,7 @@ Any questions before we start?"
 - **Sample Size**: 40 users per variant
 
 #### Test 3: Progress Indicators
+
 - **Hypothesis**: Detailed progress bars reduce perceived wait time and increase confidence
 - **Variant A** (Control): Percentage + count (45% - 9/20 files)
 - **Variant B**: Percentage only (45%)
@@ -1725,6 +1812,7 @@ Any questions before we start?"
 ### Privacy Principles
 
 **No PII Collected**:
+
 - ❌ No file paths
 - ❌ No file contents
 - ❌ No user names
@@ -1732,12 +1820,14 @@ Any questions before we start?"
 - ❌ No IP addresses
 
 **Opt-In Only**:
+
 - Telemetry disabled by default
 - Explicit consent required
 - Easy opt-out anytime
 - Clear data usage policy
 
 **Aggregation**:
+
 - Data aggregated to 50+ users minimum
 - No individual user tracking
 - No session linking across devices
@@ -1745,6 +1835,7 @@ Any questions before we start?"
 ### Funnel Definitions
 
 #### Funnel 1: First-Time Success
+
 ```
 Step 1: app.launched (mode=dryrun)
 Step 2: scan.completed (issues > 0)
@@ -1758,6 +1849,7 @@ Current Estimate: 58%
 ```
 
 #### Funnel 2: Error Recovery
+
 ```
 Step 1: error.displayed
 Step 2: help.accessed (within 60 sec)
@@ -1768,6 +1860,7 @@ Current Estimate: 45%
 ```
 
 #### Funnel 3: Tutorial to Adoption
+
 ```
 Step 1: tutorial.started
 Step 2: tutorial.completed
@@ -1781,6 +1874,7 @@ Current Estimate: Unknown (new feature)
 ### Dashboard Requirements
 
 **Primary KPI Dashboard** (updated daily):
+
 - Daily active users (DAU)
 - Weekly active users (WAU)
 - Task success rate (7-day rolling)
@@ -1788,12 +1882,14 @@ Current Estimate: Unknown (new feature)
 - Average fix confidence score
 
 **Operational Dashboard** (real-time):
+
 - Current error rate spike detection
 - Failed fix patterns (by rule)
 - Performance anomalies (p95 latency)
 - Backup failure rate
 
 **Product Dashboard** (weekly):
+
 - Feature adoption (tutorial, AI features, MCP)
 - User cohort retention (D1, D7, D30)
 - Fix success rate trends
@@ -1806,6 +1902,7 @@ Current Estimate: Unknown (new feature)
 ### Functional Requirements
 
 **FR-001: DryRun Mode**
+
 - [ ] GIVEN user runs with -DryRun flag
 - [ ] WHEN script completes
 - [ ] THEN no files are modified
@@ -1813,6 +1910,7 @@ Current Estimate: Unknown (new feature)
 - [ ] AND backup is NOT created
 
 **FR-002: Live Mode with Backup**
+
 - [ ] GIVEN user runs without -DryRun
 - [ ] WHEN fixes are applied
 - [ ] THEN backup is created BEFORE any changes
@@ -1820,6 +1918,7 @@ Current Estimate: Unknown (new feature)
 - [ ] AND backup location is displayed
 
 **FR-003: Error Display Format**
+
 - [ ] GIVEN any error occurs
 - [ ] WHEN error is displayed
 - [ ] THEN error box has red border
@@ -1828,6 +1927,7 @@ Current Estimate: Unknown (new feature)
 - [ ] AND trace ID is present
 
 **FR-004: Progress Indication**
+
 - [ ] GIVEN operation takes >2 seconds
 - [ ] WHEN processing occurs
 - [ ] THEN progress bar is displayed
@@ -1835,6 +1935,7 @@ Current Estimate: Unknown (new feature)
 - [ ] AND percentage and count are shown
 
 **FR-005: Success Summary**
+
 - [ ] GIVEN fixes applied successfully
 - [ ] WHEN operation completes
 - [ ] THEN summary shows files processed count
@@ -1845,6 +1946,7 @@ Current Estimate: Unknown (new feature)
 ### Accessibility Requirements
 
 **A11Y-001: Color Independence**
+
 - [ ] GIVEN user has colorblindness
 - [ ] WHEN viewing any screen
 - [ ] THEN information is conveyed with icons + text
@@ -1852,6 +1954,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: View in grayscale mode
 
 **A11Y-002: Screen Reader Compatibility**
+
 - [ ] GIVEN user uses screen reader
 - [ ] WHEN output is read
 - [ ] THEN content is linear top-to-bottom
@@ -1860,6 +1963,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Windows Narrator, NVDA, JAWS
 
 **A11Y-003: Keyboard-Only Navigation**
+
 - [ ] GIVEN user uses keyboard only
 - [ ] WHEN interacting with prompts
 - [ ] THEN all actions accessible via keyboard
@@ -1868,6 +1972,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Disconnect mouse, complete Task 1-5
 
 **A11Y-004: Motion Sensitivity**
+
 - [ ] GIVEN user has motion sensitivity
 - [ ] WHEN viewing animations
 - [ ] THEN no flashing content >3 Hz
@@ -1875,6 +1980,7 @@ Current Estimate: Unknown (new feature)
 - [ ] AND reduced-motion preference is respected
 
 **A11Y-005: Text Readability**
+
 - [ ] GIVEN any text output
 - [ ] WHEN measuring contrast
 - [ ] THEN text on background ≥4.5:1 (WCAG AA)
@@ -1884,24 +1990,28 @@ Current Estimate: Unknown (new feature)
 ### Performance Requirements
 
 **PERF-001: Cold Start Time**
+
 - [ ] GIVEN first script launch
 - [ ] WHEN measuring time to first output
 - [ ] THEN time ≤ 2 seconds (p95)
 - [ ] Test: Measure on min-spec hardware
 
 **PERF-002: Per-File Processing**
+
 - [ ] GIVEN single file <5KB
 - [ ] WHEN processing file
 - [ ] THEN time ≤ 3 seconds (p95)
 - [ ] Test: Run on standard test file
 
 **PERF-003: Memory Footprint**
+
 - [ ] GIVEN processing 100 files
 - [ ] WHEN monitoring memory
 - [ ] THEN peak memory ≤ 100MB
 - [ ] Test: Process-Monitor on Windows
 
 **PERF-004: Terminal Responsiveness**
+
 - [ ] GIVEN output being written
 - [ ] WHEN measuring frame time
 - [ ] THEN output latency ≤ 16ms per line
@@ -1910,6 +2020,7 @@ Current Estimate: Unknown (new feature)
 ### Usability Requirements
 
 **UX-001: First-Time Success**
+
 - [ ] GIVEN beginner user (0-6 mo experience)
 - [ ] WHEN attempting first fix
 - [ ] THEN 95% complete Task 1 (DryRun preview)
@@ -1917,6 +2028,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: 5-user usability study
 
 **UX-002: Error Self-Service**
+
 - [ ] GIVEN user encounters error
 - [ ] WHEN reading error message
 - [ ] THEN 85% resolve without external help
@@ -1924,6 +2036,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Task 4 in usability study
 
 **UX-003: Rollback Discovery**
+
 - [ ] GIVEN user wants to undo changes
 - [ ] WHEN searching for rollback
 - [ ] THEN 80% find backup location within 2 minutes
@@ -1931,6 +2044,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Task 5 in usability study
 
 **UX-004: Output Comprehension**
+
 - [ ] GIVEN DryRun output shown
 - [ ] WHEN asking what will change
 - [ ] THEN 90% correctly identify changes
@@ -1940,12 +2054,14 @@ Current Estimate: Unknown (new feature)
 ### Compatibility Requirements
 
 **COMPAT-001: PowerShell Versions**
+
 - [ ] GIVEN PowerShell 5.1
 - [ ] WHEN running PoshGuard
 - [ ] THEN all features work correctly
 - [ ] Test: CI pipeline on PS 5.1, 7.2, 7.4
 
 **COMPAT-002: Operating Systems**
+
 - [ ] GIVEN Windows 10/11, macOS 12+, Ubuntu 20.04+
 - [ ] WHEN running PoshGuard
 - [ ] THEN UI renders correctly
@@ -1953,6 +2069,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Manual verification on each OS
 
 **COMPAT-003: Terminal Emulators**
+
 - [ ] GIVEN common terminals (PowerShell, Windows Terminal, iTerm2, Terminal.app, GNOME Terminal)
 - [ ] WHEN running PoshGuard
 - [ ] THEN box drawing characters render
@@ -1960,6 +2077,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Screenshot comparison
 
 **COMPAT-004: ASCII Fallback**
+
 - [ ] GIVEN terminal without Unicode support
 - [ ] WHEN Unicode rendering fails
 - [ ] THEN ASCII box drawing used
@@ -1969,6 +2087,7 @@ Current Estimate: Unknown (new feature)
 ### Security Requirements
 
 **SEC-001: No Secret Logging**
+
 - [ ] GIVEN script contains credentials
 - [ ] WHEN PoshGuard processes file
 - [ ] THEN no secrets appear in logs
@@ -1977,6 +2096,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Process file with test secrets, audit logs
 
 **SEC-002: Safe Backups**
+
 - [ ] GIVEN sensitive files
 - [ ] WHEN backup created
 - [ ] THEN backup has same permissions as original
@@ -1984,6 +2104,7 @@ Current Estimate: Unknown (new feature)
 - [ ] Test: Check backup file permissions
 
 **SEC-003: No Data Leakage**
+
 - [ ] GIVEN telemetry enabled
 - [ ] WHEN events sent
 - [ ] THEN no file paths in events
@@ -1998,9 +2119,11 @@ Current Estimate: Unknown (new feature)
 ### Top Risks & Mitigations
 
 #### Risk 1: Terminal Unicode Support Varies
+
 **Impact**: High - Breaks visual design on 15% of systems  
 **Probability**: Medium  
 **Mitigation**:
+
 - Detect terminal capabilities on launch
 - Provide ASCII fallback mode (-NoUnicode flag)
 - Document known issues by terminal emulator
@@ -2009,9 +2132,11 @@ Current Estimate: Unknown (new feature)
 **Contingency**: If >20% users affected, make ASCII default
 
 #### Risk 2: Cognitive Load for Beginners
+
 **Impact**: High - Violates "zero knowledge" principle  
 **Probability**: Low (validated in existing implementation)  
 **Mitigation**:
+
 - 5-user testing with true beginners
 - Progressive disclosure (hide advanced info)
 - Interactive tutorial (30 min onboarding)
@@ -2020,9 +2145,11 @@ Current Estimate: Unknown (new feature)
 **Contingency**: Add "simple mode" with minimal output
 
 #### Risk 3: Color Blindness Accessibility
+
 **Impact**: Medium - Affects 8% of male users  
 **Probability**: Low (icons + color used)  
 **Mitigation**:
+
 - Never use color alone (always icon + color)
 - Test with colorblindness simulators
 - User testing with colorblind participants
@@ -2031,9 +2158,11 @@ Current Estimate: Unknown (new feature)
 **Contingency**: Add -HighContrast flag if issues found
 
 #### Risk 4: Performance on Large Codebases
+
 **Impact**: Medium - Poor experience for enterprise users  
 **Probability**: Medium  
 **Mitigation**:
+
 - Batch processing for >100 files
 - Stream output (don't buffer all)
 - Show progress every 500ms max
@@ -2042,9 +2171,11 @@ Current Estimate: Unknown (new feature)
 **Contingency**: Add -Parallel flag for concurrent processing
 
 #### Risk 5: Error Message Accuracy
+
 **Impact**: High - Wrong guidance worse than no guidance  
 **Probability**: Low  
 **Mitigation**:
+
 - Test all error paths
 - Community feedback on error messages
 - Regular error message audit
@@ -2065,43 +2196,52 @@ Current Estimate: Unknown (new feature)
 ### Phased Delivery Plan
 
 #### Phase 0: Foundation (Current - v4.3.0)
+
 **Status**: ✅ Complete  
 **Deliverables**:
+
 - Core UI components implemented
 - Design principles documented
 - Basic accessibility (WCAG AA)
 - 5-user validation (target: 75% success)
 
 **Exit Criteria**:
+
 - All core components functional
 - Documentation complete
 - Accessibility audit passed
 
 #### Phase 1: Polish (v4.4.0 - Next Release)
+
 **Timeline**: 2-4 weeks  
 **Focus**: Refinement based on user feedback
 
 **Deliverables**:
+
 - [ ] 10-user usability study results incorporated
 - [ ] A/B test results (DryRun default, error format)
 - [ ] ASCII fallback mode implemented
 - [ ] Tutorial completion tracked
 
 **Success Metrics**:
+
 - Task success rate: 85% → 95%
 - SUS score: 76 → 85
 - Error self-service: 70% → 85%
 
 **Exit Criteria**:
+
 - All acceptance criteria pass
 - 95% task success in testing
 - Zero P0/P1 bugs
 
 #### Phase 2: Optimize (v5.0.0 - Future)
+
 **Timeline**: 2-3 months  
 **Focus**: Performance, scale, internationalization
 
 **Deliverables**:
+
 - [ ] Parallel file processing
 - [ ] Localization framework (5+ languages)
 - [ ] Web companion UI (read-only dashboard)
@@ -2109,11 +2249,13 @@ Current Estimate: Unknown (new feature)
 - [ ] Analytics dashboard (product team)
 
 **Success Metrics**:
+
 - Performance: 2x improvement on large codebases
 - Adoption: 3x increase in weekly active users
 - Satisfaction: SUS score >90
 
 **Exit Criteria**:
+
 - i18n framework operational
 - 5 languages supported
 - Web UI feature parity with CLI
@@ -2121,30 +2263,35 @@ Current Estimate: Unknown (new feature)
 ### Next Steps (Immediate)
 
 **For Product Team**:
+
 1. [ ] Schedule 5-user usability study (within 2 weeks)
 2. [ ] Set up analytics pipeline (opt-in telemetry)
 3. [ ] Create tracking dashboard (KPIs)
 4. [ ] Define A/B test criteria
 
 **For Design Team**:
+
 1. [ ] Create Figma library for web UI (Phase 2)
 2. [ ] Design high-contrast theme
 3. [ ] Develop localization guidelines
 4. [ ] Create icon library (SVG exports)
 
 **For Engineering Team**:
+
 1. [ ] Implement acceptance criteria tests
 2. [ ] Add ASCII fallback mode
 3. [ ] Instrument analytics events
 4. [ ] Performance benchmark suite
 
 **For Documentation Team**:
+
 1. [ ] Create video walkthrough (5 min)
 2. [ ] Write "Troubleshooting Common Errors" guide
 3. [ ] Update FAQ based on support tickets
 4. [ ] Translate docs to Spanish, French, German, Japanese, Chinese
 
 **For Marketing Team**:
+
 1. [ ] Create comparison chart (vs competitors)
 2. [ ] Collect user testimonials
 3. [ ] Write case studies (3 personas)
@@ -2225,6 +2372,7 @@ $Colors = @{
 | **Success celebration** | ✅ Encouraging tone | ❌ Matter-of-fact | ❌ Terse |
 
 **UX Advantages**:
+
 1. Only PowerShell tool designed for beginners
 2. Only tool with WCAG compliance
 3. Only tool with interactive onboarding
@@ -2237,24 +2385,28 @@ $Colors = @{
 ### Validation Methods Used
 
 **Literature Review**:
+
 - Nielsen Norman Group: 10 Usability Heuristics
 - WebAIM: WCAG 2.2 Guidelines
 - Google Material Design: Accessibility
 - IBM Design Language: Motion
 
 **User Research**:
+
 - 12 user interviews (beginners to experts)
 - 5-user usability testing (completed)
 - 200+ GitHub issue analysis (pain points)
 - 50+ Discord community feedback sessions
 
 **Competitive Analysis**:
+
 - PSScriptAnalyzer (primary competitor)
 - ShellCheck (bash equivalent)
 - ESLint (JavaScript equivalent - UX benchmark)
 - Prettier (formatting tool - UX benchmark)
 
 **Analytics Review** (existing users):
+
 - Most common errors (top 10)
 - Time-to-first-success (baseline: 12 min)
 - Feature adoption rates (DryRun: 91%)
@@ -2273,6 +2425,7 @@ $Colors = @{
 ## Appendix D: Glossary
 
 **For Users** (Plain Language):
+
 - **AST**: The "skeleton" of your code - how PowerShell understands structure
 - **Backup**: A safety copy of your file before changes
 - **Cmdlet**: A PowerShell command (like Get-ChildItem)
@@ -2283,6 +2436,7 @@ $Colors = @{
 - **Trace ID**: A reference number for support requests
 
 **For Engineers** (Technical):
+
 - **WCAG**: Web Content Accessibility Guidelines
 - **SUS**: System Usability Scale (standardized survey)
 - **HEART**: Happiness, Engagement, Adoption, Retention, Task success
@@ -2295,21 +2449,25 @@ $Colors = @{
 ## Document Control
 
 **Version History**:
+
 - v1.0.0 (2025-10-12): Initial release - Complete UX specification
 
 **Maintenance**:
+
 - Review quarterly or after major releases
 - Update based on usability study findings
 - Incorporate A/B test results
 - Reflect regulatory changes (accessibility)
 
 **Approvals**:
+
 - Product Lead: _______________ Date: __________
 - Design Lead: _______________ Date: __________
 - Engineering Lead: _______________ Date: __________
 - Accessibility SME: _______________ Date: __________
 
 **Distribution**:
+
 - Product team (strategy, roadmap)
 - Design team (visual design, prototypes)
 - Engineering team (implementation)
@@ -2323,6 +2481,7 @@ $Colors = @{
 ### The Big Idea
 
 **PoshGuard proves that CLI tools don't have to be intimidating.** Through world-class UX design, we've created a terminal interface that:
+
 - Welcomes beginners with zero assumed knowledge
 - Guides users with clear, actionable feedback
 - Celebrates success and reduces anxiety
@@ -2343,12 +2502,14 @@ $Colors = @{
 ### What Makes This Special
 
 **Not "good UX"** - This is a new standard for CLI tools:
+
 - First PowerShell tool with WCAG 2.2 AA compliance
 - First with comprehensive usability testing protocol
 - First with beginner-focused design system
 - First with 95%+ task success rate target
 
 **Measurable Impact**:
+
 - 60% reduction in onboarding time
 - 85% fewer support requests
 - 40% increase in adoption
@@ -2403,6 +2564,7 @@ $Colors = @{
 **END OF SPECIFICATION**
 
 For questions or feedback on this specification, contact:
+
 - Product: [Product Lead Email]
 - Design: [Design Lead Email]  
 - Engineering: [Engineering Lead Email]
