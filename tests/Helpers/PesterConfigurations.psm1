@@ -34,12 +34,17 @@ function New-FastTestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [string]$Path = './tests/Unit',
     
     [switch]$PassThru
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $config = New-PesterConfiguration
   
@@ -82,7 +87,7 @@ function New-CoverageTestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [string]$Path = './tests/Unit',
     
@@ -92,6 +97,11 @@ function New-CoverageTestConfiguration {
     
     [string]$TestResultPath = './test-results.xml'
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $config = New-PesterConfiguration
   
@@ -133,12 +143,17 @@ function New-DebugTestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [string]$Path = './tests/Unit',
     
     [switch]$StopOnFailure
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $config = New-PesterConfiguration
   
@@ -179,7 +194,7 @@ function New-SingleFileTestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [Parameter(Mandatory)]
     [string]$FilePath,
@@ -189,6 +204,11 @@ function New-SingleFileTestConfiguration {
   
   if (-not (Test-Path $FilePath)) {
     throw "Test file not found: $FilePath"
+  }
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
   }
   
   $config = New-PesterConfiguration
@@ -229,7 +249,7 @@ function New-TaggedTestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [string]$Path = './tests/Unit',
     
@@ -237,6 +257,11 @@ function New-TaggedTestConfiguration {
     
     [string[]]$ExcludeTag
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $config = New-PesterConfiguration
   
@@ -286,7 +311,7 @@ function New-CITestConfiguration {
       Invoke-Pester -Configuration $config
   #>
   [CmdletBinding()]
-  [OutputType([PesterConfiguration])]
+  [OutputType([object])]
   param(
     [string]$Path = './tests/Unit',
     
@@ -294,6 +319,11 @@ function New-CITestConfiguration {
     
     [bool]$EnableCoverage = $false
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $config = New-PesterConfiguration
   
@@ -344,12 +374,17 @@ function Invoke-TestWithRetry {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory)]
-    [PesterConfiguration]$Configuration,
+    [object]$Configuration,
     
     [int]$MaxRetries = 3,
     
     [int]$RetryDelaySeconds = 2
   )
+  
+  # Ensure Pester is loaded
+  if (-not (Get-Module -Name Pester)) {
+    Import-Module -Name Pester -MinimumVersion 5.5.0 -ErrorAction Stop
+  }
   
   $attempt = 0
   $result = $null

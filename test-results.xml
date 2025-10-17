@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="32" errors="0" failures="5" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2025-10-17" time="03:15:24">
+  <environment cwd="/home/runner/work/PoshGuard/PoshGuard" clr-version="8.0.19" os-version="6.11.0-1018-azure" user="runner" nunit-version="2.5.8.0" user-domain="" machine-name="runnervmwhb2z" platform="Linux" />
+  <culture-info current-culture="" current-uiculture="" />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="1.457" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1" executed="True" result="Failure" success="False" time="1.457" asserts="0" description="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="Clean-Backups" executed="True" result="Success" success="True" time="0.3162" asserts="0" description="Clean-Backups">
+            <results>
+              <test-suite type="TestFixture" name="Clean-Backups.When backup directory does not exist" executed="True" result="Success" success="True" time="0.2607" asserts="0" description="Clean-Backups.When backup directory does not exist">
+                <results>
+                  <test-case description="Should return without error" name="Clean-Backups.When backup directory does not exist.Should return without error" time="0.2363" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Clean-Backups.When backup directory exists with old files" executed="True" result="Success" success="True" time="0.3022" asserts="0" description="Clean-Backups.When backup directory exists with old files">
+                <results>
+                  <test-case description="Should execute without error when cleaning backups" name="Clean-Backups.When backup directory exists with old files.Should execute without error when cleaning backups" time="0.0164" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should respect -WhatIf parameter" name="Clean-Backups.When backup directory exists with old files.Should respect -WhatIf parameter" time="0.0173" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Write-Log" executed="True" result="Success" success="True" time="0.5829" asserts="0" description="Write-Log">
+            <results>
+              <test-suite type="TestFixture" name="Write-Log.When logging at different levels" executed="True" result="Success" success="True" time="0.1476" asserts="0" description="Write-Log.When logging at different levels">
+                <results>
+                  <test-suite type="ParameterizedTest" name="Write-Log.When logging at different levels.Should output message at &lt;Level&gt; level" executed="True" result="Success" success="True" time="0.1378" asserts="0" description="Should output message at &lt;Level&gt; level">
+                    <results>
+                      <test-case description="Should output message at Info level" name="Write-Log.When logging at different levels.Should output message at Info level" time="0.0239" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Warn level" name="Write-Log.When logging at different levels.Should output message at Warn level" time="0.0077" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Error level" name="Write-Log.When logging at different levels.Should output message at Error level" time="0.0097" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Success level" name="Write-Log.When logging at different levels.Should output message at Success level" time="0.035" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Critical level" name="Write-Log.When logging at different levels.Should output message at Critical level" time="0.0285" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Debug level" name="Write-Log.When logging at different levels.Should output message at Debug level" time="0.0331" asserts="0" success="True" result="Success" executed="True" />
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.When using optional parameters" executed="True" result="Success" success="True" time="0.1889" asserts="0" description="Write-Log.When using optional parameters">
+                <results>
+                  <test-case description="Should support -NoTimestamp switch" name="Write-Log.When using optional parameters.Should support -NoTimestamp switch" time="0.0196" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support -NoIcon switch" name="Write-Log.When using optional parameters.Should support -NoIcon switch" time="0.0087" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.When message is empty or whitespace" executed="True" result="Success" success="True" time="0.2029" asserts="0" description="Write-Log.When message is empty or whitespace">
+                <results>
+                  <test-case description="Should handle whitespace message" name="Write-Log.When message is empty or whitespace.Should handle whitespace message" time="0.0082" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.Parameter validation" executed="True" result="Success" success="True" time="0.2617" asserts="0" description="Write-Log.Parameter validation">
+                <results>
+                  <test-case description="Should validate Level is in allowed set" name="Write-Log.Parameter validation.Should validate Level is in allowed set" time="0.0528" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Get-PowerShellFiles" executed="True" result="Failure" success="False" time="0.9003" asserts="0" description="Get-PowerShellFiles">
+            <results>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path is a single file" executed="True" result="Failure" success="False" time="0.1311" asserts="0" description="Get-PowerShellFiles.When path is a single file">
+                <results>
+                  <test-case description="Should return the single file" name="Get-PowerShellFiles.When path is a single file.Should return the single file" time="0.095" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:121</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should return file with .psm1 extension" name="Get-PowerShellFiles.When path is a single file.Should return file with .psm1 extension" time="0.0138" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:130</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should return file with .psd1 extension" name="Get-PowerShellFiles.When path is a single file.Should return file with .psd1 extension" time="0.0129" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:139</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path is a directory" executed="True" result="Success" success="True" time="0.2416" asserts="0" description="Get-PowerShellFiles.When path is a directory">
+                <results>
+                  <test-case description="Should return all PowerShell files recursively" name="Get-PowerShellFiles.When path is a directory.Should return all PowerShell files recursively" time="0.0417" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should filter by supported extensions" name="Get-PowerShellFiles.When path is a directory.Should filter by supported extensions" time="0.0229" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support custom extensions" name="Get-PowerShellFiles.When path is a directory.Should support custom extensions" time="0.0363" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path does not exist" executed="True" result="Success" success="True" time="0.259" asserts="0" description="Get-PowerShellFiles.When path does not exist">
+                <results>
+                  <test-case description="Should handle non-existent path" name="Get-PowerShellFiles.When path does not exist.Should handle non-existent path" time="0.0119" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.Edge cases" executed="True" result="Failure" success="False" time="0.3126" asserts="0" description="Get-PowerShellFiles.Edge cases">
+                <results>
+                  <test-case description="Should handle directory with no PowerShell files" name="Get-PowerShellFiles.Edge cases.Should handle directory with no PowerShell files" time="0.0106" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle files with multiple dots in name" name="Get-PowerShellFiles.Edge cases.Should handle files with multiple dots in name" time="0.0152" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:213</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should handle paths with spaces" name="Get-PowerShellFiles.Edge cases.Should handle paths with spaces" time="0.0183" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:224</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="New-FileBackup" executed="True" result="Success" success="True" time="0.943" asserts="0" description="New-FileBackup">
+            <results>
+              <test-suite type="TestFixture" name="New-FileBackup.Basic functionality" executed="True" result="Success" success="True" time="0.0332" asserts="0" description="New-FileBackup.Basic functionality">
+                <results>
+                  <test-case description="Should be defined and callable" name="New-FileBackup.Basic functionality.Should be defined and callable" time="0.0106" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have CmdletBinding attribute" name="New-FileBackup.Basic functionality.Should have CmdletBinding attribute" time="0.0072" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support ShouldProcess" name="New-FileBackup.Basic functionality.Should support ShouldProcess" time="0.0108" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="New-UnifiedDiff" executed="True" result="Success" success="True" time="1.0025" asserts="0" description="New-UnifiedDiff">
+            <results>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.Basic functionality" executed="True" result="Success" success="True" time="0.0278" asserts="0" description="New-UnifiedDiff.Basic functionality">
+                <results>
+                  <test-case description="Should be defined and callable" name="New-UnifiedDiff.Basic functionality.Should be defined and callable" time="0.0058" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have CmdletBinding attribute" name="New-UnifiedDiff.Basic functionality.Should have CmdletBinding attribute" time="0.0056" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should execute without error" name="New-UnifiedDiff.Basic functionality.Should execute without error" time="0.012" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.When comparing identical content" executed="True" result="Success" success="True" time="0.038" asserts="0" description="New-UnifiedDiff.When comparing identical content">
+                <results>
+                  <test-case description="Should execute without error on identical content" name="New-UnifiedDiff.When comparing identical content.Should execute without error on identical content" time="0.006" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.When content has changes" executed="True" result="Success" success="True" time="0.0557" asserts="0" description="New-UnifiedDiff.When content has changes">
+                <results>
+                  <test-case description="Should detect added lines" name="New-UnifiedDiff.When content has changes.Should detect added lines" time="0.0075" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect removed lines" name="New-UnifiedDiff.When content has changes.Should detect removed lines" time="0.0057" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
