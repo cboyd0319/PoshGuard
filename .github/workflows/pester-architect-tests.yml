@@ -1,0 +1,207 @@
+name: Pester Architect Test Suite
+on:
+  push:
+    branches: [ main, develop, 'copilot/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} - PowerShell ${{ matrix.pwsh }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        pwsh: ["7.4.4"]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        uses: PowerShell/PowerShell-For-GitHub-Actions@v1
+        with:
+          version: ${{ matrix.pwsh }}
+      
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          Write-Host "📦 Installing testing modules..." -ForegroundColor Cyan
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          
+          # Install Pester v5.5.0+ (required for modern syntax)
+          Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0 -SkipPublisherCheck
+          
+          # Install PSScriptAnalyzer (required for static analysis)
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+          
+          # Verify versions
+          $pesterVersion = (Get-Module Pester -ListAvailable | Select-Object -First 1).Version
+          $psaVersion = (Get-Module PSScriptAnalyzer -ListAvailable | Select-Object -First 1).Version
+          
+          Write-Host "✅ Pester $pesterVersion installed" -ForegroundColor Green
+          Write-Host "✅ PSScriptAnalyzer $psaVersion installed" -ForegroundColor Green
+      
+      - name: Run PSScriptAnalyzer on source code
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Running PSScriptAnalyzer on source code..." -ForegroundColor Cyan
+          
+          $results = Invoke-ScriptAnalyzer `
+            -Path ./tools/lib `
+            -Settings ./.psscriptanalyzer.psd1 `
+            -Recurse `
+            -ErrorAction Continue
+          
+          if ($results) {
+            Write-Host "⚠️  PSScriptAnalyzer found $($results.Count) issue(s):" -ForegroundColor Yellow
+            $results | Format-Table -Property Severity, RuleName, ScriptName, Line, Message -AutoSize
+            
+            # Fail on errors only (warnings are acceptable for now)
+            $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+            if ($errors) {
+              Write-Error "❌ PSScriptAnalyzer found $($errors.Count) error(s). Fix before merging."
+              exit 1
+            }
+            else {
+              Write-Host "ℹ️  Only warnings found, no critical errors" -ForegroundColor Green
+            }
+          }
+          else {
+            Write-Host "✅ PSScriptAnalyzer passed with no issues" -ForegroundColor Green
+          }
+      
+      - name: Run PSScriptAnalyzer on test code
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Running PSScriptAnalyzer on test code..." -ForegroundColor Cyan
+          
+          $results = Invoke-ScriptAnalyzer `
+            -Path ./tests `
+            -Settings ./tests/.psscriptanalyzer.tests.psd1 `
+            -Recurse `
+            -ErrorAction Continue
+          
+          if ($results) {
+            Write-Host "⚠️  PSScriptAnalyzer found $($results.Count) test issue(s):" -ForegroundColor Yellow
+            $results | Format-Table -Property Severity, RuleName, ScriptName, Line, Message -AutoSize
+            
+            # Fail on errors in tests too
+            $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+            if ($errors) {
+              Write-Error "❌ PSScriptAnalyzer found $($errors.Count) error(s) in tests."
+              exit 1
+            }
+          }
+          else {
+            Write-Host "✅ Test code passed PSScriptAnalyzer" -ForegroundColor Green
+          }
+      
+      - name: Run unit tests with coverage
+        shell: pwsh
+        run: |
+          Write-Host "🧪 Running comprehensive unit tests..." -ForegroundColor Cyan
+          
+          # Configure Pester
+          $config = New-PesterConfiguration
+          
+          # Test execution settings
+          $config.Run.Path = './tests/Unit'
+          $config.Run.PassThru = $true
+          $config.Run.Exit = $false
+          
+          # Output settings
+          $config.Output.Verbosity = 'Detailed'
+          
+          # Test result settings
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath = 'test-results.xml'
+          
+          # Code coverage settings (enable on Linux only for speed)
+          if ($IsLinux) {
+            Write-Host "📊 Enabling code coverage on Linux..." -ForegroundColor Cyan
+            $config.CodeCoverage.Enabled = $true
+            $config.CodeCoverage.Path = './tools/lib/*.psm1'
+            $config.CodeCoverage.OutputFormat = 'JaCoCo'
+            $config.CodeCoverage.OutputPath = 'coverage.xml'
+            $config.CodeCoverage.CoveragePercentTarget = 85  # Target: 85% minimum
+          }
+          
+          # Run tests
+          $result = Invoke-Pester -Configuration $config
+          
+          # Display results
+          Write-Host "`n📊 Test Results:" -ForegroundColor Cyan
+          Write-Host "  Total:    $($result.TotalCount)" -ForegroundColor White
+          Write-Host "  Passed:   $($result.PassedCount)" -ForegroundColor Green
+          Write-Host "  Failed:   $($result.FailedCount)" -ForegroundColor $(if ($result.FailedCount -gt 0) { 'Red' } else { 'Green' })
+          Write-Host "  Skipped:  $($result.SkippedCount)" -ForegroundColor Yellow
+          Write-Host "  Duration: $($result.Duration.TotalSeconds)s" -ForegroundColor White
+          
+          # Display coverage results (Linux only)
+          if ($IsLinux -and $result.CodeCoverage) {
+            $coverage = $result.CodeCoverage
+            $coveragePercent = [math]::Round($coverage.CoveragePercent, 2)
+            
+            Write-Host "`n📊 Code Coverage:" -ForegroundColor Cyan
+            Write-Host "  Lines Covered:   $($coverage.CommandsExecutedCount) / $($coverage.CommandsAnalyzedCount)" -ForegroundColor White
+            Write-Host "  Coverage:        $coveragePercent%" -ForegroundColor $(if ($coveragePercent -ge 85) { 'Green' } else { 'Yellow' })
+            Write-Host "  Target:          85%" -ForegroundColor White
+            
+            # Check coverage threshold
+            if ($coveragePercent -lt 85) {
+              Write-Warning "⚠️  Coverage $coveragePercent% is below 85% target"
+              # Don't fail build yet, just warn
+            }
+            else {
+              Write-Host "✅ Coverage meets 85% threshold" -ForegroundColor Green
+            }
+          }
+          
+          # Fail if tests failed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "❌ $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          
+          Write-Host "`n✅ All tests passed!" -ForegroundColor Green
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: test-results.xml
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: coverage-report
+          path: coverage.xml
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-poshguard
+          fail_ci_if_error: false
+
+  quality-gates:
+    name: Quality Gates Summary
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test status
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Tests failed on one or more platforms"
+            exit 1
+          fi
+          echo "✅ All quality gates passed"

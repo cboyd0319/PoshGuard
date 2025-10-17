@@ -1,0 +1,358 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="87" errors="0" failures="6" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2025-10-17" time="10:25:00">
+  <environment user="runner" nunit-version="2.5.8.0" os-version="6.14.0-1012-azure" cwd="/home/runner/work/PoshGuard/PoshGuard" user-domain="" platform="Linux" clr-version="8.0.19" machine-name="runnervmzdgdc" />
+  <culture-info current-culture="" current-uiculture="" />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="2.3514" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/PoshGuard.Tests.ps1" executed="True" result="Success" success="True" time="0.9985" asserts="0" description="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/PoshGuard.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="Invoke-PoshGuard" executed="True" result="Success" success="True" time="0.3246" asserts="0" description="Invoke-PoshGuard">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-PoshGuard.Function existence and signature" executed="True" result="Success" success="True" time="0.2447" asserts="0" description="Invoke-PoshGuard.Function existence and signature">
+                <results>
+                  <test-case description="Should be exported and accessible" name="Invoke-PoshGuard.Function existence and signature.Should be exported and accessible" time="0.0979" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have CmdletBinding attribute" name="Invoke-PoshGuard.Function existence and signature.Should have CmdletBinding attribute" time="0.0279" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have Path parameter" name="Invoke-PoshGuard.Function existence and signature.Should have Path parameter" time="0.0072" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have DryRun switch parameter" name="Invoke-PoshGuard.Function existence and signature.Should have DryRun switch parameter" time="0.0075" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have ShowDiff switch parameter" name="Invoke-PoshGuard.Function existence and signature.Should have ShowDiff switch parameter" time="0.0307" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have Recurse switch parameter" name="Invoke-PoshGuard.Function existence and signature.Should have Recurse switch parameter" time="0.0119" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have Skip parameter" name="Invoke-PoshGuard.Function existence and signature.Should have Skip parameter" time="0.0141" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have ExportSarif switch parameter" name="Invoke-PoshGuard.Function existence and signature.Should have ExportSarif switch parameter" time="0.0061" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have SarifOutputPath parameter with default value" name="Invoke-PoshGuard.Function existence and signature.Should have SarifOutputPath parameter with default value" time="0.0117" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PoshGuard.Parameter attributes" executed="True" result="Success" success="True" time="0.3115" asserts="0" description="Invoke-PoshGuard.Parameter attributes">
+                <results>
+                  <test-case description="Path parameter should be in position 0" name="Invoke-PoshGuard.Parameter attributes.Path parameter should be in position 0" time="0.0131" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Path parameter should be mandatory" name="Invoke-PoshGuard.Parameter attributes.Path parameter should be mandatory" time="0.0077" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="DryRun should be a switch parameter" name="Invoke-PoshGuard.Parameter attributes.DryRun should be a switch parameter" time="0.009" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="ShowDiff should be a switch parameter" name="Invoke-PoshGuard.Parameter attributes.ShowDiff should be a switch parameter" time="0.0193" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Recurse should be a switch parameter" name="Invoke-PoshGuard.Parameter attributes.Recurse should be a switch parameter" time="0.0105" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="PoshGuard Module" executed="True" result="Success" success="True" time="0.5146" asserts="0" description="PoshGuard Module">
+            <results>
+              <test-suite type="TestFixture" name="PoshGuard Module.Module metadata" executed="True" result="Success" success="True" time="0.1159" asserts="0" description="PoshGuard Module.Module metadata">
+                <results>
+                  <test-case description="Should be loaded" name="PoshGuard Module.Module metadata.Should be loaded" time="0.012" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have correct module name" name="PoshGuard Module.Module metadata.Should have correct module name" time="0.0086" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should export Invoke-PoshGuard function" name="PoshGuard Module.Module metadata.Should export Invoke-PoshGuard function" time="0.0227" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should export only Invoke-PoshGuard (no internal functions)" name="PoshGuard Module.Module metadata.Should export only Invoke-PoshGuard (no internal functions)" time="0.0213" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not export variables" name="PoshGuard Module.Module metadata.Should not export variables" time="0.0191" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not export aliases" name="PoshGuard Module.Module metadata.Should not export aliases" time="0.0156" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should not export cmdlets" name="PoshGuard Module.Module metadata.Should not export cmdlets" time="0.01" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="PoshGuard Module.Module structure" executed="True" result="Success" success="True" time="0.1846" asserts="0" description="PoshGuard Module.Module structure">
+                <results>
+                  <test-case description="Module file exists" name="PoshGuard Module.Module structure.Module file exists" time="0.0097" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Manifest file exists" name="PoshGuard Module.Module structure.Manifest file exists" time="0.0088" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Manifest can be imported" name="PoshGuard Module.Module structure.Manifest can be imported" time="0.0445" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1" executed="True" result="Failure" success="False" time="0.8386" asserts="0" description="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="Clean-Backups" executed="True" result="Success" success="True" time="0.1967" asserts="0" description="Clean-Backups">
+            <results>
+              <test-suite type="TestFixture" name="Clean-Backups.When backup directory does not exist" executed="True" result="Success" success="True" time="0.1596" asserts="0" description="Clean-Backups.When backup directory does not exist">
+                <results>
+                  <test-case description="Should return without error" name="Clean-Backups.When backup directory does not exist.Should return without error" time="0.1555" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Clean-Backups.When backup directory exists with old files" executed="True" result="Success" success="True" time="0.1934" asserts="0" description="Clean-Backups.When backup directory exists with old files">
+                <results>
+                  <test-case description="Should execute without error when cleaning backups" name="Clean-Backups.When backup directory exists with old files.Should execute without error when cleaning backups" time="0.0169" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should respect -WhatIf parameter" name="Clean-Backups.When backup directory exists with old files.Should respect -WhatIf parameter" time="0.0111" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Write-Log" executed="True" result="Success" success="True" time="0.3648" asserts="0" description="Write-Log">
+            <results>
+              <test-suite type="TestFixture" name="Write-Log.When logging at different levels" executed="True" result="Success" success="True" time="0.0883" asserts="0" description="Write-Log.When logging at different levels">
+                <results>
+                  <test-suite type="ParameterizedTest" name="Write-Log.When logging at different levels.Should output message at &lt;Level&gt; level" executed="True" result="Success" success="True" time="0.0831" asserts="0" description="Should output message at &lt;Level&gt; level">
+                    <results>
+                      <test-case description="Should output message at Info level" name="Write-Log.When logging at different levels.Should output message at Info level" time="0.0235" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Warn level" name="Write-Log.When logging at different levels.Should output message at Warn level" time="0.0064" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Error level" name="Write-Log.When logging at different levels.Should output message at Error level" time="0.0064" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Success level" name="Write-Log.When logging at different levels.Should output message at Success level" time="0.0086" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Critical level" name="Write-Log.When logging at different levels.Should output message at Critical level" time="0.0302" asserts="0" success="True" result="Success" executed="True" />
+                      <test-case description="Should output message at Debug level" name="Write-Log.When logging at different levels.Should output message at Debug level" time="0.008" asserts="0" success="True" result="Success" executed="True" />
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.When using optional parameters" executed="True" result="Success" success="True" time="0.1131" asserts="0" description="Write-Log.When using optional parameters">
+                <results>
+                  <test-case description="Should support -NoTimestamp switch" name="Write-Log.When using optional parameters.Should support -NoTimestamp switch" time="0.0076" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support -NoIcon switch" name="Write-Log.When using optional parameters.Should support -NoIcon switch" time="0.0066" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.When message is empty or whitespace" executed="True" result="Success" success="True" time="0.1247" asserts="0" description="Write-Log.When message is empty or whitespace">
+                <results>
+                  <test-case description="Should handle whitespace message" name="Write-Log.When message is empty or whitespace.Should handle whitespace message" time="0.0072" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Write-Log.Parameter validation" executed="True" result="Success" success="True" time="0.1644" asserts="0" description="Write-Log.Parameter validation">
+                <results>
+                  <test-case description="Should validate Level is in allowed set" name="Write-Log.Parameter validation.Should validate Level is in allowed set" time="0.035" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Get-PowerShellFiles" executed="True" result="Failure" success="False" time="0.6418" asserts="0" description="Get-PowerShellFiles">
+            <results>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path is a single file" executed="True" result="Failure" success="False" time="0.1338" asserts="0" description="Get-PowerShellFiles.When path is a single file">
+                <results>
+                  <test-case description="Should return the single file" name="Get-PowerShellFiles.When path is a single file.Should return the single file" time="0.1014" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:121</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should return file with .psm1 extension" name="Get-PowerShellFiles.When path is a single file.Should return file with .psm1 extension" time="0.0127" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:130</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should return file with .psd1 extension" name="Get-PowerShellFiles.When path is a single file.Should return file with .psd1 extension" time="0.0115" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:139</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path is a directory" executed="True" result="Success" success="True" time="0.222" asserts="0" description="Get-PowerShellFiles.When path is a directory">
+                <results>
+                  <test-case description="Should return all PowerShell files recursively" name="Get-PowerShellFiles.When path is a directory.Should return all PowerShell files recursively" time="0.0312" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should filter by supported extensions" name="Get-PowerShellFiles.When path is a directory.Should filter by supported extensions" time="0.0152" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support custom extensions" name="Get-PowerShellFiles.When path is a directory.Should support custom extensions" time="0.0331" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.When path does not exist" executed="True" result="Success" success="True" time="0.236" asserts="0" description="Get-PowerShellFiles.When path does not exist">
+                <results>
+                  <test-case description="Should handle non-existent path" name="Get-PowerShellFiles.When path does not exist.Should handle non-existent path" time="0.0093" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Get-PowerShellFiles.Edge cases" executed="True" result="Failure" success="False" time="0.2732" asserts="0" description="Get-PowerShellFiles.Edge cases">
+                <results>
+                  <test-case description="Should handle directory with no PowerShell files" name="Get-PowerShellFiles.Edge cases.Should handle directory with no PowerShell files" time="0.0104" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle files with multiple dots in name" name="Get-PowerShellFiles.Edge cases.Should handle files with multiple dots in name" time="0.0101" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:213</stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case description="Should handle paths with spaces" name="Get-PowerShellFiles.Edge cases.Should handle paths with spaces" time="0.0102" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Core.Tests.ps1:224</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="New-FileBackup" executed="True" result="Success" success="True" time="0.6709" asserts="0" description="New-FileBackup">
+            <results>
+              <test-suite type="TestFixture" name="New-FileBackup.Basic functionality" executed="True" result="Success" success="True" time="0.0257" asserts="0" description="New-FileBackup.Basic functionality">
+                <results>
+                  <test-case description="Should be defined and callable" name="New-FileBackup.Basic functionality.Should be defined and callable" time="0.0071" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have CmdletBinding attribute" name="New-FileBackup.Basic functionality.Should have CmdletBinding attribute" time="0.0057" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should support ShouldProcess" name="New-FileBackup.Basic functionality.Should support ShouldProcess" time="0.0091" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="New-UnifiedDiff" executed="True" result="Success" success="True" time="0.7243" asserts="0" description="New-UnifiedDiff">
+            <results>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.Basic functionality" executed="True" result="Success" success="True" time="0.0282" asserts="0" description="New-UnifiedDiff.Basic functionality">
+                <results>
+                  <test-case description="Should be defined and callable" name="New-UnifiedDiff.Basic functionality.Should be defined and callable" time="0.0096" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should have CmdletBinding attribute" name="New-UnifiedDiff.Basic functionality.Should have CmdletBinding attribute" time="0.0046" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should execute without error" name="New-UnifiedDiff.Basic functionality.Should execute without error" time="0.0102" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.When comparing identical content" executed="True" result="Success" success="True" time="0.0366" asserts="0" description="New-UnifiedDiff.When comparing identical content">
+                <results>
+                  <test-case description="Should execute without error on identical content" name="New-UnifiedDiff.When comparing identical content.Should execute without error on identical content" time="0.0052" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="New-UnifiedDiff.When content has changes" executed="True" result="Success" success="True" time="0.05" asserts="0" description="New-UnifiedDiff.When content has changes">
+                <results>
+                  <test-case description="Should detect added lines" name="New-UnifiedDiff.When content has changes.Should detect added lines" time="0.0057" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should detect removed lines" name="New-UnifiedDiff.When content has changes.Should detect removed lines" time="0.0043" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Security.Tests.ps1" executed="True" result="Failure" success="False" time="0.5144" asserts="0" description="/home/runner/work/PoshGuard/PoshGuard/tests/Unit/Security.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix" executed="True" result="Success" success="True" time="0.1565" asserts="0" description="Invoke-PlainTextPasswordFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type" executed="True" result="Success" success="True" time="0.087" asserts="0" description="Invoke-PlainTextPasswordFix.When parameter has plain text password type">
+                <results>
+                  <test-case description="Should convert [string]$Password to [SecureString]$Password" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type.Should convert [string]$Password to [SecureString]$Password" time="0.0583" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should convert [string]$Pass parameter" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type.Should convert [string]$Pass parameter" time="0.0073" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should convert [string]$Pwd parameter" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type.Should convert [string]$Pwd parameter" time="0.0062" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should convert [string]$Secret parameter" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type.Should convert [string]$Secret parameter" time="0.0055" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should convert [string]$Token parameter" name="Invoke-PlainTextPasswordFix.When parameter has plain text password type.Should convert [string]$Token parameter" time="0.0057" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.When parameter already uses SecureString" executed="True" result="Success" success="True" time="0.0988" asserts="0" description="Invoke-PlainTextPasswordFix.When parameter already uses SecureString">
+                <results>
+                  <test-case description="Should not modify already secure parameters" name="Invoke-PlainTextPasswordFix.When parameter already uses SecureString.Should not modify already secure parameters" time="0.0085" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.When parameter name contains password but is not a string" executed="True" result="Success" success="True" time="0.1079" asserts="0" description="Invoke-PlainTextPasswordFix.When parameter name contains password but is not a string">
+                <results>
+                  <test-case description="Should not modify non-string password parameters" name="Invoke-PlainTextPasswordFix.When parameter name contains password but is not a string.Should not modify non-string password parameters" time="0.0059" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.When multiple password parameters exist" executed="True" result="Success" success="True" time="0.1239" asserts="0" description="Invoke-PlainTextPasswordFix.When multiple password parameters exist">
+                <results>
+                  <test-case description="Should convert all password parameters" name="Invoke-PlainTextPasswordFix.When multiple password parameters exist.Should convert all password parameters" time="0.012" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.When content has no parameters" executed="True" result="Success" success="True" time="0.1331" asserts="0" description="Invoke-PlainTextPasswordFix.When content has no parameters">
+                <results>
+                  <test-case description="Should return content unchanged" name="Invoke-PlainTextPasswordFix.When content has no parameters.Should return content unchanged" time="0.006" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-PlainTextPasswordFix.Error handling" executed="True" result="Success" success="True" time="0.1524" asserts="0" description="Invoke-PlainTextPasswordFix.Error handling">
+                <results>
+                  <test-case description="Should handle invalid PowerShell syntax gracefully" name="Invoke-PlainTextPasswordFix.Error handling.Should handle invalid PowerShell syntax gracefully" time="0.01" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle simple content" name="Invoke-PlainTextPasswordFix.Error handling.Should handle simple content" time="0.0051" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-ConvertToSecureStringFix" executed="True" result="Success" success="True" time="0.1937" asserts="0" description="Invoke-ConvertToSecureStringFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-ConvertToSecureStringFix.When ConvertTo-SecureString with -AsPlainText is found" executed="True" result="Success" success="True" time="0.0238" asserts="0" description="Invoke-ConvertToSecureStringFix.When ConvertTo-SecureString with -AsPlainText is found">
+                <results>
+                  <test-case description="Should process dangerous ConvertTo-SecureString usage" name="Invoke-ConvertToSecureStringFix.When ConvertTo-SecureString with -AsPlainText is found.Should process dangerous ConvertTo-SecureString usage" time="0.014" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle ConvertTo-SecureString with literal password" name="Invoke-ConvertToSecureStringFix.When ConvertTo-SecureString with -AsPlainText is found.Should handle ConvertTo-SecureString with literal password" time="0.0052" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-ConvertToSecureStringFix.Edge cases" executed="True" result="Success" success="True" time="0.0337" asserts="0" description="Invoke-ConvertToSecureStringFix.Edge cases">
+                <results>
+                  <test-case description="Should handle content without ConvertTo-SecureString" name="Invoke-ConvertToSecureStringFix.Edge cases.Should handle content without ConvertTo-SecureString" time="0.0058" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-UsernamePasswordParamsFix" executed="True" result="Success" success="True" time="0.2287" asserts="0" description="Invoke-UsernamePasswordParamsFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-UsernamePasswordParamsFix.When function has both Username and Password parameters" executed="True" result="Success" success="True" time="0.0235" asserts="0" description="Invoke-UsernamePasswordParamsFix.When function has both Username and Password parameters">
+                <results>
+                  <test-case description="Should process function with Username and Password params" name="Invoke-UsernamePasswordParamsFix.When function has both Username and Password parameters.Should process function with Username and Password params" time="0.0203" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-UsernamePasswordParamsFix.Edge cases" executed="True" result="Success" success="True" time="0.0321" asserts="0" description="Invoke-UsernamePasswordParamsFix.Edge cases">
+                <results>
+                  <test-case description="Should handle simple content" name="Invoke-UsernamePasswordParamsFix.Edge cases.Should handle simple content" time="0.0054" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-InvokeExpressionFix" executed="True" result="Success" success="True" time="0.2612" asserts="0" description="Invoke-InvokeExpressionFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-InvokeExpressionFix.When Invoke-Expression is used" executed="True" result="Success" success="True" time="0.0219" asserts="0" description="Invoke-InvokeExpressionFix.When Invoke-Expression is used">
+                <results>
+                  <test-case description="Should process Invoke-Expression usage" name="Invoke-InvokeExpressionFix.When Invoke-Expression is used.Should process Invoke-Expression usage" time="0.0138" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle iex alias" name="Invoke-InvokeExpressionFix.When Invoke-Expression is used.Should handle iex alias" time="0.0047" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-InvokeExpressionFix.When Invoke-Expression is not present" executed="True" result="Success" success="True" time="0.0297" asserts="0" description="Invoke-InvokeExpressionFix.When Invoke-Expression is not present">
+                <results>
+                  <test-case description="Should handle safe content" name="Invoke-InvokeExpressionFix.When Invoke-Expression is not present.Should handle safe content" time="0.0048" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-EmptyCatchBlockFix" executed="True" result="Failure" success="False" time="0.3198" asserts="0" description="Invoke-EmptyCatchBlockFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-EmptyCatchBlockFix.When empty catch block is found" executed="True" result="Success" success="True" time="0.0283" asserts="0" description="Invoke-EmptyCatchBlockFix.When empty catch block is found">
+                <results>
+                  <test-case description="Should add logging to empty catch block" name="Invoke-EmptyCatchBlockFix.When empty catch block is found.Should add logging to empty catch block" time="0.02" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle catch block with only whitespace" name="Invoke-EmptyCatchBlockFix.When empty catch block is found.Should handle catch block with only whitespace" time="0.0052" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-EmptyCatchBlockFix.When catch block has content" executed="True" result="Success" success="True" time="0.0372" asserts="0" description="Invoke-EmptyCatchBlockFix.When catch block has content">
+                <results>
+                  <test-case description="Should not modify non-empty catch blocks" name="Invoke-EmptyCatchBlockFix.When catch block has content.Should not modify non-empty catch blocks" time="0.0058" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-EmptyCatchBlockFix.Edge cases" executed="True" result="Failure" success="False" time="0.0558" asserts="0" description="Invoke-EmptyCatchBlockFix.Edge cases">
+                <results>
+                  <test-case description="Should handle multiple try-catch blocks" name="Invoke-EmptyCatchBlockFix.Edge cases.Should handle multiple try-catch blocks" time="0.0062" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle nested try-catch" name="Invoke-EmptyCatchBlockFix.Edge cases.Should handle nested try-catch" time="0.0092" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.</message>
+                      <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Security.Tests.ps1:315</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-HardcodedComputerNameFix" executed="True" result="Success" success="True" time="0.3499" asserts="0" description="Invoke-HardcodedComputerNameFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-HardcodedComputerNameFix.When hardcoded computer names are found" executed="True" result="Success" success="True" time="0.0196" asserts="0" description="Invoke-HardcodedComputerNameFix.When hardcoded computer names are found">
+                <results>
+                  <test-case description="Should process hardcoded computer name" name="Invoke-HardcodedComputerNameFix.When hardcoded computer names are found.Should process hardcoded computer name" time="0.0076" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="Should handle multiple hardcoded names" name="Invoke-HardcodedComputerNameFix.When hardcoded computer names are found.Should handle multiple hardcoded names" time="0.009" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-HardcodedComputerNameFix.Edge cases" executed="True" result="Success" success="True" time="0.0274" asserts="0" description="Invoke-HardcodedComputerNameFix.Edge cases">
+                <results>
+                  <test-case description="Should handle localhost references" name="Invoke-HardcodedComputerNameFix.Edge cases.Should handle localhost references" time="0.0049" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Invoke-AllowUnencryptedAuthFix" executed="True" result="Success" success="True" time="0.4112" asserts="0" description="Invoke-AllowUnencryptedAuthFix">
+            <results>
+              <test-suite type="TestFixture" name="Invoke-AllowUnencryptedAuthFix.When -AllowUnencryptedAuthentication is found" executed="True" result="Success" success="True" time="0.0189" asserts="0" description="Invoke-AllowUnencryptedAuthFix.When -AllowUnencryptedAuthentication is found">
+                <results>
+                  <test-case description="Should comment out AllowUnencryptedAuthentication switch" name="Invoke-AllowUnencryptedAuthFix.When -AllowUnencryptedAuthentication is found.Should comment out AllowUnencryptedAuthentication switch" time="0.0112" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-AllowUnencryptedAuthFix.When no unencrypted auth is present" executed="True" result="Success" success="True" time="0.0318" asserts="0" description="Invoke-AllowUnencryptedAuthFix.When no unencrypted auth is present">
+                <results>
+                  <test-case description="Should return content unchanged" name="Invoke-AllowUnencryptedAuthFix.When no unencrypted auth is present.Should return content unchanged" time="0.0082" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Invoke-AllowUnencryptedAuthFix.Edge cases" executed="True" result="Success" success="True" time="0.0473" asserts="0" description="Invoke-AllowUnencryptedAuthFix.Edge cases">
+                <results>
+                  <test-case description="Should handle multiple occurrences" name="Invoke-AllowUnencryptedAuthFix.Edge cases.Should handle multiple occurrences" time="0.0108" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Security Module Integration" executed="True" result="Success" success="True" time="0.4409" asserts="0" description="Security Module Integration">
+            <results>
+              <test-suite type="TestFixture" name="Security Module Integration.When combining multiple security fixes" executed="True" result="Success" success="True" time="0.0248" asserts="0" description="Security Module Integration.When combining multiple security fixes">
+                <results>
+                  <test-case description="Should apply all relevant fixes to a script" name="Security Module Integration.When combining multiple security fixes.Should apply all relevant fixes to a script" time="0.019" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
