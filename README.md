@@ -68,6 +68,31 @@ Defaults are usually enough. When needed, see `docs/config.md` for `config/PSScr
 - Checks & Fixes: docs/checks.md
 - API: docs/api.md
 
+## Testing
+
+PoshGuard has a comprehensive test suite with 1000+ tests following Pester v5+ best practices:
+
+```powershell
+# Quick test run
+./tests/Run-Tests.ps1
+
+# With code coverage
+./tests/Run-Tests.ps1 -Mode Coverage
+
+# Test specific module
+./tests/Run-Tests.ps1 -Module Core
+
+# Debug mode
+./tests/Run-Tests.ps1 -Mode Debug -Module Security -StopOnFailure
+```
+
+**Documentation:**
+- [Test Architecture](tests/COMPREHENSIVE_PESTER_ARCHITECTURE.md) — Complete testing guide and standards
+- [Quick Start](tests/QUICKSTART_TESTING.md) — Testing patterns and examples
+- [Run Tests](tests/Run-Tests.ps1) — Automated test runner
+
+**Coverage:** 90%+ lines, 85%+ branches across all modules (enforced in CI)
+
 ## Troubleshooting
 
 - Validate PowerShell scripts: .github/workflows/docs-ci.yml (Windows job)
