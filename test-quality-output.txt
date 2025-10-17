@@ -1,0 +1,21 @@
+🔍 PoshGuard Test Quality Analysis
+=================================
+
+📋 Discovering test files...
+   Found 49 test files
+
+🧪 Analyzing test execution...
+[95m
+[95mStarting discovery in 49 files.[0m
+[95mDiscovery found 1086 tests in 1.69s.[0m
+[95mRunning tests.[0m
+[32m[+] /home/runner/work/PoshGuard/PoshGuard/tests/Unit/Advanced.Tests.ps1[0m[90m 1.06s (403ms|474ms)[0m
+[33;1mWARNING: Dead code analysis failed: Cannot bind argument to parameter 'Content' because it is an empty string.[0m
+[33;1mWARNING: Dead code analysis failed: Cannot bind argument to parameter 'Content' because it is an empty string.[0m
+[33;1mWARNING: Code smell detection failed: The script failed due to call depth overflow.[0m
+::error::[-] Find-CodeSmells.When code has deep nesting.Should detect deeply nested control structures 492.36s (492.36s|2ms)[0m
+::group::Message[0m
+Expected the value to have type [array] or any of its subtypes, but got $null with type $null.[0m
+at $issues | Should -BeOfType [array], /home/runner/work/PoshGuard/PoshGuard/tests/Unit/AdvancedCodeAnalysis.Tests.ps1:365[0m
+at <ScriptBlock>, /home/runner/work/PoshGuard/PoshGuard/tests/Unit/AdvancedCodeAnalysis.Tests.ps1:365[0m
+::endgroup::[0m
