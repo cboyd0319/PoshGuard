@@ -57,6 +57,7 @@ function Find-DeadCode {
     [OutputType([array])]
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string]$Content,
         
         [Parameter()]
@@ -112,7 +113,9 @@ function Find-UnreachableCode {
     
     foreach ($returnStmt in $returnStatements) {
         $parent = $returnStmt.Parent
-        if ($parent -is [System.Management.Automation.Language.StatementBlockAst]) {
+        # Check both StatementBlockAst and NamedBlockAst (function/script bodies)
+        if ($parent -is [System.Management.Automation.Language.StatementBlockAst] -or
+            $parent -is [System.Management.Automation.Language.NamedBlockAst]) {
             $statements = $parent.Statements
             $returnIndex = $statements.IndexOf($returnStmt)
             
@@ -247,7 +250,7 @@ function Find-UnusedVariables {
                     Type = 'DeadCode'
                     Name = 'UnusedVariable'
                     Severity = 'Low'
-                    Description = "Variable '\$$varName' is assigned but never used"
+                    Description = "Variable '`$$varName' is assigned but never used"
                     Line = $assignmentLine
                     Column = $assignment.Extent.StartColumnNumber
                     FilePath = $FilePath
