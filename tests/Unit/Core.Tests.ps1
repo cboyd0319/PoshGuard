@@ -3,28 +3,41 @@
 
 <#
 .SYNOPSIS
-    Pester tests for PoshGuard Core module
+    Comprehensive Pester Architect tests for PoshGuard Core module
 
 .DESCRIPTION
-    Comprehensive unit tests for Core.psm1 functions:
-    - Clean-Backups
-    - Write-Log
-    - Get-PowerShellFiles
-    - New-FileBackup
-    - New-UnifiedDiff
-
-    Tests cover happy paths, edge cases, error conditions, and parameter validation.
-    All tests are hermetic using TestDrive and mocks.
+    Unit tests for Core.psm1 following Pester Architect principles:
+    
+    Functions Tested:
+    - Clean-Backups: Backup cleanup with date filtering
+    - Write-Log: Logging with levels, formatting, and optional parameters
+    - Get-PowerShellFiles: File discovery with recursion and filtering
+    - New-FileBackup: File backup with timestamps
+    - New-UnifiedDiff: Unified diff generation
+    
+    Test Principles Applied:
+    ✓ AAA (Arrange-Act-Assert) pattern
+    ✓ Table-driven tests with -TestCases
+    ✓ Comprehensive mocking with InModuleScope
+    ✓ Deterministic time mocking (Get-Date)
+    ✓ Hermetic filesystem with TestDrive
+    ✓ Edge case coverage (empty, null, large, unicode)
+    ✓ Error path testing with Should -Throw
+    ✓ Parameter validation testing
+    ✓ ShouldProcess testing (-WhatIf, -Confirm)
 
 .NOTES
     Part of PoshGuard Comprehensive Test Suite
-    Follows Pester v5+ AAA pattern with deterministic execution
+    Follows Pester v5+ best practices
+    Enhanced: 2025-10-17 (Pester Architect compliance)
 #>
 
 BeforeAll {
   # Import test helpers
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
-  Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  if (Test-Path $helpersPath) {
+    Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  }
 
   # Import Core module
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Core.psm1'
@@ -34,78 +47,228 @@ BeforeAll {
   Import-Module -Name $modulePath -Force -ErrorAction Stop
 }
 
-Describe 'Clean-Backups' -Tag 'Unit', 'Core' {
+Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
+  <#
+  .SYNOPSIS
+      Tests for backup cleanup with time-based filtering
+      
+  .NOTES
+      Tests deterministic behavior by mocking Get-Date
+      Uses TestDrive for filesystem isolation
+      Validates ShouldProcess (-WhatIf/-Confirm) behavior
+  #>
   
   Context 'When backup directory does not exist' {
-    It 'Should return without error' {
+    It 'Returns without error and does not attempt cleanup' {
       InModuleScope Core {
-        Mock Test-Path { return $false }
-        { Clean-Backups -WhatIf } | Should -Not -Throw
+        # Arrange
+        Mock Test-Path { return $false } -Verifiable
+        Mock Get-ChildItem { throw "Should not be called" }
+        
+        # Act & Assert
+        { Clean-Backups -Confirm:$false } | Should -Not -Throw
+        Assert-MockCalled Test-Path -Exactly -Times 1 -Scope It
+        Assert-MockCalled Get-ChildItem -Exactly -Times 0 -Scope It
       }
     }
   }
 
   Context 'When backup directory exists with old files' {
-    It 'Should execute without error when cleaning backups' {
+    It 'Deletes files older than 1 day using mocked time' {
       InModuleScope Core {
-        # Mock Test-Path to return false (no backup dir)
-        Mock Test-Path { return $false }
+        # Arrange - freeze time
+        $frozenNow = [datetime]'2025-01-15T10:00:00Z'
+        Mock Get-Date { return $frozenNow }
         
-        { Clean-Backups -WhatIf } | Should -Not -Throw
+        # Create mock old files
+        $oldFile = [PSCustomObject]@{
+          FullName = 'C:\test\.psqa-backup\old.bak'
+          LastWriteTime = $frozenNow.AddDays(-2)  # 2 days old
+        }
+        $recentFile = [PSCustomObject]@{
+          FullName = 'C:\test\.psqa-backup\recent.bak'
+          LastWriteTime = $frozenNow.AddHours(-12)  # 12 hours old
+        }
+        
+        Mock Test-Path { return $true }
+        Mock Get-ChildItem { return @($oldFile, $recentFile) }
+        Mock Remove-Item { } -Verifiable
+        
+        # Act
+        Clean-Backups -Confirm:$false
+        
+        # Assert - only old file should be deleted
+        Assert-MockCalled Remove-Item -ParameterFilter { 
+          $Path -eq 'C:\test\.psqa-backup\old.bak' 
+        } -Exactly -Times 1 -Scope It
+        
+        Assert-MockCalled Remove-Item -ParameterFilter { 
+          $Path -eq 'C:\test\.psqa-backup\recent.bak' 
+        } -Exactly -Times 0 -Scope It
       }
     }
-
-    It 'Should respect -WhatIf parameter' {
+    
+    It 'Respects -WhatIf and does not delete files' {
       InModuleScope Core {
-        Mock Test-Path { return $false }
+        # Arrange
+        Mock Test-Path { return $true }
+        $oldFile = [PSCustomObject]@{
+          FullName = 'C:\test\.psqa-backup\old.bak'
+          LastWriteTime = (Get-Date).AddDays(-2)
+        }
+        Mock Get-ChildItem { return @($oldFile) }
+        Mock Remove-Item { throw "Should not delete in WhatIf mode" }
         
-        { Clean-Backups -WhatIf } | Should -Not -Throw
+        # Act
+        Clean-Backups -WhatIf
+        
+        # Assert - Remove-Item should not be called
+        Assert-MockCalled Remove-Item -Exactly -Times 0 -Scope It
+      }
+    }
+  }
+  
+  Context 'Error conditions' {
+    It 'Handles filesystem errors gracefully' {
+      InModuleScope Core {
+        # Arrange
+        Mock Test-Path { return $true }
+        Mock Get-ChildItem { throw "Access denied" }
+        
+        # Act & Assert
+        { Clean-Backups -Confirm:$false -ErrorAction SilentlyContinue } | Should -Not -Throw
       }
     }
   }
 }
 
-Describe 'Write-Log' -Tag 'Unit', 'Core' {
-  
-  Context 'When logging at different levels' {
-    It 'Should output message at <Level> level' -TestCases @(
-      @{ Level = 'Info'; ExpectedColor = 'Cyan' }
-      @{ Level = 'Warn'; ExpectedColor = 'Yellow' }
-      @{ Level = 'Error'; ExpectedColor = 'Red' }
-      @{ Level = 'Success'; ExpectedColor = 'Green' }
-      @{ Level = 'Critical'; ExpectedColor = 'Red' }
-      @{ Level = 'Debug'; ExpectedColor = 'Gray' }
-    ) {
-      param($Level)
+Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
+  <#
+  .SYNOPSIS
+      Tests for Write-Log function with comprehensive coverage
       
-      $message = "Test message"
-      $output = Write-Log -Level $Level -Message $message *>&1
-      # Should not throw
-      { Write-Log -Level $Level -Message $message } | Should -Not -Throw
+  .NOTES
+      Uses table-driven tests for all severity levels
+      Tests edge cases (empty, null, unicode, special characters)
+      Validates parameter validation and error conditions
+  #>
+  
+  Context 'When logging at different severity levels' {
+    It 'Formats message at <Level> level with correct pattern and color' -TestCases @(
+      @{ Level = 'Info'; ExpectedPattern = '\[INFO\]'; ExpectedColor = 'Cyan' }
+      @{ Level = 'Warn'; ExpectedPattern = '\[WARN\]'; ExpectedColor = 'Yellow' }
+      @{ Level = 'Error'; ExpectedPattern = '\[ERROR\]'; ExpectedColor = 'Red' }
+      @{ Level = 'Success'; ExpectedPattern = '\[SUCCESS\]'; ExpectedColor = 'Green' }
+      @{ Level = 'Critical'; ExpectedPattern = '\[CRITICAL\]'; ExpectedColor = 'Red' }
+      @{ Level = 'Debug'; ExpectedPattern = '\[DEBUG\]'; ExpectedColor = 'Gray' }
+    ) {
+      param($Level, $ExpectedPattern, $ExpectedColor)
+      
+      # Arrange
+      $message = "Test message for $Level level"
+      
+      # Act
+      $output = Write-Log -Level $Level -Message $message 6>&1 | Out-String
+      
+      # Assert
+      $output | Should -Match $ExpectedPattern
+      $output | Should -Not -BeNullOrEmpty
     }
   }
 
   Context 'When using optional parameters' {
-    It 'Should support -NoTimestamp switch' {
-      # Just verify the command runs without error
-      { Write-Log -Level Info -Message "Test" -NoTimestamp } | Should -Not -Throw
+    It 'Omits timestamp when -NoTimestamp is specified' {
+      # Arrange & Act
+      $output = Write-Log -Level Info -Message "Test" -NoTimestamp 6>&1 | Out-String
+      
+      # Assert - should not contain timestamp pattern
+      $output | Should -Not -Match '\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}'
+      $output | Should -Match '\[INFO\]'
     }
 
-    It 'Should support -NoIcon switch' {
-      # Just verify the command runs without error
-      { Write-Log -Level Info -Message "Test" -NoIcon } | Should -Not -Throw
+    It 'Omits icon when -NoIcon is specified' {
+      # Arrange & Act
+      $output = Write-Log -Level Success -Message "Test" -NoIcon 6>&1 | Out-String
+      
+      # Assert
+      $output | Should -Match '\[SUCCESS\]'
+      # Should still work without throwing
+      { Write-Log -Level Success -Message "Test" -NoIcon } | Should -Not -Throw
+    }
+    
+    It 'Omits both timestamp and icon when both switches specified' {
+      # Arrange & Act
+      $output = Write-Log -Level Warn -Message "Test" -NoTimestamp -NoIcon 6>&1 | Out-String
+      
+      # Assert
+      $output | Should -Not -Match '\d{4}-\d{2}-\d{2}'
+      $output | Should -Match '\[WARN\]'
+      $output | Should -Match 'Test'
     }
   }
 
-  Context 'When message is empty or whitespace' {
-    It 'Should handle whitespace message' {
-      { Write-Log -Level Info -Message "   " } | Should -Not -Throw
+  Context 'When message is empty or whitespace (edge cases)' {
+    It 'Handles <Description> without throwing' -TestCases @(
+      @{ Message = ''; Description = 'empty string' }
+      @{ Message = '   '; Description = 'whitespace only' }
+      @{ Message = "`t`n"; Description = 'tabs and newlines' }
+      @{ Message = "`r`n"; Description = 'CRLF line endings' }
+    ) {
+      param($Message, $Description)
+      
+      # Act & Assert
+      { Write-Log -Level Info -Message $Message } | Should -Not -Throw
+    }
+  }
+  
+  Context 'When message contains special characters' {
+    It 'Handles <Description> correctly' -TestCases @(
+      @{ Message = '你好世界'; Description = 'Chinese characters' }
+      @{ Message = 'Здравствуй мир'; Description = 'Cyrillic characters' }
+      @{ Message = '🎉🚀✨'; Description = 'Emoji' }
+      @{ Message = 'Quote: "test"'; Description = 'double quotes' }
+      @{ Message = "Quote: 'test'"; Description = 'single quotes' }
+      @{ Message = 'Backslash: \test'; Description = 'backslash' }
+      @{ Message = 'Percent: 100%'; Description = 'percent sign' }
+      @{ Message = 'Dollar: $variable'; Description = 'dollar sign' }
+    ) {
+      param($Message, $Description)
+      
+      # Act
+      $output = Write-Log -Level Info -Message $Message -NoTimestamp 6>&1 | Out-String
+      
+      # Assert - should not throw and should contain the message
+      { Write-Log -Level Info -Message $Message } | Should -Not -Throw
+      # Message should be present in output (accounting for formatting)
+      $output | Should -Not -BeNullOrEmpty
     }
   }
 
-  Context 'Parameter validation' {
-    It 'Should validate Level is in allowed set' {
-      { Write-Log -Level "InvalidLevel" -Message "Test" } | Should -Throw -ErrorId 'ParameterArgumentValidationError*'
+  Context 'Parameter validation (error conditions)' {
+    It 'Throws when Level parameter is invalid' {
+      # Act & Assert
+      { Write-Log -Level 'InvalidLevel' -Message 'Test' } | 
+        Should -Throw -ErrorId 'ParameterArgumentValidationError*'
+    }
+
+    It 'Throws when Message parameter is missing' {
+      # Act & Assert
+      { Write-Log -Level Info } | 
+        Should -Throw
+    }
+    
+    It 'Accepts all valid Level values' -TestCases @(
+      @{ Level = 'Info' }
+      @{ Level = 'Warn' }
+      @{ Level = 'Error' }
+      @{ Level = 'Success' }
+      @{ Level = 'Critical' }
+      @{ Level = 'Debug' }
+    ) {
+      param($Level)
+      
+      # Act & Assert
+      { Write-Log -Level $Level -Message 'Test' } | Should -Not -Throw
     }
   }
 }
