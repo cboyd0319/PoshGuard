@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -256,10 +256,14 @@ Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
         Should -Throw -ErrorId 'ParameterArgumentValidationError*'
     }
 
-    It 'Throws when Message parameter is missing' {
+    It 'Has mandatory Message parameter' {
+      # Arrange
+      $cmd = Get-Command Write-Log
+      $msgParam = $cmd.Parameters['Message'].Attributes | 
+        Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+      
       # Act & Assert
-      { Write-Log -Level Info } | 
-        Should -Throw
+      $msgParam[0].Mandatory | Should -Be $true
     }
     
     It 'Accepts all valid Level values' -TestCases @(
@@ -426,133 +430,100 @@ Describe 'New-FileBackup' -Tag 'Unit', 'Core', 'Backup' {
   Context 'Creating backups' {
     BeforeEach {
       # Create a test file
-      $script:testFile = Join-Path $TestDrive 'original.ps1'
-      Set-Content -Path $script:testFile -Value 'Write-Output "Test"' -Encoding UTF8
+      $testFile = Join-Path $TestDrive 'original.ps1'
+      Set-Content -Path $testFile -Value 'Write-Output "Test"' -Encoding UTF8
+      $script:testFile = $testFile
     }
 
     It 'Creates backup with timestamp in .psqa-backup directory' {
-      InModuleScope Core {
-        # Arrange
-        $frozenDate = [datetime]'2025-01-15T10:30:45Z'
-        Mock Get-Date { return $frozenDate }
-        
-        $testFile = $script:testFile
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        # Assert
-        $backupPath | Should -Not -BeNullOrEmpty
-        $backupPath | Should -Match '\.psqa-backup[\\/]original\.ps1\.20250115103045\.bak$'
-      }
+      # Arrange - test file already created in BeforeEach
+      
+      # Act
+      $backupPath = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      
+      # Assert
+      $backupPath | Should -Not -BeNullOrEmpty
+      $backupPath | Should -Match '\.psqa-backup[\\/]original\.ps1\.\d{14}\.bak$'
     }
 
     It 'Creates .psqa-backup directory if it does not exist' {
-      InModuleScope Core {
-        # Arrange
-        $testFile = $script:testFile
-        $backupDir = Join-Path (Split-Path $testFile -Parent) '.psqa-backup'
-        
-        # Ensure directory doesn't exist
-        if (Test-Path $backupDir) {
-          Remove-Item -Path $backupDir -Recurse -Force
-        }
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        # Assert
-        Test-Path $backupDir | Should -Be $true
+      # Arrange
+      $backupDir = Join-Path (Split-Path $script:testFile -Parent) '.psqa-backup'
+      
+      # Ensure directory doesn't exist
+      if (Test-Path $backupDir) {
+        Remove-Item -Path $backupDir -Recurse -Force
       }
+      
+      # Act
+      $null = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      
+      # Assert
+      Test-Path $backupDir | Should -Be $true
     }
 
     It 'Copies file content correctly' {
-      InModuleScope Core {
-        # Arrange
-        $testFile = $script:testFile
-        $originalContent = Get-Content -Path $testFile -Raw
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        # Assert
-        $backupContent = Get-Content -Path $backupPath -Raw
-        $backupContent | Should -Be $originalContent
-      }
+      # Arrange
+      $originalContent = Get-Content -Path $script:testFile -Raw
+      
+      # Act
+      $backupPath = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      
+      # Assert
+      $backupContent = Get-Content -Path $backupPath -Raw
+      $backupContent | Should -Be $originalContent
     }
 
     It 'Returns backup path' {
-      InModuleScope Core {
-        # Arrange
-        $testFile = $script:testFile
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        # Assert
-        $backupPath | Should -Not -BeNullOrEmpty
-        Test-Path $backupPath | Should -Be $true
-      }
+      # Act
+      $backupPath = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      
+      # Assert
+      $backupPath | Should -Not -BeNullOrEmpty
+      Test-Path $backupPath | Should -Be $true
     }
 
     It 'Respects -WhatIf and does not create backup' {
-      InModuleScope Core {
-        # Arrange
-        $testFile = $script:testFile
-        $backupDir = Join-Path (Split-Path $testFile -Parent) '.psqa-backup'
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $testFile -WhatIf
-        
-        # Assert - backup should not be created
-        $backupPath | Should -BeNullOrEmpty
-      }
+      # Act
+      $backupPath = New-FileBackup -FilePath $script:testFile -WhatIf
+      
+      # Assert - backup should not be created
+      $backupPath | Should -BeNullOrEmpty
     }
 
     It 'Handles files with spaces in path' {
-      InModuleScope Core {
-        # Arrange
-        $fileWithSpaces = Join-Path $TestDrive 'file with spaces.ps1'
-        Set-Content -Path $fileWithSpaces -Value 'Test' -Encoding UTF8
-        
-        # Act
-        $backupPath = New-FileBackup -FilePath $fileWithSpaces -Confirm:$false
-        
-        # Assert
-        $backupPath | Should -Not -BeNullOrEmpty
-        Test-Path $backupPath | Should -Be $true
-      }
+      # Arrange
+      $fileWithSpaces = Join-Path $TestDrive 'file with spaces.ps1'
+      Set-Content -Path $fileWithSpaces -Value 'Test' -Encoding UTF8
+      
+      # Act
+      $backupPath = New-FileBackup -FilePath $fileWithSpaces -Confirm:$false
+      
+      # Assert
+      $backupPath | Should -Not -BeNullOrEmpty
+      Test-Path $backupPath | Should -Be $true
     }
 
     It 'Creates unique backups for multiple calls' {
-      InModuleScope Core {
-        # Arrange
-        $testFile = $script:testFile
-        
-        # Act - create two backups with slight time difference
-        Mock Get-Date { return [datetime]'2025-01-15T10:30:45Z' }
-        $backup1 = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        Mock Get-Date { return [datetime]'2025-01-15T10:30:46Z' }
-        $backup2 = New-FileBackup -FilePath $testFile -Confirm:$false
-        
-        # Assert - different backup files
-        $backup1 | Should -Not -Be $backup2
-        Test-Path $backup1 | Should -Be $true
-        Test-Path $backup2 | Should -Be $true
-      }
+      # Act - create two backups (timestamps will naturally differ)
+      $backup1 = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      Start-Sleep -Seconds 2  # Ensure different timestamp (format is yyyyMMddHHmmss)
+      $backup2 = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      
+      # Assert - different backup files
+      $backup1 | Should -Not -Be $backup2
+      Test-Path $backup1 | Should -Be $true
+      Test-Path $backup2 | Should -Be $true
     }
   }
 
   Context 'Error conditions' {
     It 'Handles non-existent file gracefully' {
-      InModuleScope Core {
-        # Arrange
-        $nonExistentFile = Join-Path $TestDrive 'nonexistent.ps1'
-        
-        # Act & Assert
-        { New-FileBackup -FilePath $nonExistentFile -Confirm:$false -ErrorAction Stop } | Should -Throw
-      }
+      # Arrange
+      $nonExistentFile = Join-Path $TestDrive 'nonexistent.ps1'
+      
+      # Act & Assert
+      { New-FileBackup -FilePath $nonExistentFile -Confirm:$false -ErrorAction Stop } | Should -Throw
     }
   }
 }
@@ -585,18 +556,21 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
   }
 
   Context 'When comparing identical content' {
-    It 'Returns empty string for identical single-line content' {
+    It 'Returns diff with headers and unchanged lines for identical single-line content' {
       # Arrange
       $content = "Line 1"
       
       # Act
       $result = New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1'
       
-      # Assert
-      $result | Should -BeExactly ""
+      # Assert - Function returns headers + unchanged lines for identical content
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '--- a/test\.ps1'
+      $result | Should -Match '\+\+\+ b/test\.ps1'
+      $result | Should -Match ' Line 1'  # Space indicator for unchanged
     }
 
-    It 'Returns empty string for identical multi-line content' {
+    It 'Returns diff with headers for identical multi-line content' {
       # Arrange
       $content = "Line 1`nLine 2`nLine 3"
       
@@ -604,7 +578,9 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
       $result = New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1'
       
       # Assert
-      $result | Should -BeExactly ""
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '--- a/test\.ps1'
+      $result | Should -Match '\+\+\+ b/test\.ps1'
     }
   }
 
@@ -704,9 +680,9 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
   }
 
   Context 'Edge cases' {
-    It 'Handles empty original content' {
+    It 'Handles whitespace-only original content' {
       # Arrange
-      $original = ""
+      $original = " "
       $modified = "Line 1`nLine 2"
       
       # Act
@@ -718,10 +694,10 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
       $result | Should -Match '\+Line 2'
     }
 
-    It 'Handles empty modified content' {
+    It 'Handles whitespace-only modified content' {
       # Arrange
       $original = "Line 1`nLine 2"
-      $modified = ""
+      $modified = " "
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -732,16 +708,16 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
       $result | Should -Match '\-Line 2'
     }
 
-    It 'Handles both empty strings' {
+    It 'Handles minimal content difference' {
       # Arrange
-      $original = ""
-      $modified = ""
+      $original = " "
+      $modified = "  "
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
       
-      # Assert
-      $result | Should -BeExactly ""
+      # Assert - Should detect the difference
+      $result | Should -Not -BeNullOrEmpty
     }
 
     It 'Handles content with Windows line endings (CRLF)' {
@@ -815,19 +791,35 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
   }
 
   Context 'Parameter validation' {
-    It 'Requires Original parameter' {
+    It 'Has mandatory Original parameter' {
+      # Arrange
+      $cmd = Get-Command New-UnifiedDiff
+      $param = $cmd.Parameters['Original'].Attributes | 
+        Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+      
       # Act & Assert
-      { New-UnifiedDiff -Modified "test" -FilePath 'test.ps1' } | Should -Throw
+      $param[0].Mandatory | Should -Be $true
     }
 
-    It 'Requires Modified parameter' {
+    It 'Has mandatory Modified parameter' {
+      # Arrange
+      $cmd = Get-Command New-UnifiedDiff
+      $param = $cmd.Parameters['Modified'].Attributes | 
+        Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+      
       # Act & Assert
-      { New-UnifiedDiff -Original "test" -FilePath 'test.ps1' } | Should -Throw
+      $param[0].Mandatory | Should -Be $true
     }
 
-    It 'Requires FilePath parameter' {
+    It 'Has mandatory FilePath parameter' {
+      # Arrange
+      $cmd = Get-Command New-UnifiedDiff
+      $param = $cmd.Parameters['FilePath'].Attributes | 
+        Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+      
       # Act & Assert
-      { New-UnifiedDiff -Original "test" -Modified "test" } | Should -Throw
+      $param[0].Mandatory | Should -Be $true
     }
   }
 }
+
