@@ -129,14 +129,14 @@ Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
   }
   
   Context 'Error conditions' {
-    It 'Handles filesystem errors gracefully' {
+    It 'Propagates filesystem errors when ErrorAction is not SilentlyContinue' {
       InModuleScope Core {
         # Arrange
         Mock Test-Path { return $true }
         Mock Get-ChildItem { throw "Access denied" }
         
-        # Act & Assert
-        { Clean-Backups -Confirm:$false -ErrorAction SilentlyContinue } | Should -Not -Throw
+        # Act & Assert - should throw when ErrorAction is not suppressed
+        { Clean-Backups -Confirm:$false -ErrorAction Stop } | Should -Throw -ExpectedMessage '*Access denied*'
       }
     }
   }
@@ -208,8 +208,13 @@ Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
   }
 
   Context 'When message is empty or whitespace (edge cases)' {
+    It 'Rejects empty string per Mandatory parameter validation' {
+      # Arrange & Act & Assert
+      # PowerShell parameter validation rejects empty strings on Mandatory parameters
+      { Write-Log -Level Info -Message '' } | Should -Throw
+    }
+
     It 'Handles <Description> without throwing' -TestCases @(
-      @{ Message = ''; Description = 'empty string' }
       @{ Message = '   '; Description = 'whitespace only' }
       @{ Message = "`t`n"; Description = 'tabs and newlines' }
       @{ Message = "`r`n"; Description = 'CRLF line endings' }
@@ -390,7 +395,16 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
   }
 }
 
-Describe 'New-FileBackup' -Tag 'Unit', 'Core' {
+Describe 'New-FileBackup' -Tag 'Unit', 'Core', 'Backup' {
+  <#
+  .SYNOPSIS
+      Tests for file backup creation with timestamp
+      
+  .NOTES
+      Tests deterministic behavior by mocking Get-Date
+      Validates ShouldProcess (-WhatIf/-Confirm) behavior
+      Uses TestDrive for filesystem isolation
+  #>
   
   Context 'Basic functionality' {
     It 'Should be defined and callable' {
@@ -408,9 +422,151 @@ Describe 'New-FileBackup' -Tag 'Unit', 'Core' {
       $cmd.Parameters.ContainsKey('Confirm') | Should -Be $true
     }
   }
+
+  Context 'Creating backups' {
+    BeforeEach {
+      # Create a test file
+      $script:testFile = Join-Path $TestDrive 'original.ps1'
+      Set-Content -Path $script:testFile -Value 'Write-Output "Test"' -Encoding UTF8
+    }
+
+    It 'Creates backup with timestamp in .psqa-backup directory' {
+      InModuleScope Core {
+        # Arrange
+        $frozenDate = [datetime]'2025-01-15T10:30:45Z'
+        Mock Get-Date { return $frozenDate }
+        
+        $testFile = $script:testFile
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        # Assert
+        $backupPath | Should -Not -BeNullOrEmpty
+        $backupPath | Should -Match '\.psqa-backup[\\/]original\.ps1\.20250115103045\.bak$'
+      }
+    }
+
+    It 'Creates .psqa-backup directory if it does not exist' {
+      InModuleScope Core {
+        # Arrange
+        $testFile = $script:testFile
+        $backupDir = Join-Path (Split-Path $testFile -Parent) '.psqa-backup'
+        
+        # Ensure directory doesn't exist
+        if (Test-Path $backupDir) {
+          Remove-Item -Path $backupDir -Recurse -Force
+        }
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        # Assert
+        Test-Path $backupDir | Should -Be $true
+      }
+    }
+
+    It 'Copies file content correctly' {
+      InModuleScope Core {
+        # Arrange
+        $testFile = $script:testFile
+        $originalContent = Get-Content -Path $testFile -Raw
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        # Assert
+        $backupContent = Get-Content -Path $backupPath -Raw
+        $backupContent | Should -Be $originalContent
+      }
+    }
+
+    It 'Returns backup path' {
+      InModuleScope Core {
+        # Arrange
+        $testFile = $script:testFile
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        # Assert
+        $backupPath | Should -Not -BeNullOrEmpty
+        Test-Path $backupPath | Should -Be $true
+      }
+    }
+
+    It 'Respects -WhatIf and does not create backup' {
+      InModuleScope Core {
+        # Arrange
+        $testFile = $script:testFile
+        $backupDir = Join-Path (Split-Path $testFile -Parent) '.psqa-backup'
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $testFile -WhatIf
+        
+        # Assert - backup should not be created
+        $backupPath | Should -BeNullOrEmpty
+      }
+    }
+
+    It 'Handles files with spaces in path' {
+      InModuleScope Core {
+        # Arrange
+        $fileWithSpaces = Join-Path $TestDrive 'file with spaces.ps1'
+        Set-Content -Path $fileWithSpaces -Value 'Test' -Encoding UTF8
+        
+        # Act
+        $backupPath = New-FileBackup -FilePath $fileWithSpaces -Confirm:$false
+        
+        # Assert
+        $backupPath | Should -Not -BeNullOrEmpty
+        Test-Path $backupPath | Should -Be $true
+      }
+    }
+
+    It 'Creates unique backups for multiple calls' {
+      InModuleScope Core {
+        # Arrange
+        $testFile = $script:testFile
+        
+        # Act - create two backups with slight time difference
+        Mock Get-Date { return [datetime]'2025-01-15T10:30:45Z' }
+        $backup1 = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        Mock Get-Date { return [datetime]'2025-01-15T10:30:46Z' }
+        $backup2 = New-FileBackup -FilePath $testFile -Confirm:$false
+        
+        # Assert - different backup files
+        $backup1 | Should -Not -Be $backup2
+        Test-Path $backup1 | Should -Be $true
+        Test-Path $backup2 | Should -Be $true
+      }
+    }
+  }
+
+  Context 'Error conditions' {
+    It 'Handles non-existent file gracefully' {
+      InModuleScope Core {
+        # Arrange
+        $nonExistentFile = Join-Path $TestDrive 'nonexistent.ps1'
+        
+        # Act & Assert
+        { New-FileBackup -FilePath $nonExistentFile -Confirm:$false -ErrorAction Stop } | Should -Throw
+      }
+    }
+  }
 }
 
-Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core' {
+Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
+  <#
+  .SYNOPSIS
+      Tests for unified diff generation
+      
+  .NOTES
+      Tests diff format compliance
+      Validates edge cases (identical, empty, large diffs)
+      Ensures proper line indicator characters (+, -, space)
+  #>
   
   Context 'Basic functionality' {
     It 'Should be defined and callable' {
@@ -429,30 +585,249 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core' {
   }
 
   Context 'When comparing identical content' {
-    It 'Should execute without error on identical content' {
+    It 'Returns empty string for identical single-line content' {
+      # Arrange
+      $content = "Line 1"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -BeExactly ""
+    }
+
+    It 'Returns empty string for identical multi-line content' {
+      # Arrange
       $content = "Line 1`nLine 2`nLine 3"
       
-      { New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1' } | Should -Not -Throw
+      # Act
+      $result = New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -BeExactly ""
     }
   }
 
   Context 'When content has changes' {
-    It 'Should detect added lines' {
+    It 'Detects added lines with + indicator' {
+      # Arrange
       $original = "Line 1`nLine 2"
       $modified = "Line 1`nLine 2`nLine 3"
       
+      # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
       
+      # Assert
       $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\+Line 3'
     }
 
-    It 'Should detect removed lines' {
+    It 'Detects removed lines with - indicator' {
+      # Arrange
       $original = "Line 1`nLine 2`nLine 3"
       $modified = "Line 1`nLine 3"
       
+      # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
       
+      # Assert
       $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Line 2'
+    }
+
+    It 'Detects modified lines (remove + add)' {
+      # Arrange
+      $original = "Line 1`nOld Line`nLine 3"
+      $modified = "Line 1`nNew Line`nLine 3"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Old Line'
+      $result | Should -Match '\+New Line'
+    }
+
+    It 'Includes unchanged lines with space indicator' {
+      # Arrange
+      $original = "Line 1`nLine 2`nLine 3"
+      $modified = "Line 1`nLine 2 Modified`nLine 3"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Match ' Line 1'
+      $result | Should -Match ' Line 3'
+    }
+  }
+
+  Context 'Diff header format' {
+    It 'Includes --- header for original file' {
+      # Arrange
+      $original = "Line 1"
+      $modified = "Line 2"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Match '^--- a/test\.ps1'
+    }
+
+    It 'Includes +++ header for modified file' {
+      # Arrange
+      $original = "Line 1"
+      $modified = "Line 2"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Match '\+\+\+ b/test\.ps1'
+    }
+
+    It 'Preserves file path in headers' {
+      # Arrange
+      $original = "Line 1"
+      $modified = "Line 2"
+      $filePath = 'src/modules/MyModule.psm1'
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath $filePath
+      
+      # Assert
+      $result | Should -Match "--- a/$([regex]::Escape($filePath))"
+      $result | Should -Match "\+\+\+ b/$([regex]::Escape($filePath))"
+    }
+  }
+
+  Context 'Edge cases' {
+    It 'Handles empty original content' {
+      # Arrange
+      $original = ""
+      $modified = "Line 1`nLine 2"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\+Line 1'
+      $result | Should -Match '\+Line 2'
+    }
+
+    It 'Handles empty modified content' {
+      # Arrange
+      $original = "Line 1`nLine 2"
+      $modified = ""
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Line 1'
+      $result | Should -Match '\-Line 2'
+    }
+
+    It 'Handles both empty strings' {
+      # Arrange
+      $original = ""
+      $modified = ""
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -BeExactly ""
+    }
+
+    It 'Handles content with Windows line endings (CRLF)' {
+      # Arrange
+      $original = "Line 1`r`nLine 2`r`nLine 3"
+      $modified = "Line 1`r`nLine 2 Modified`r`nLine 3"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Line 2'
+      $result | Should -Match '\+Line 2 Modified'
+    }
+
+    It 'Handles content with Unix line endings (LF)' {
+      # Arrange
+      $original = "Line 1`nLine 2`nLine 3"
+      $modified = "Line 1`nLine 2 Modified`nLine 3"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Line 2'
+      $result | Should -Match '\+Line 2 Modified'
+    }
+
+    It 'Handles large diffs efficiently' {
+      # Arrange - 100 line file
+      $lines = 1..100 | ForEach-Object { "Line $_" }
+      $original = $lines -join "`n"
+      $modifiedLines = $lines
+      $modifiedLines[49] = "Modified Line 50"
+      $modified = $modifiedLines -join "`n"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+      $result | Should -Match '\-Line 50'
+      $result | Should -Match '\+Modified Line 50'
+    }
+
+    It 'Handles special characters in content' {
+      # Arrange
+      $original = "Line with `$variable"
+      $modified = "Line with `$newVariable"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+    }
+
+    It 'Handles Unicode characters' {
+      # Arrange
+      $original = "Hello 世界"
+      $modified = "Hello 世界!"
+      
+      # Act
+      $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Requires Original parameter' {
+      # Act & Assert
+      { New-UnifiedDiff -Modified "test" -FilePath 'test.ps1' } | Should -Throw
+    }
+
+    It 'Requires Modified parameter' {
+      # Act & Assert
+      { New-UnifiedDiff -Original "test" -FilePath 'test.ps1' } | Should -Throw
+    }
+
+    It 'Requires FilePath parameter' {
+      # Act & Assert
+      { New-UnifiedDiff -Original "test" -Modified "test" } | Should -Throw
     }
   }
 }
