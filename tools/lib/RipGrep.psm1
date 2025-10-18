@@ -217,7 +217,7 @@ function Find-HardcodedSecrets {
     if (-not $rgCheck.IsAvailable) {
         Write-Warning "RipGrep not installed. Secret scanning requires RipGrep for best performance."
         Write-Warning "Install from: https://github.com/BurntSushi/ripgrep"
-        return @()
+        return [PSCustomObject[]]@()
     }
 
     $secretPatterns = @{
@@ -383,7 +383,7 @@ function Test-ModuleSecurityConfig {
     $rgCheck = Test-RipGrepAvailable
     if (-not $rgCheck.IsAvailable) {
         Write-Warning "RipGrep not installed. Configuration validation requires RipGrep."
-        return @()
+        return [PSCustomObject[]]@()
     }
 
     $issues = @()
@@ -574,12 +574,12 @@ function Get-CriticalFindings {
     $rgCheck = Test-RipGrepAvailable
     if (-not $rgCheck.IsAvailable) {
         Write-Warning "RipGrep not installed. SARIF querying requires RipGrep."
-        return @()
+        return [PSCustomObject[]]@()
     }
 
     if (-not (Test-Path $SarifPath)) {
         Write-Warning "SARIF file not found: $SarifPath"
-        return @()
+        return [PSCustomObject[]]@()
     }
 
     $findings = @()
