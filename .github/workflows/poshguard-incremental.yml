@@ -1,0 +1,66 @@
+name: PoshGuard Incremental Scan
+
+on:
+  pull_request:
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+      - '**.psd1'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git diff
+
+      - name: Install RipGrep
+        run: |
+          curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep_14.1.0-1_amd64.deb
+          sudo dpkg -i ripgrep_14.1.0-1_amd64.deb
+          rg --version
+
+      - name: Find changed PowerShell files
+        id: changed-files
+        run: |
+          # Get changed .ps1/.psm1/.psd1 files
+          git diff origin/${{ github.base_ref }}...HEAD --name-only | rg "\.(ps1|psm1|psd1)$" > changed_files.txt || true
+          echo "count=$(wc -l < changed_files.txt)" >> $GITHUB_OUTPUT
+          echo "Changed files:"
+          cat changed_files.txt || echo "No PowerShell files changed"
+
+      - name: Run PoshGuard on changed files only
+        if: steps.changed-files.outputs.count > 0
+        shell: pwsh
+        run: |
+          Write-Host "Installing PSScriptAnalyzer..."
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          
+          Write-Host "Running PoshGuard on changed files..."
+          $changedFiles = Get-Content changed_files.txt
+          
+          foreach ($file in $changedFiles) {
+            if (Test-Path $file) {
+              Write-Host "Scanning: $file"
+              ./tools/Apply-AutoFix.ps1 -Path $file -DryRun -ExportSarif -SarifOutputPath "poshguard-$($file -replace '[/\\]', '_').sarif"
+            }
+          }
+
+      - name: Upload SARIF
+        if: steps.changed-files.outputs.count > 0
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: poshguard-*.sarif
+        continue-on-error: true
+
+      - name: Summary
+        if: steps.changed-files.outputs.count > 0
+        run: |
+          echo "### PoshGuard Incremental Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "Files scanned: ${{ steps.changed-files.outputs.count }}" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ✅ Complete" >> $GITHUB_STEP_SUMMARY

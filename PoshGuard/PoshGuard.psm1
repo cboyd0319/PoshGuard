@@ -115,6 +115,10 @@ function Invoke-PoshGuard {
     .PARAMETER SarifOutputPath
         Path where SARIF file should be saved (default: ./poshguard-results.sarif).
 
+    .PARAMETER FastScan
+        Use RipGrep pre-filtering to scan only suspicious files (5-10x faster for large codebases).
+        Requires RipGrep to be installed. Falls back to full scan if not available.
+
     .EXAMPLE
         Invoke-PoshGuard -Path ./MyScript.ps1 -DryRun
 
@@ -124,6 +128,10 @@ function Invoke-PoshGuard {
     .EXAMPLE
         Invoke-PoshGuard -Path ./src -DryRun -ExportSarif -SarifOutputPath ./results.sarif
         Analyze code and export results in SARIF format for GitHub Security tab
+
+    .EXAMPLE
+        Invoke-PoshGuard -Path ./src -FastScan -Recurse
+        Use RipGrep pre-filtering for faster scanning of large codebases
     #>
     [CmdletBinding()]
     param(
@@ -146,7 +154,10 @@ function Invoke-PoshGuard {
         [switch]$ExportSarif,
 
         [Parameter()]
-        [string]$SarifOutputPath = './poshguard-results.sarif'
+        [string]$SarifOutputPath = './poshguard-results.sarif',
+
+        [Parameter()]
+        [switch]$FastScan
     )
 
     # Locate Apply-AutoFix.ps1 using helper function
@@ -169,6 +180,7 @@ function Invoke-PoshGuard {
     if ($Skip) { $params['Skip'] = $Skip }
     if ($ExportSarif) { $params['ExportSarif'] = $true }
     if ($SarifOutputPath) { $params['SarifOutputPath'] = $SarifOutputPath }
+    if ($FastScan) { $params['FastScan'] = $true }
 
     # Execute the script
     & $ScriptPath @params

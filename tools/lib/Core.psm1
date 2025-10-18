@@ -82,11 +82,38 @@ function Get-PowerShellFiles {
         [string]$Path,
 
         [Parameter()]
-        [string[]]$SupportedExtensions = @('.ps1', '.psm1', '.psd1')
+        [string[]]$SupportedExtensions = @('.ps1', '.psm1', '.psd1'),
+
+        [Parameter()]
+        [switch]$FastScan
     )
 
     if (Test-Path -Path $Path -PathType Leaf -ErrorAction Stop) {
         return @(Get-Item -Path $Path -ErrorAction Stop)
+    }
+
+    # Use RipGrep pre-filtering if FastScan is enabled
+    if ($FastScan) {
+        try {
+            # Check if RipGrep module is available
+            if (Get-Command Find-SuspiciousScripts -ErrorAction SilentlyContinue) {
+                $candidateFiles = Find-SuspiciousScripts -Path $Path
+                if ($candidateFiles) {
+                    $totalFiles = (Get-ChildItem -Path $Path -Recurse -File | Where-Object { $SupportedExtensions -contains $_.Extension }).Count
+                    $candidateCount = ($candidateFiles | Measure-Object).Count
+                    $skippedCount = $totalFiles - $candidateCount
+                    
+                    Write-Host "  🚀 RipGrep FastScan: Found $candidateCount candidate files (skipping $skippedCount safe files)" -ForegroundColor Cyan
+                    
+                    # Convert paths to FileInfo objects
+                    $files = $candidateFiles | ForEach-Object { Get-Item -Path $_ -ErrorAction SilentlyContinue } | Where-Object { $_ }
+                    return $files
+                }
+            }
+        }
+        catch {
+            Write-Verbose "FastScan failed, falling back to normal scan: $_"
+        }
     }
 
     $files = Get-ChildItem -Path $Path -Recurse -File | Where-Object {

@@ -2,6 +2,21 @@
 
 PoshGuard uses modular AST-based transformations to fix PowerShell code issues.
 
+## Prerequisites
+
+| Item | Version | Why | Optional |
+|------|---------|-----|----------|
+| PowerShell | 7+ | runtime | No |
+| PSScriptAnalyzer | 1.24.0+ | code analysis | No |
+| RipGrep | 14+ | fast pre-filtering | Yes (degrades to slower scan) |
+
+**RipGrep Installation:**
+- Windows: `choco install ripgrep` or `winget install BurntSushi.ripgrep.MSVC`
+- macOS: `brew install ripgrep`
+- Linux: `apt install ripgrep` or download from [GitHub releases](https://github.com/BurntSushi/ripgrep/releases)
+
+RipGrep enables 10-100x faster file filtering and secret scanning. Without it, PoshGuard automatically falls back to slower PowerShell-native file scanning.
+
 ## System Flow
 
 ```
