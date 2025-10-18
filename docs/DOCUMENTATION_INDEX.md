@@ -12,6 +12,7 @@ Use this page to navigate the docs. Prefer short, runnable examples and link dee
 
 - Overview: [ARCHITECTURE.md](ARCHITECTURE.md)
 - How it Works: [how-it-works.md](how-it-works.md)
+- RipGrep Integration: [RIPGREP_INTEGRATION.md](RIPGREP_INTEGRATION.md)
 - SARIF Integration: [GITHUB-SARIF-INTEGRATION.md](reference/GITHUB-SARIF-INTEGRATION.md)
 
 ## Security
@@ -21,6 +22,7 @@ Use this page to navigate the docs. Prefer short, runnable examples and link dee
 ## Guides
 
 - MCP Integration Guide: [MCP-GUIDE.md](MCP-GUIDE.md)
+- RipGrep Usage Guide: [RIPGREP_USAGE_GUIDE.md](RIPGREP_USAGE_GUIDE.md)
 - Beginners Guide: [BEGINNERS-GUIDE.md](BEGINNERS-GUIDE.md)
 - Demo Instructions: [demo-instructions.md](demo-instructions.md)
 
