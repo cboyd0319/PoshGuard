@@ -207,3 +207,146 @@ Describe 'PoshGuard Module' -Tag 'Unit', 'PoshGuard', 'Module' {
   }
 }
 
+Describe 'Resolve-PoshGuardPath' -Tag 'Unit', 'PoshGuard', 'PathResolution' {
+  <#
+  .SYNOPSIS
+      Tests for internal path resolution helper function
+      
+  .NOTES
+      Tests both Gallery and Dev installation paths
+      Validates fallback behavior when paths don't exist
+  #>
+  
+  Context 'Path resolution logic' {
+    It 'Returns Gallery path when it exists' {
+      InModuleScope PoshGuard {
+        # Arrange
+        Mock Test-Path { 
+          param($Path)
+          return $Path -like '*\lib' -or $Path -like '*/lib'
+        }
+        
+        # Act
+        $result = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath 'tools/lib'
+        
+        # Assert
+        $result | Should -Not -BeNullOrEmpty
+        $result | Should -Match 'lib$'
+      }
+    }
+
+    It 'Returns Dev path when Gallery path does not exist' {
+      InModuleScope PoshGuard {
+        # Arrange
+        $script:ModuleRoot = '/test/PoshGuard'
+        Mock Test-Path { 
+          param($Path)
+          # Gallery path doesn't exist, dev path does
+          return $Path -like '*/tools/lib'
+        }
+        
+        # Act
+        $result = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath 'tools/lib'
+        
+        # Assert
+        $result | Should -Not -BeNullOrEmpty
+        $result | Should -Match 'tools[\\/]lib$'
+      }
+    }
+
+    It 'Returns null when neither path exists' {
+      InModuleScope PoshGuard {
+        # Arrange
+        Mock Test-Path { return $false }
+        
+        # Act
+        $result = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath 'tools/lib'
+        
+        # Assert
+        $result | Should -BeNullOrEmpty
+      }
+    }
+  }
+}
+
+Describe 'Invoke-PoshGuard Execution' -Tag 'Unit', 'PoshGuard', 'Execution' {
+  <#
+  .SYNOPSIS
+      Tests for Invoke-PoshGuard execution behavior
+      
+  .NOTES
+      Tests script location resolution and error handling
+      Uses mocks to avoid actual file modifications
+  #>
+  
+  Context 'Script resolution' {
+    It 'Validates that Resolve-PoshGuardPath is called' {
+      InModuleScope PoshGuard {
+        # Arrange
+        Mock Resolve-PoshGuardPath { return $null } -Verifiable
+        
+        # Act & Assert
+        { Invoke-PoshGuard -Path 'test.ps1' -ErrorAction Stop } | 
+          Should -Throw -ExpectedMessage '*Cannot locate Apply-AutoFix.ps1*'
+        
+        # Verify the path resolution was attempted
+        Assert-MockCalled Resolve-PoshGuardPath -Exactly -Times 1 -Scope It
+      }
+    }
+  }
+
+  Context 'Error conditions' {
+    It 'Throws when Apply-AutoFix.ps1 cannot be located' {
+      InModuleScope PoshGuard {
+        # Arrange
+        Mock Resolve-PoshGuardPath { return $null }
+        
+        # Act & Assert
+        { Invoke-PoshGuard -Path 'test.ps1' } | Should -Throw -ExpectedMessage '*Cannot locate Apply-AutoFix.ps1*'
+      }
+    }
+
+    It 'Has mandatory Path parameter' {
+      # Arrange
+      $cmd = Get-Command Invoke-PoshGuard
+      $pathParam = $cmd.Parameters['Path'].Attributes | 
+        Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+      
+      # Act & Assert
+      $pathParam[0].Mandatory | Should -Be $true
+    }
+  }
+  
+  Context 'Parameter validation' {
+    It 'Accepts DryRun switch parameter' {
+      # Arrange
+      $cmd = Get-Command Invoke-PoshGuard
+      
+      # Act & Assert
+      $cmd.Parameters.ContainsKey('DryRun') | Should -Be $true
+      $cmd.Parameters['DryRun'].SwitchParameter | Should -Be $true
+    }
+
+    It 'Accepts Skip parameter as string array' {
+      # Arrange
+      $cmd = Get-Command Invoke-PoshGuard
+      
+      # Act & Assert
+      $cmd.Parameters.ContainsKey('Skip') | Should -Be $true
+      $cmd.Parameters['Skip'].ParameterType.Name | Should -Be 'String[]'
+    }
+
+    It 'Accepts all expected optional parameters' {
+      # Arrange
+      $cmd = Get-Command Invoke-PoshGuard
+      $expectedParams = @('Path', 'DryRun', 'ShowDiff', 'Recurse', 'Skip', 'ExportSarif', 'SarifOutputPath')
+      
+      # Act & Assert
+      foreach ($param in $expectedParams) {
+        $cmd.Parameters.ContainsKey($param) | Should -Be $true -Because "Parameter '$param' should exist"
+      }
+    }
+  }
+}
+
+
