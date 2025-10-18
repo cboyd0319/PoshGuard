@@ -97,7 +97,10 @@ param(
     [switch]$ExportSarif,
 
     [Parameter()]
-    [string]$SarifOutputPath = './poshguard-results.sarif'
+    [string]$SarifOutputPath = './poshguard-results.sarif',
+
+    [Parameter()]
+    [switch]$FastScan
 )
 
 Set-StrictMode -Version Latest
@@ -134,6 +137,9 @@ try {
     Import-Module (Join-Path -Path $libPath -ChildPath 'ConfigurationManager.psm1') -Force -ErrorAction Stop
     Import-Module (Join-Path -Path $libPath -ChildPath 'Core.psm1') -Force -ErrorAction Stop
     Import-Module (Join-Path -Path $libPath -ChildPath 'Observability.psm1') -Force -ErrorAction Stop
+    
+    # RipGrep integration module (v4.3.0+)
+    Import-Module (Join-Path -Path $libPath -ChildPath 'RipGrep.psm1') -Force -ErrorAction Stop
     
     # Fix modules
     Import-Module (Join-Path -Path $libPath -ChildPath 'Formatting.psm1') -Force -ErrorAction Stop
@@ -534,11 +540,13 @@ try {
     Write-Host "  └──────────────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
     Write-Host ""
 
-    $files = @(Get-PowerShellFiles -Path $Path)
+    $files = @(Get-PowerShellFiles -Path $Path -FastScan:$FastScan)
     
     # Enhanced file discovery message
-    Write-Host "  🔍 Discovering files..." -ForegroundColor Cyan
-    Start-Sleep -Milliseconds 200  # Brief pause for better UX
+    if (-not $FastScan) {
+        Write-Host "  🔍 Discovering files..." -ForegroundColor Cyan
+        Start-Sleep -Milliseconds 200  # Brief pause for better UX
+    }
     Write-Host "  ✓ Found " -ForegroundColor Green -NoNewline
     Write-Host $files.Count -ForegroundColor White -NoNewline
     Write-Host " PowerShell file(s)" -ForegroundColor Green
