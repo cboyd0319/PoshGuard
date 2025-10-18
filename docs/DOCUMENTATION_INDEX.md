@@ -12,6 +12,7 @@ Use this page to navigate the docs. Prefer short, runnable examples and link dee
 
 - Overview: [ARCHITECTURE.md](ARCHITECTURE.md)
 - How it Works: [how-it-works.md](how-it-works.md)
+- RipGrep Integration: [RIPGREP_INTEGRATION.md](RIPGREP_INTEGRATION.md)
 - SARIF Integration: [GITHUB-SARIF-INTEGRATION.md](reference/GITHUB-SARIF-INTEGRATION.md)
 
 ## Security
