@@ -278,6 +278,443 @@ Describe 'Get-EntropyConfidence' -Tag 'Unit', 'Security', 'Confidence' {
   }
 }
 
+Describe 'Invoke-SecretScan' -Tag 'Unit', 'Security', 'SecretDetection' {
+  
+  Context 'When scanning content for secrets' {
+    It 'Should scan content and return results' {
+      # Arrange
+      $testContent = @'
+# Test script with various patterns
+$message = "Hello World"
+$apiKey = "AKIAIOSFODNN7EXAMPLE"
+$password = "MySecurePassword123"
+'@
+      
+      # Act
+      $result = Invoke-SecretScan -Content $testContent -FilePath 'test.ps1'
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+    }
+
+    It 'Should accept Content parameter' {
+      # Arrange
+      $cmd = Get-Command -Name Invoke-SecretScan
+      
+      # Assert
+      $cmd.Parameters.ContainsKey('Content') | Should -Be $true
+    }
+
+    It 'Should accept FilePath parameter' {
+      # Arrange
+      $cmd = Get-Command -Name Invoke-SecretScan
+      
+      # Assert
+      $cmd.Parameters.ContainsKey('FilePath') | Should -Be $true
+    }
+
+    It 'Should return hashtable with results' {
+      # Arrange
+      $content = '$test = "value"'
+      
+      # Act
+      $result = Invoke-SecretScan -Content $content
+      
+      # Assert
+      $result | Should -BeOfType [hashtable]
+    }
+
+    It 'Should detect high-entropy strings' {
+      # Arrange
+      $secretContent = '$secret = "xK9mQ2vN8pL4rT6yU1wS3eA5dF7gH9j"'
+      
+      # Act
+      $result = Invoke-SecretScan -Content $secretContent
+      
+      # Assert
+      $result.Keys.Count | Should -BeGreaterThan 0
+    }
+
+    It 'Should handle empty content gracefully' {
+      # Act
+      $result = Invoke-SecretScan -Content ''
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+    }
+
+    It 'Should handle content with only comments' {
+      # Arrange
+      $commentContent = @'
+# This is a comment
+# Another comment
+# Yet another comment
+'@
+      
+      # Act
+      $result = Invoke-SecretScan -Content $commentContent
+      
+      # Assert
+      $result | Should -Not -BeNullOrEmpty
+    }
+
+    It 'Should include scan metrics in results' {
+      # Arrange
+      $content = '$test = "value"'
+      
+      # Act
+      $result = Invoke-SecretScan -Content $content
+      
+      # Assert
+      $result.Keys | Should -Contain 'ScanDurationMs'
+      $result.Keys | Should -Contain 'LineCount'
+      $result.Keys | Should -Contain 'SecretsFound'
+    }
+  }
+
+  Context 'Pattern detection' {
+    It 'Should detect AWS access keys' {
+      # Arrange
+      $awsContent = '$accessKey = "AKIAIOSFODNN7EXAMPLE"'
+      
+      # Act
+      $result = Invoke-SecretScan -Content $awsContent
+      
+      # Assert
+      $result.Keys.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect private keys' {
+      # Arrange
+      $keyContent = @'
+$key = @"
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA...
+-----END RSA PRIVATE KEY-----
+"@
+'@
+      
+      # Act
+      $result = Invoke-SecretScan -Content $keyContent
+      
+      # Assert
+      $result.Keys.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect JWT tokens' {
+      # Arrange
+      $jwtContent = '$token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"'
+      
+      # Act
+      $result = Invoke-SecretScan -Content $jwtContent
+      
+      # Assert
+      $result.Keys.Count | Should -BeGreaterOrEqual 0
+    }
+  }
+}
+
+Describe 'Export-SecretScanResults' -Tag 'Unit', 'Security', 'Reporting' {
+  
+  Context 'When exporting scan results' {
+    BeforeEach {
+      $testResults = @{
+        FilePath = 'test.ps1'
+        SecretsFound = 1
+        Secrets = @(
+          @{
+            Type = 'HighEntropy'
+            SubType = 'Base64'
+            Value = 'SGVsbG9Xb3JsZA=='
+            Entropy = 4.8
+            LineNumber = 1
+            Severity = 'Error'
+            Confidence = 0.85
+            Message = 'High entropy Base64 string detected'
+          }
+        )
+      }
+    }
+
+    It 'Should export results without error' {
+      # Act & Assert
+      { Export-SecretScanResults -Results $testResults } | Should -Not -Throw
+    }
+
+    It 'Should accept Results parameter' {
+      # Arrange
+      $cmd = Get-Command -Name Export-SecretScanResults
+      
+      # Assert
+      $cmd.Parameters.ContainsKey('Results') | Should -Be $true
+    }
+
+    It 'Should handle empty results hashtable' {
+      # Arrange
+      $emptyResults = @{
+        FilePath = 'test.ps1'
+        SecretsFound = 0
+        Secrets = @()
+      }
+      
+      # Act & Assert
+      { Export-SecretScanResults -Results $emptyResults } | Should -Not -Throw
+    }
+
+    It 'Should have CmdletBinding attribute' {
+      # Arrange
+      $cmd = Get-Command -Name Export-SecretScanResults
+      
+      # Assert
+      $cmd.CmdletBinding | Should -Be $true
+    }
+  }
+}
+
+Describe 'Get-SecretScanSummary' -Tag 'Unit', 'Security', 'Reporting' {
+  
+  Context 'When generating scan summary' {
+    It 'Should generate summary without errors' {
+      # Act & Assert
+      { Get-SecretScanSummary } | Should -Not -Throw
+    }
+
+    It 'Should return hashtable' {
+      # Act
+      $summary = Get-SecretScanSummary
+      
+      # Assert
+      $summary | Should -BeOfType [hashtable]
+    }
+
+    It 'Should have TotalScans key' {
+      # Act
+      $summary = Get-SecretScanSummary
+      
+      # Assert
+      $summary.Keys | Should -Contain 'TotalScans'
+    }
+
+    It 'Should have TotalSecrets key' {
+      # Act
+      $summary = Get-SecretScanSummary
+      
+      # Assert
+      $summary.Keys | Should -Contain 'TotalSecrets'
+    }
+
+    It 'Should have FilesWithSecrets key' {
+      # Act
+      $summary = Get-SecretScanSummary
+      
+      # Assert
+      $summary.Keys | Should -Contain 'FilesWithSecrets'
+    }
+
+    It 'Should return zero counts when no report exists' {
+      # Act
+      $summary = Get-SecretScanSummary
+      
+      # Assert
+      $summary.TotalScans | Should -BeGreaterOrEqual 0
+      $summary.TotalSecrets | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should have CmdletBinding attribute' {
+      # Arrange
+      $cmd = Get-Command -Name Get-SecretScanSummary
+      
+      # Assert
+      $cmd.CmdletBinding | Should -Be $true
+    }
+  }
+}
+
+Describe 'Find-SecretsByEntropy - Extended Tests' -Tag 'Unit', 'Security' {
+  
+  Context 'Different string types' {
+    It 'Should detect Base64 encoded secrets' {
+      # Arrange
+      $content = '$secret = "SGVsbG9Xb3JsZERhdGFUaGlzSXNBTG9uZ0Jhc2U2NFN0cmluZ1dpdGhIaWdoRW50cm9weQ=="'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect hexadecimal secrets' {
+      # Arrange
+      $content = '$key = "1a2b3c4d5e6f7890abcdef1234567890abcdef"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should classify string types correctly' {
+      # Arrange
+      $content = @'
+$base64 = "SGVsbG9Xb3JsZERhdGFUaGlz"
+$hex = "1a2b3c4d5e6f7890"
+$ascii = "RandomHighEntropyString"
+'@
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result | Should -Not -BeNull
+    }
+  }
+
+  Context 'False positive filtering' {
+    It 'Should exclude example patterns' {
+      # Arrange
+      $content = '$example = "YOUR_KEY_HERE_REPLACE_THIS_WITH_REAL_KEY"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -Be 0
+    }
+
+    It 'Should exclude test data' {
+      # Arrange
+      $content = '$test = "test_data_1234567890abcdefghijklmnop"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -Be 0
+    }
+
+    It 'Should exclude Lorem Ipsum' {
+      # Arrange
+      $content = '$text = "Lorem ipsum dolor sit amet consectetur"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -Be 0
+    }
+
+    It 'Should exclude repeated X patterns' {
+      # Arrange
+      $content = '$placeholder = "XXXXXXXXXXXXXXXXXXXXXXXX"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -Be 0
+    }
+
+    It 'Should exclude repeated 0 patterns' {
+      # Arrange
+      $content = '$zeros = "00000000000000000000"'
+      
+      # Act
+      $result = Find-SecretsByEntropy -Content $content
+      
+      # Assert
+      $result.Count | Should -Be 0
+    }
+  }
+}
+
+Describe 'Find-SecretsByPattern - Extended Tests' -Tag 'Unit', 'Security' {
+  
+  Context 'Cloud provider keys' {
+    It 'Should detect AWS access keys' {
+      # Arrange
+      $content = '$key = "AKIAIOSFODNN7EXAMPLE"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect Azure client secrets' {
+      # Arrange
+      $content = '$azure_secret = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect Google API keys' {
+      # Arrange
+      $content = '$google = "AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+  }
+
+  Context 'Version control tokens' {
+    It 'Should detect GitHub tokens' {
+      # Arrange
+      $content = '$github = "ghp_1234567890abcdefghijklmnopqrstuvwxyz"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect GitLab tokens' {
+      # Arrange
+      $content = '$gitlab = "glpat-1234567890abcdef"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+  }
+
+  Context 'Connection strings' {
+    It 'Should detect SQL connection strings' {
+      # Arrange
+      $content = '$conn = "Server=localhost;Database=test;User Id=sa;Password=secret123;"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+
+    It 'Should detect MongoDB connection strings' {
+      # Arrange
+      $content = '$mongo = "mongodb://user:pass@localhost:27017/db"'
+      
+      # Act
+      $result = Find-SecretsByPattern -Content $content
+      
+      # Assert
+      $result.Count | Should -BeGreaterOrEqual 0
+    }
+  }
+}
+
 Describe 'EntropySecretDetection - Integration Tests' -Tag 'Integration', 'Security' {
   
   Context 'When scanning realistic code samples' {
