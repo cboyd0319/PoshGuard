@@ -768,7 +768,7 @@ function Test-VeryDeep {
     It 'Should require Ast parameter' {
       InModuleScope AdvancedDetection {
         # Act & Assert
-        { Get-MaxNestingDepth } | Should -Throw
+        { Get-MaxNestingDepth -ErrorAction Stop } | Should -Throw
       }
     }
 
