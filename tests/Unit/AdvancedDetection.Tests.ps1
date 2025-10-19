@@ -566,6 +566,234 @@ function Test-Clean {
   }
 }
 
+Describe 'Get-MaxNestingDepth' -Tag 'Unit', 'AdvancedDetection', 'Priority1' {
+  
+  Context 'When analyzing simple AST structures' {
+    It 'Should return 0 for flat code with no nesting' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-Flat {
+    $x = 1
+    $y = 2
+    return $x + $y
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -Be 0
+      }
+    }
+
+    It 'Should return 1 for single-level if statement' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-OneLevel {
+    if ($true) {
+        Write-Output "nested"
+    }
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -Be 1
+      }
+    }
+  }
+
+  Context 'When analyzing deeply nested structures' {
+    It 'Should calculate correct depth for nested if statements' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-ThreeLevel {
+    if ($true) {
+        if ($true) {
+            if ($true) {
+                Write-Output "level 3"
+            }
+        }
+    }
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -Be 3
+      }
+    }
+
+    It 'Should handle mixed control structures (if, foreach, while)' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-Mixed {
+    if ($condition) {
+        foreach ($item in $collection) {
+            while ($true) {
+                Write-Output "nested"
+            }
+        }
+    }
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -BeGreaterOrEqual 3
+      }
+    }
+
+    It 'Should handle switch statements' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-Switch {
+    switch ($value) {
+        1 { 
+            if ($true) {
+                Write-Output "nested in case"
+            }
+        }
+    }
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -BeGreaterOrEqual 2
+      }
+    }
+
+    It 'Should handle try-catch blocks' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = @'
+function Test-TryCatch {
+    try {
+        if ($condition) {
+            Write-Output "nested in try"
+        }
+    } catch {
+        Write-Error $_
+    }
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -BeGreaterOrEqual 2
+      }
+    }
+  }
+
+  Context 'When handling edge cases' {
+    It 'Should prevent infinite recursion with MaxRecursionDepth parameter' {
+      InModuleScope AdvancedDetection {
+        # Arrange - Create a very deeply nested structure
+        $content = @'
+function Test-VeryDeep {
+    if ($true) { if ($true) { if ($true) { if ($true) { if ($true) {
+        if ($true) { if ($true) { if ($true) { if ($true) { if ($true) {
+            Write-Output "very deep"
+        }}}}}}}}}}
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act & Assert - should not throw, even with low recursion limit
+        { Get-MaxNestingDepth -Ast $funcAst.Body -MaxRecursionDepth 5 } | Should -Not -Throw
+      }
+    }
+
+    It 'Should accept CurrentDepth parameter for recursive calls' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = 'if ($true) { Write-Output "test" }'
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $ast -CurrentDepth 2
+        
+        # Assert
+        $depth | Should -BeGreaterOrEqual 2
+      }
+    }
+
+    It 'Should handle empty function body' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $content = 'function Test-Empty {}'
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$null)
+        $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
+        
+        # Act
+        $depth = Get-MaxNestingDepth -Ast $funcAst.Body
+        
+        # Assert
+        $depth | Should -Be 0
+      }
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Should require Ast parameter' {
+      InModuleScope AdvancedDetection {
+        # Act & Assert
+        { Get-MaxNestingDepth } | Should -Throw
+      }
+    }
+
+    It 'Should have CmdletBinding attribute' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $cmd = Get-Command -Name Get-MaxNestingDepth
+        
+        # Assert
+        $cmd.CmdletBinding | Should -Be $true
+      }
+    }
+
+    It 'Should have OutputType attribute returning int' {
+      InModuleScope AdvancedDetection {
+        # Arrange
+        $cmd = Get-Command -Name Get-MaxNestingDepth
+        
+        # Assert
+        $cmd.OutputType.Name | Should -Contain 'Int32'
+      }
+    }
+  }
+}
+
 Describe 'AdvancedDetection Module Structure' -Tag 'Unit', 'AdvancedDetection' {
   
   Context 'Module export validation' {
