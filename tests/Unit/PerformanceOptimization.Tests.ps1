@@ -32,15 +32,16 @@ BeforeAll {
     Import-Module -Name $helpersPath -ErrorAction Stop
   }
 
-  # Import module under test (only if not already loaded)
+  # Import module under test with Force to ensure clean state
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/PerformanceOptimization.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find PerformanceOptimization module at: $modulePath"
   }
-  $moduleLoaded = Get-Module -Name 'PerformanceOptimization' -ErrorAction SilentlyContinue
-  if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
-  }
+  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Mock console output functions globally to prevent slow console I/O during tests
+  Mock -ModuleName PerformanceOptimization Write-Host { } -Verifiable
+  Mock -ModuleName PerformanceOptimization Write-Progress { } -Verifiable
 }
 
 Describe 'Get-PerformanceMetrics' -Tag 'Unit', 'PerformanceOptimization' {
@@ -564,16 +565,16 @@ Describe 'Show-PerformanceReport' -Tag 'Unit', 'PerformanceOptimization' {
   }
 
   Context 'Output format validation' {
-    It 'Should output performance metrics to console' {
+    It 'Should call Write-Host to display performance metrics' {
       # Arrange
       $startTime = (Get-Date).AddSeconds(-2)
       $fileCount = 10
       
-      # Act - capture output
-      $output = Show-PerformanceReport -StartTime $startTime -FileCount $fileCount 6>&1 5>&1 4>&1 3>&1 2>&1
+      # Act
+      Show-PerformanceReport -StartTime $startTime -FileCount $fileCount
       
-      # Assert - verify output is generated
-      $output | Should -Not -BeNullOrEmpty
+      # Assert - verify Write-Host was called (mocked in BeforeAll for performance)
+      Should -Invoke -ModuleName PerformanceOptimization -CommandName Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { $Object -match "Performance Report" }
     }
 
     It 'Should display all expected metrics' {
