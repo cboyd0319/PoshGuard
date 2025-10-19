@@ -127,11 +127,12 @@ jobs:
           
       - name: Upload code coverage to Codecov
         if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         with:
           files: ./coverage.xml
           flags: unittests
           name: codecov-${{ matrix.os }}-pwsh-${{ matrix.pwsh }}
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           
       - name: Upload test results
