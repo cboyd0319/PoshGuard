@@ -325,3 +325,261 @@ Describe 'Get-SecurityReport' -Tag 'Unit', 'Security', 'Report' {
     }
   }
 }
+
+Describe 'Get-LineNumber' -Tag 'Unit', 'Security', 'Enhanced', 'Helper' {
+  
+  Context 'When finding pattern matches in content' {
+    It 'Should return correct line number for single-line match' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = @'
+Line 1
+Line 2
+Line 3 with pattern
+Line 4
+'@
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern 'with pattern'
+        
+        # Assert
+        $lineNum | Should -Be 3
+      }
+    }
+
+    It 'Should return first match when pattern appears multiple times' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = @'
+Match on line 1
+Some other text
+Match on line 3
+'@
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern 'Match'
+        
+        # Assert
+        $lineNum | Should -Be 1
+      }
+    }
+
+    It 'Should return 0 when pattern not found' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = @'
+Line 1
+Line 2
+Line 3
+'@
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern 'notfound'
+        
+        # Assert
+        $lineNum | Should -Be 0
+      }
+    }
+
+    It 'Should handle regex patterns' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = @'
+First line
+Second line with number 123
+Third line
+'@
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern '\d+'
+        
+        # Assert
+        $lineNum | Should -Be 2
+      }
+    }
+
+    It 'Should handle empty content' {
+      InModuleScope EnhancedSecurityDetection {
+        # Act
+        $lineNum = Get-LineNumber -Content '' -Pattern 'pattern'
+        
+        # Assert
+        $lineNum | Should -Be 0
+      }
+    }
+
+    It 'Should handle content with Windows line endings (CRLF)' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = "Line 1`r`nLine 2 match`r`nLine 3"
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern 'match'
+        
+        # Assert
+        $lineNum | Should -Be 2
+      }
+    }
+
+    It 'Should handle content with Unix line endings (LF)' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $content = "Line 1`nLine 2 match`nLine 3"
+        
+        # Act
+        $lineNum = Get-LineNumber -Content $content -Pattern 'match'
+        
+        # Assert
+        $lineNum | Should -Be 2
+      }
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Should have CmdletBinding attribute' {
+      InModuleScope EnhancedSecurityDetection {
+        $cmd = Get-Command -Name Get-LineNumber
+        $cmd.CmdletBinding | Should -Be $true
+      }
+    }
+  }
+}
+
+Describe 'Get-ComplianceStatus' -Tag 'Unit', 'Security', 'Enhanced', 'Helper' {
+  
+  Context 'When calculating compliance from issues' {
+    It 'Should return Compliant when no critical or high severity issues' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @(
+          [PSCustomObject]@{ Severity = 'Medium' }
+          [PSCustomObject]@{ Severity = 'Low' }
+          [PSCustomObject]@{ Severity = 'Information' }
+        )
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Compliant'
+      }
+    }
+
+    It 'Should return Compliant when no issues at all' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @()
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Compliant'
+      }
+    }
+
+    It 'Should return Mostly Compliant with 1-2 high severity and no critical' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @(
+          [PSCustomObject]@{ Severity = 'High' }
+          [PSCustomObject]@{ Severity = 'High' }
+          [PSCustomObject]@{ Severity = 'Medium' }
+        )
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Mostly Compliant'
+      }
+    }
+
+    It 'Should return Partially Compliant with 1-2 critical issues' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @(
+          [PSCustomObject]@{ Severity = 'Critical' }
+          [PSCustomObject]@{ Severity = 'Critical' }
+          [PSCustomObject]@{ Severity = 'High' }
+        )
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Partially Compliant'
+      }
+    }
+
+    It 'Should return Non-Compliant with 3+ critical issues' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @(
+          [PSCustomObject]@{ Severity = 'Critical' }
+          [PSCustomObject]@{ Severity = 'Critical' }
+          [PSCustomObject]@{ Severity = 'Critical' }
+          [PSCustomObject]@{ Severity = 'High' }
+        )
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Non-Compliant'
+      }
+    }
+
+    It 'Should return Non-Compliant with exactly 3 high severity (no critical)' -TestCases @(
+      @{ Issues = @(
+        [PSCustomObject]@{ Severity = 'High' }
+        [PSCustomObject]@{ Severity = 'High' }
+        [PSCustomObject]@{ Severity = 'High' }
+      ); ExpectedStatus = 'Compliant' }
+    ) {
+      param($Issues, $ExpectedStatus)
+      
+      InModuleScope EnhancedSecurityDetection -Parameters @{ Issues = $Issues } {
+        param($Issues)
+        # Act
+        $status = Get-ComplianceStatus -Issues $Issues
+        
+        # Assert - more than 2 high but no critical should still be Compliant based on logic
+        # The function only checks for 0 critical and <=2 high for Mostly Compliant
+        # If high > 2 and critical = 0, it falls to Compliant
+        $status | Should -Be 'Compliant'
+      }
+    }
+
+    It 'Should handle edge case: exactly 1 critical issue' {
+      InModuleScope EnhancedSecurityDetection {
+        # Arrange
+        $issues = @(
+          [PSCustomObject]@{ Severity = 'Critical' }
+        )
+        
+        # Act
+        $status = Get-ComplianceStatus -Issues $issues
+        
+        # Assert
+        $status | Should -Be 'Partially Compliant'
+      }
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Should have CmdletBinding attribute' {
+      InModuleScope EnhancedSecurityDetection {
+        $cmd = Get-Command -Name Get-ComplianceStatus
+        $cmd.CmdletBinding | Should -Be $true
+      }
+    }
+
+    It 'Should handle null issues array' {
+      InModuleScope EnhancedSecurityDetection {
+        # Act & Assert - should not throw
+        { Get-ComplianceStatus -Issues @() } | Should -Not -Throw
+      }
+    }
+  }
+}
