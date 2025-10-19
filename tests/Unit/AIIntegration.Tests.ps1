@@ -533,8 +533,8 @@ Describe 'Get-MCPContext' -Tag 'Unit', 'AIIntegration' {
   
   Context 'When retrieving MCP context' {
     It 'Should return context object' {
-      # Act & Assert
-      { Get-MCPContext } | Should -Not -Throw
+      # Act & Assert - Provide required Query parameter
+      { Get-MCPContext -Query "test query" -ErrorAction Stop } | Should -Not -Throw
     }
   }
 }
