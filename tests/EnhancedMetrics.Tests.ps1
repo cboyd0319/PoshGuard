@@ -3,7 +3,7 @@
 
 BeforeAll {
     $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '../tools/lib/EnhancedMetrics.psm1'
-    Import-Module -Name $ModulePath -Force -ErrorAction Stop
+    Import-Module -Name $ModulePath -Force -Force -ErrorAction Stop
 }
 
 Describe "Enhanced Metrics Module" {
