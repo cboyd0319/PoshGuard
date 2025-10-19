@@ -730,7 +730,8 @@ function Test-VeryDeep {
         $funcAst = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)[0]
         
         # Act & Assert - should not throw, even with low recursion limit
-        { Get-MaxNestingDepth -Ast $funcAst.Body -MaxRecursionDepth 5 } | Should -Not -Throw
+        # Suppress warnings to avoid hundreds of "Max recursion depth reached" messages
+        { Get-MaxNestingDepth -Ast $funcAst.Body -MaxRecursionDepth 5 -WarningAction SilentlyContinue } | Should -Not -Throw
       }
     }
 
@@ -768,7 +769,14 @@ function Test-VeryDeep {
     It 'Should require Ast parameter' {
       InModuleScope AdvancedDetection {
         # Act & Assert
-        { Get-MaxNestingDepth -ErrorAction Stop } | Should -Throw
+        # Note: Using try-catch to avoid interactive prompt for mandatory parameter
+        $threw = $false
+        try {
+          $null = & { Get-MaxNestingDepth -Ast $null -ErrorAction Stop }
+        } catch {
+          $threw = $true
+        }
+        $threw | Should -Be $true
       }
     }
 
@@ -788,7 +796,7 @@ function Test-VeryDeep {
         $cmd = Get-Command -Name Get-MaxNestingDepth
         
         # Assert
-        $cmd.OutputType.Name | Should -Contain 'Int32'
+        $cmd.OutputType.Name | Should -Contain 'System.Int32'
       }
     }
   }
