@@ -32,10 +32,10 @@ BeforeAll {
   Import-Module -Name $modulePath -Force -ErrorAction Stop
 }
 
-Describe 'Find-DeadCode' -Tag 'Unit', 'AdvancedCodeAnalysis' {
+Describe 'Find-DeadCode' -Tag 'Unit', 'AdvancedCodeAnalysis', 'Slow' {
   
   Context 'When code contains unreachable statements' {
-    It 'Should detect code after return statement' {
+    It 'Should detect code after return statement' -Tag 'Slow' {
       # Arrange
       $content = @'
 function Test-Function {
@@ -78,7 +78,7 @@ function Test-Function {
   }
 
   Context 'When code contains unused functions' {
-    It 'Should detect unused internal function' {
+    It 'Should detect unused internal function' -Tag 'Slow' {
       # Arrange
       $content = @'
 function HelperFunction {
@@ -124,7 +124,7 @@ function Test-Main {
   }
 
   Context 'When code contains unused variables' {
-    It 'Should detect assigned but never read variable' {
+    It 'Should detect assigned but never read variable' -Tag 'Slow' {
       # Arrange
       $content = @'
 function Test-Function {
@@ -162,7 +162,7 @@ function Test-Function {
   }
 
   Context 'When code contains commented-out code' {
-    It 'Should detect large blocks of commented code' {
+    It 'Should detect large blocks of commented code' -Tag 'Slow' {
       # Arrange
       $content = @'
 function Test-Function {
@@ -249,10 +249,10 @@ function Test-Function {
   }
 }
 
-Describe 'Find-CodeSmells' -Tag 'Unit', 'AdvancedCodeAnalysis' {
+Describe 'Find-CodeSmells' -Tag 'Unit', 'AdvancedCodeAnalysis', 'Slow' {
   
   Context 'When function is too long' {
-    It 'Should detect function exceeding 50 lines' {
+    It 'Should detect function exceeding 50 lines' -Tag 'Slow' {
       # Arrange
       $lines = 1..60 | ForEach-Object { "    Write-Output 'Line $_'" }
       $content = @"
@@ -289,7 +289,7 @@ function Test-ShortFunction {
   }
 
   Context 'When function has too many parameters' {
-    It 'Should detect function with more than 7 parameters' {
+    It 'Should detect function with more than 7 parameters' -Tag 'Slow' {
       # Arrange
       $content = @'
 function Test-ManyParams {
@@ -338,7 +338,7 @@ function Test-ReasonableParams {
   }
 
   Context 'When code has deep nesting' {
-    It 'Should detect deeply nested control structures' {
+    It 'Should detect deeply nested control structures' -Tag 'Slow' {
       # Arrange - Using 5 levels (reduced from 10) to avoid stack overflow
       # This is still enough to test deep nesting detection
       $content = @'
@@ -431,7 +431,7 @@ function Test-ShallowNesting {
   }
 }
 
-Describe 'Get-CognitiveComplexity' -Tag 'Unit', 'AdvancedCodeAnalysis' {
+Describe 'Get-CognitiveComplexity' -Tag 'Unit', 'AdvancedCodeAnalysis', 'Slow' {
   
   Context 'When analyzing simple functions' {
     It 'Should return low complexity for simple function' {
@@ -453,7 +453,7 @@ function Test-Simple {
   }
 
   Context 'When analyzing complex functions' {
-    It 'Should detect high complexity with multiple decision points' {
+    It 'Should detect high complexity with multiple decision points' -Tag 'Slow' {
       # Arrange
       $content = @'
 function Test-Complex {
