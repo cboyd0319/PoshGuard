@@ -37,7 +37,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'EnhancedSecurityDetection' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'EnhancedSecurityDetection'
   }
 }
 
@@ -417,7 +420,9 @@ Third line
     It 'Should handle content with Windows line endings (CRLF)' {
       InModuleScope EnhancedSecurityDetection {
         # Arrange
-        $content = "Line 1`r`nLine 2 match`r`nLine 3"
+        $content = "Line 1`r
+Line 2 match`r
+Line 3"
         
         # Act
         $lineNum = Get-LineNumber -Content $content -Pattern 'match'
@@ -430,7 +435,9 @@ Third line
     It 'Should handle content with Unix line endings (LF)' {
       InModuleScope EnhancedSecurityDetection {
         # Arrange
-        $content = "Line 1`nLine 2 match`nLine 3"
+        $content = "Line 1
+Line 2 match
+Line 3"
         
         # Act
         $lineNum = Get-LineNumber -Content $content -Pattern 'match'

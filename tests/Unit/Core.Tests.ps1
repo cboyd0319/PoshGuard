@@ -33,7 +33,7 @@
 #>
 
 BeforeAll {
-  # Import test helpers (only if not already loaded)
+  # Import test helpers
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
   if (Test-Path $helpersPath) {
     $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
@@ -42,15 +42,15 @@ BeforeAll {
     }
   }
 
-  # Import Core module (only if not already loaded)
+  # Import Core module with Force for clean state
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Core.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find Core module at: $modulePath"
   }
-  $moduleLoaded = Get-Module -Name 'Core' -ErrorAction SilentlyContinue
-  if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
-  }
+  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'Core'
 }
 
 Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
@@ -222,8 +222,10 @@ Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
 
     It 'Handles <Description> without throwing' -TestCases @(
       @{ Message = '   '; Description = 'whitespace only' }
-      @{ Message = "`t`n"; Description = 'tabs and newlines' }
-      @{ Message = "`r`n"; Description = 'CRLF line endings' }
+      @{ Message = "`t
+"; Description = 'tabs and newlines' }
+      @{ Message = "`r
+"; Description = 'CRLF line endings' }
     ) {
       param($Message, $Description)
       
@@ -589,7 +591,9 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Returns diff with headers for identical multi-line content' {
       # Arrange
-      $content = "Line 1`nLine 2`nLine 3"
+      $content = "Line 1
+Line 2
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $content -Modified $content -FilePath 'test.ps1'
@@ -604,8 +608,11 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
   Context 'When content has changes' {
     It 'Detects added lines with + indicator' {
       # Arrange
-      $original = "Line 1`nLine 2"
-      $modified = "Line 1`nLine 2`nLine 3"
+      $original = "Line 1
+Line 2"
+      $modified = "Line 1
+Line 2
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -617,8 +624,11 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Detects removed lines with - indicator' {
       # Arrange
-      $original = "Line 1`nLine 2`nLine 3"
-      $modified = "Line 1`nLine 3"
+      $original = "Line 1
+Line 2
+Line 3"
+      $modified = "Line 1
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -630,8 +640,12 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Detects modified lines (remove + add)' {
       # Arrange
-      $original = "Line 1`nOld Line`nLine 3"
-      $modified = "Line 1`nNew Line`nLine 3"
+      $original = "Line 1
+Old Line
+Line 3"
+      $modified = "Line 1
+New Line
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -644,8 +658,12 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Includes unchanged lines with space indicator' {
       # Arrange
-      $original = "Line 1`nLine 2`nLine 3"
-      $modified = "Line 1`nLine 2 Modified`nLine 3"
+      $original = "Line 1
+Line 2
+Line 3"
+      $modified = "Line 1
+Line 2 Modified
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -700,7 +718,8 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
     It 'Handles whitespace-only original content' {
       # Arrange
       $original = " "
-      $modified = "Line 1`nLine 2"
+      $modified = "Line 1
+Line 2"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -713,7 +732,8 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Handles whitespace-only modified content' {
       # Arrange
-      $original = "Line 1`nLine 2"
+      $original = "Line 1
+Line 2"
       $modified = " "
       
       # Act
@@ -739,8 +759,12 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Handles content with Windows line endings (CRLF)' {
       # Arrange
-      $original = "Line 1`r`nLine 2`r`nLine 3"
-      $modified = "Line 1`r`nLine 2 Modified`r`nLine 3"
+      $original = "Line 1`r
+Line 2`r
+Line 3"
+      $modified = "Line 1`r
+Line 2 Modified`r
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -753,8 +777,12 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
 
     It 'Handles content with Unix line endings (LF)' {
       # Arrange
-      $original = "Line 1`nLine 2`nLine 3"
-      $modified = "Line 1`nLine 2 Modified`nLine 3"
+      $original = "Line 1
+Line 2
+Line 3"
+      $modified = "Line 1
+Line 2 Modified
+Line 3"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'
@@ -768,10 +796,12 @@ Describe 'New-UnifiedDiff' -Tag 'Unit', 'Core', 'Diff' {
     It 'Handles large diffs efficiently' {
       # Arrange - 100 line file
       $lines = 1..100 | ForEach-Object { "Line $_" }
-      $original = $lines -join "`n"
+      $original = $lines -join "
+"
       $modifiedLines = $lines
       $modifiedLines[49] = "Modified Line 50"
-      $modified = $modifiedLines -join "`n"
+      $modified = $modifiedLines -join "
+"
       
       # Act
       $result = New-UnifiedDiff -Original $original -Modified $modified -FilePath 'test.ps1'

@@ -35,7 +35,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'MCPIntegration' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'MCPIntegration'
   }
 }
 

@@ -22,22 +22,22 @@
 #>
 
 BeforeAll {
-  # Import test helpers (only if not already loaded)
+  # Import test helpers
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
   $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
   if (-not $helpersLoaded) {
     Import-Module -Name $helpersPath -ErrorAction Stop
   }
 
-  # Import AdvancedDetection module (only if not already loaded)
+  # Import AdvancedDetection module with Force for clean state
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/AdvancedDetection.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find AdvancedDetection module at: $modulePath"
   }
-  $moduleLoaded = Get-Module -Name 'AdvancedDetection' -ErrorAction SilentlyContinue
-  if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
-  }
+  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'AdvancedDetection'
 }
 
 Describe 'Test-CodeComplexity' -Tag 'Unit', 'AdvancedDetection' {
@@ -150,7 +150,8 @@ function Test-ShallowNesting {
       $lines = 1..60 | ForEach-Object { "    Write-Output 'Line $_'" }
       $content = @"
 function Test-LongFunction {
-$($lines -join "`n")
+$($lines -join "
+")
 }
 "@
       
@@ -349,7 +350,8 @@ function Test-EfficientArray {
 function Test-StringConcat {
     $result = ""
     foreach ($i in 1..100) {
-        $result = $result + "Line $i`n"
+        $result = $result + "Line $i
+"
     }
     return $result
 }
