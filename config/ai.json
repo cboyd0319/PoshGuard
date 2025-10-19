@@ -1,8 +1,8 @@
 {
-  "ConfigPath": "./config/ai.json",
-  "LLMIntegration": false,
-  "MCPIntegration": false,
   "PatternLearning": true,
   "PatternDatabasePath": "./ml/patterns.jsonl",
-  "ConfidenceScoring": true
+  "ConfigPath": "./config/ai.json",
+  "ConfidenceScoring": true,
+  "LLMIntegration": false,
+  "MCPIntegration": false
 }
