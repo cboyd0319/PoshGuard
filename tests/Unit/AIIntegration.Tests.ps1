@@ -573,6 +573,212 @@ Describe 'Add-FixPattern' -Tag 'Unit', 'AIIntegration' {
   }
 }
 
+Describe 'Invoke-ModelRetraining' -Tag 'Unit', 'AIIntegration', 'ML' {
+  
+  Context 'When pattern database does not exist' {
+    It 'Should warn when no pattern database found' {
+      InModuleScope AIIntegration {
+        # Arrange - Set a non-existent path
+        $script:AIConfig.PatternDatabasePath = 'TestDrive:/nonexistent.jsonl'
+        
+        # Act - capture warnings
+        $warnings = @()
+        Invoke-ModelRetraining -WarningVariable warnings -WarningAction SilentlyContinue
+        
+        # Assert
+        $warnings.Count | Should -BeGreaterThan 0
+      }
+    }
+  }
+
+  Context 'When pattern database is empty' {
+    It 'Should warn when database has no patterns' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $dbPath = Join-Path $TestDrive 'patterns.jsonl'
+        '' | Set-Content -Path $dbPath
+        $script:AIConfig.PatternDatabasePath = $dbPath
+        
+        # Act
+        $warnings = @()
+        Invoke-ModelRetraining -WarningVariable warnings -WarningAction SilentlyContinue
+        
+        # Assert
+        $warnings.Count | Should -BeGreaterThan 0
+      }
+    }
+  }
+
+  Context 'When pattern database contains valid patterns' {
+    It 'Should process patterns without error' {
+      InModuleScope AIIntegration {
+        # Arrange - create test patterns
+        $dbPath = Join-Path $TestDrive 'patterns.jsonl'
+        $pattern1 = @{
+          rule = 'TestRule1'
+          success = $true
+          confidence = 0.95
+        } | ConvertTo-Json -Compress
+        
+        $pattern2 = @{
+          rule = 'TestRule1'
+          success = $false
+          confidence = 0.5
+        } | ConvertTo-Json -Compress
+        
+        "$pattern1`n$pattern2" | Set-Content -Path $dbPath
+        $script:AIConfig.PatternDatabasePath = $dbPath
+        
+        # Act & Assert
+        { Invoke-ModelRetraining -Verbose } | Should -Not -Throw
+      }
+    }
+
+    It 'Should handle invalid JSON entries gracefully' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $dbPath = Join-Path $TestDrive 'patterns.jsonl'
+        $validPattern = @{ rule = 'Test'; success = $true } | ConvertTo-Json -Compress
+        "$validPattern`ninvalid json`n$validPattern" | Set-Content -Path $dbPath
+        $script:AIConfig.PatternDatabasePath = $dbPath
+        
+        # Act & Assert - should not throw on invalid entries
+        { Invoke-ModelRetraining } | Should -Not -Throw
+      }
+    }
+
+    It 'Should calculate statistics for multiple patterns per rule' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $dbPath = Join-Path $TestDrive 'patterns.jsonl'
+        $patterns = @(
+          @{ rule = 'Rule1'; success = $true }
+          @{ rule = 'Rule1'; success = $true }
+          @{ rule = 'Rule1'; success = $false }
+          @{ rule = 'Rule2'; success = $true }
+        ) | ForEach-Object { $_ | ConvertTo-Json -Compress }
+        
+        $patterns -join "`n" | Set-Content -Path $dbPath
+        $script:AIConfig.PatternDatabasePath = $dbPath
+        
+        # Act & Assert
+        { Invoke-ModelRetraining -Verbose } | Should -Not -Throw
+      }
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Should have CmdletBinding attribute' {
+      $cmd = Get-Command -Name Invoke-ModelRetraining
+      $cmd.CmdletBinding | Should -Be $true
+    }
+
+    It 'Should not require any parameters' {
+      $cmd = Get-Command -Name Invoke-ModelRetraining
+      $cmd.Parameters.Keys | Where-Object { $cmd.Parameters[$_].Attributes.Mandatory } | Should -BeNullOrEmpty
+    }
+
+    It 'Should support -Verbose parameter' {
+      $cmd = Get-Command -Name Invoke-ModelRetraining
+      $cmd.Parameters.ContainsKey('Verbose') | Should -Be $true
+    }
+  }
+}
+
+Describe 'Update-ConfidenceWeights' -Tag 'Unit', 'AIIntegration', 'ML' {
+  
+  Context 'When updating confidence weights with statistics' {
+    It 'Should accept statistics parameter' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $stats = @(
+          [PSCustomObject]@{ Rule = 'Rule1'; SuccessRate = 0.9; Count = 100 }
+          [PSCustomObject]@{ Rule = 'Rule2'; SuccessRate = 0.7; Count = 50 }
+        )
+        
+        # Act & Assert
+        { Update-ConfidenceWeights -Statistics $stats } | Should -Not -Throw
+      }
+    }
+
+    It 'Should handle empty statistics array' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $stats = @()
+        
+        # Act & Assert
+        { Update-ConfidenceWeights -Statistics $stats } | Should -Not -Throw
+      }
+    }
+
+    It 'Should process without throwing on valid input' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $stats = @(
+          [PSCustomObject]@{
+            Rule = 'TestRule'
+            SuccessRate = 0.85
+            TotalCount = 100
+            SuccessCount = 85
+          }
+        )
+        
+        # Act & Assert - function is a placeholder for future implementation
+        { Update-ConfidenceWeights -Statistics $stats -Verbose } | Should -Not -Throw
+      }
+    }
+  }
+
+  Context 'Parameter validation' {
+    It 'Should have CmdletBinding attribute' {
+      InModuleScope AIIntegration {
+        $cmd = Get-Command -Name Update-ConfidenceWeights
+        $cmd.CmdletBinding | Should -Be $true
+      }
+    }
+
+    It 'Should require Statistics parameter' {
+      InModuleScope AIIntegration {
+        # Act & Assert
+        { Update-ConfidenceWeights } | Should -Throw
+      }
+    }
+
+    It 'Should accept array of objects' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $stats = @([PSCustomObject]@{ Test = 'Value' })
+        
+        # Act & Assert
+        { Update-ConfidenceWeights -Statistics $stats } | Should -Not -Throw
+      }
+    }
+
+    It 'Should support -Verbose parameter' {
+      InModuleScope AIIntegration {
+        $cmd = Get-Command -Name Update-ConfidenceWeights
+        $cmd.Parameters.ContainsKey('Verbose') | Should -Be $true
+      }
+    }
+  }
+
+  Context 'Functionality' {
+    It 'Should log verbose message about unchanged weights' {
+      InModuleScope AIIntegration {
+        # Arrange
+        $stats = @([PSCustomObject]@{ Rule = 'Test'; SuccessRate = 0.9 })
+        
+        # Act - capture verbose output
+        $verboseOutput = Update-ConfidenceWeights -Statistics $stats -Verbose 4>&1
+        
+        # Assert
+        $verboseOutput | Should -Not -BeNullOrEmpty
+        $verboseOutput -match 'weights remain unchanged' | Should -Be $true
+      }
+    }
+  }
+}
+
 AfterAll {
   # Cleanup - remove imported modules
   Remove-Module -Name AIIntegration -ErrorAction SilentlyContinue

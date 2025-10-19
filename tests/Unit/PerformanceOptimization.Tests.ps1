@@ -329,7 +329,8 @@ function Test-Function {
 
     It 'Should parse empty script without error' {
       # Arrange
-      $emptyFile = New-TestFile -FileName 'empty.ps1' -Content ''
+      $emptyFile = Join-Path $TestDrive 'empty.ps1'
+      '' | Set-Content -Path $emptyFile -NoNewline
       
       # Act
       $result = Get-CachedAST -FilePath $emptyFile
