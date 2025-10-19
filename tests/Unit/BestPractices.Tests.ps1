@@ -271,7 +271,7 @@ Describe 'BestPractices Error Handling' -Tag 'Unit', 'BestPractices' {
       $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/BestPractices.psm1'
       
       # Assert
-      { Import-Module -Name $modulePath -Force -Force -ErrorAction Stop } | Should -Not -Throw
+      { Import-Module -Name $modulePath -Force -ErrorAction Stop } | Should -Not -Throw
     }
   }
 }
