@@ -24,7 +24,10 @@ BeforeAll {
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find PoshGuard module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop -WarningAction SilentlyContinue
+  $moduleLoaded = Get-Module -Name 'PoshGuard' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  } -WarningAction SilentlyContinue
 }
 
 Describe 'Invoke-PoshGuard' -Tag 'Unit', 'PoshGuard', 'MainFunction' {

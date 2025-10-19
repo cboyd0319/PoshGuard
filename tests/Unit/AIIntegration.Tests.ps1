@@ -27,19 +27,28 @@
 #>
 
 BeforeAll {
-  # Import test helpers
+  # Import test helpers (only if not already loaded)
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
-  Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
+  if (-not $helpersLoaded) {
+    Import-Module -Name $helpersPath -ErrorAction Stop
+  }
   
   $mockBuildersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/MockBuilders.psm1'
-  Import-Module -Name $mockBuildersPath -Force -ErrorAction Stop
+  $mockBuildersLoaded = Get-Module -Name 'MockBuilders' -ErrorAction SilentlyContinue
+  if (-not $mockBuildersLoaded) {
+    Import-Module -Name $mockBuildersPath -ErrorAction Stop
+  }
 
-  # Import AIIntegration module
+  # Import AIIntegration module (only if not already loaded)
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/AIIntegration.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find AIIntegration module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'AIIntegration' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
 }
 
 Describe 'Get-FixConfidenceScore' -Tag 'Unit', 'AIIntegration', 'Priority1' {
