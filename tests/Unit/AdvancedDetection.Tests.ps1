@@ -34,7 +34,7 @@ BeforeAll {
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find AdvancedDetection module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  Import-Module -Name $modulePath -ErrorAction Stop
   
   # Initialize performance mocks to prevent slow console I/O
   Initialize-PerformanceMocks -ModuleName 'AdvancedDetection'

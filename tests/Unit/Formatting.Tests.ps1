@@ -34,7 +34,7 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'Formatting' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -Force -ErrorAction Stop
+    Import-Module -Name $modulePath -ErrorAction Stop
   
   # Initialize performance mocks to prevent slow console I/O
   Initialize-PerformanceMocks -ModuleName 'Formatting'
@@ -49,7 +49,7 @@ Describe 'Formatting Module Structure' -Tag 'Unit', 'Formatting', 'Facade' {
       $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Formatting.psm1'
       
       # Act & Assert
-      { Import-Module -Name $modulePath -Force -Force -ErrorAction Stop } | Should -Not -Throw
+      { Import-Module -Name $modulePath -ErrorAction Stop } | Should -Not -Throw
     }
 
     It 'Should be a valid PowerShell module' {

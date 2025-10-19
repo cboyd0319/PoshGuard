@@ -33,7 +33,10 @@ BeforeAll {
   }
   
   $mockBuildersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/MockBuilders.psm1'
-  Import-Module -Name $mockBuildersPath -Force -ErrorAction Stop
+  $mockBuildersLoaded = Get-Module -Name 'MockBuilders' -ErrorAction SilentlyContinue
+  if (-not $mockBuildersLoaded) {
+    Import-Module -Name $mockBuildersPath -ErrorAction Stop
+  }
 
   # Import SupplyChainSecurity module
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/SupplyChainSecurity.psm1'
@@ -42,7 +45,7 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'SupplyChainSecurity' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -Force -ErrorAction Stop
+    Import-Module -Name $modulePath -ErrorAction Stop
   
   # Initialize performance mocks to prevent slow console I/O
   Initialize-PerformanceMocks -ModuleName 'SupplyChainSecurity'

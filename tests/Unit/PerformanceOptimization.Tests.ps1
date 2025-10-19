@@ -37,7 +37,7 @@ BeforeAll {
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find PerformanceOptimization module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  Import-Module -Name $modulePath -ErrorAction Stop
   
   # Mock console output functions globally to prevent slow console I/O during tests
   Mock -ModuleName PerformanceOptimization Write-Host { } -Verifiable

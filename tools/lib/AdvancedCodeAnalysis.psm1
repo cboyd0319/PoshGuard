@@ -490,23 +490,50 @@ function Get-MaxNestingDepth {
     <#
     .SYNOPSIS
         Calculate maximum nesting depth in AST
+    .DESCRIPTION
+        Uses a simple iterative approach to find the maximum nesting depth
+        by examining the parent chain of each nesting node.
     #>
     [CmdletBinding()]
-    param($AST, [int]$CurrentDepth = 0)
+    param($AST)
     
-    $maxDepth = $CurrentDepth
+    if ($null -eq $AST) {
+        return 0
+    }
     
+    $maxDepth = 0
+    
+    # Find all nesting constructs in the AST
     $nestingNodes = $AST.FindAll({ param($node)
         $node -is [System.Management.Automation.Language.IfStatementAst] -or
         $node -is [System.Management.Automation.Language.ForEachStatementAst] -or
         $node -is [System.Management.Automation.Language.WhileStatementAst] -or
         $node -is [System.Management.Automation.Language.SwitchStatementAst]
-    }, $false)
+    }, $true)
     
+    # For each nesting node, count how many nesting ancestors it has
     foreach ($node in $nestingNodes) {
-        $childDepth = Get-MaxNestingDepth -AST $node -CurrentDepth ($CurrentDepth + 1)
-        if ($childDepth -gt $maxDepth) {
-            $maxDepth = $childDepth
+        $depth = 0
+        $current = $node.Parent
+        
+        # Walk up the parent chain counting nesting nodes
+        $safety = 0
+        while ($null -ne $current -and $safety -lt 200) {
+            $safety++
+            if ($current -is [System.Management.Automation.Language.IfStatementAst] -or
+                $current -is [System.Management.Automation.Language.ForEachStatementAst] -or
+                $current -is [System.Management.Automation.Language.WhileStatementAst] -or
+                $current -is [System.Management.Automation.Language.SwitchStatementAst]) {
+                $depth++
+            }
+            $current = $current.Parent
+        }
+        
+        # Current node itself counts as one level
+        $depth++
+        
+        if ($depth -gt $maxDepth) {
+            $maxDepth = $depth
         }
     }
     
