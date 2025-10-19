@@ -40,7 +40,7 @@ BeforeAll {
   Import-Module -Name $modulePath -Force -ErrorAction Stop
 }
 
-Describe 'Get-PowerShellDependencies' -Tag 'Unit', 'SupplyChainSecurity', 'Priority1' {
+Describe 'Get-PowerShellDependencies' -Tag 'Unit', 'SupplyChainSecurity', 'Priority1', 'Slow' {
   
   Context 'When script has #Requires statements' {
     It 'Should discover modules from #Requires -Modules' {
@@ -270,7 +270,7 @@ Write-Output "test"
   }
 }
 
-Describe 'New-CycloneDXSBOM' -Tag 'Unit', 'SupplyChainSecurity' {
+Describe 'New-CycloneDXSBOM' -Tag 'Unit', 'SupplyChainSecurity', 'Slow' {
   
   Context 'When generating CycloneDX SBOM' {
     It 'Should create SBOM with correct format and version' {
@@ -317,7 +317,7 @@ Describe 'New-CycloneDXSBOM' -Tag 'Unit', 'SupplyChainSecurity' {
   }
 }
 
-Describe 'New-SPDXSBOM' -Tag 'Unit', 'SupplyChainSecurity' {
+Describe 'New-SPDXSBOM' -Tag 'Unit', 'SupplyChainSecurity', 'Slow' {
   
   Context 'When generating SPDX SBOM' {
     It 'Should create SBOM with correct format and version' {
@@ -392,7 +392,7 @@ Describe 'Export-SBOM' -Tag 'Unit', 'SupplyChainSecurity' {
   }
 }
 
-Describe 'Test-DependencyVulnerabilities' -Tag 'Unit', 'SupplyChainSecurity' {
+Describe 'Test-DependencyVulnerabilities' -Tag 'Unit', 'SupplyChainSecurity', 'Slow' {
   
   Context 'When scanning for vulnerabilities' {
     It 'Should return vulnerability findings' {
@@ -430,7 +430,7 @@ Describe 'Test-DependencyVulnerabilities' -Tag 'Unit', 'SupplyChainSecurity' {
   }
 }
 
-Describe 'Test-LicenseCompliance' -Tag 'Unit', 'SupplyChainSecurity' {
+Describe 'Test-LicenseCompliance' -Tag 'Unit', 'SupplyChainSecurity', 'Slow' {
   
   Context 'When checking license compliance' {
     It 'Should validate license compatibility' {
@@ -455,7 +455,7 @@ Describe 'Test-LicenseCompliance' -Tag 'Unit', 'SupplyChainSecurity' {
   }
 }
 
-Describe 'New-SoftwareBillOfMaterials' -Tag 'Unit', 'SupplyChainSecurity' {
+Describe 'New-SoftwareBillOfMaterials' -Tag 'Unit', 'SupplyChainSecurity', 'Slow' {
   
   Context 'When generating complete SBOM' {
     It 'Should create SBOM from script path' {
