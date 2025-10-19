@@ -34,7 +34,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'AdvancedCodeAnalysis' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'AdvancedCodeAnalysis'
   }
 }
 
@@ -263,7 +266,8 @@ Describe 'Find-CodeSmells' -Tag 'Unit', 'AdvancedCodeAnalysis', 'Slow' {
       $lines = 1..60 | ForEach-Object { "    Write-Output 'Line $_'" }
       $content = @"
 function Test-LongFunction {
-$($lines -join "`n")
+$($lines -join "
+")
 }
 "@
       

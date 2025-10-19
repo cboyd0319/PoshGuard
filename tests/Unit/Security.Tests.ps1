@@ -35,10 +35,10 @@ BeforeAll {
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find Security module at: $modulePath"
   }
-  $moduleLoaded = Get-Module -Name 'Security' -ErrorAction SilentlyContinue
-  if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
-  }
+  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'Security'
 }
 
 Describe 'Invoke-PlainTextPasswordFix' -Tag 'Unit', 'Security' {

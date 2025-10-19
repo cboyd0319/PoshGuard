@@ -34,7 +34,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'Advanced' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'Advanced'
   }
 }
 
@@ -46,7 +49,7 @@ Describe 'Advanced Module Structure' -Tag 'Unit', 'Advanced', 'Facade' {
       $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Advanced.psm1'
       
       # Act & Assert
-      { Import-Module -Name $modulePath -Force -ErrorAction Stop } | Should -Not -Throw
+      { Import-Module -Name $modulePath -Force -Force -ErrorAction Stop } | Should -Not -Throw
     }
 
     It 'Should be a valid PowerShell module' {

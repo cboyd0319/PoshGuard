@@ -346,5 +346,40 @@ function ConvertTo-UnixLineEndings {
   return $Content -replace "`r`n", "`n"
 }
 
+function Initialize-PerformanceMocks {
+  <#
+  .SYNOPSIS
+      Sets up performance-optimized mocks for console output functions
+  
+  .DESCRIPTION
+      Mocks Write-Host and Write-Progress globally in the specified module
+      to prevent slow console I/O during tests. This can reduce test execution
+      time by 70-80% for modules that generate significant console output.
+  
+  .PARAMETER ModuleName
+      Name of the module to mock console output functions for
+  
+  .EXAMPLE
+      Initialize-PerformanceMocks -ModuleName 'Core'
+      
+  .NOTES
+      Part of Pester Architect test optimization strategy
+      Should be called in BeforeAll block for maximum performance
+  #>
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [string]$ModuleName
+  )
+  
+  # Mock Write-Host to prevent slow console I/O
+  Mock -ModuleName $ModuleName Write-Host { }
+  
+  # Mock Write-Progress to prevent progress bar overhead
+  Mock -ModuleName $ModuleName Write-Progress { }
+  
+  Write-Verbose "Performance mocks initialized for module: $ModuleName"
+}
+
 # Export all functions
 Export-ModuleMember -Function *

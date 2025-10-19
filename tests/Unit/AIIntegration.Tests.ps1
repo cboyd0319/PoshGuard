@@ -47,7 +47,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'AIIntegration' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'AIIntegration'
   }
 }
 
@@ -365,8 +368,15 @@ Describe 'Test-ChangeMinimality' -Tag 'Unit', 'AIIntegration' {
     It 'Should return high score for single line change' {
       InModuleScope AIIntegration {
         # Arrange
-        $before = "Line1`nLine2`nLine3`nLine4`nLine5"
-        $after = "Line1`nLine2`nLine3`nLine4"  # One line removed
+        $before = "Line1
+Line2
+Line3
+Line4
+Line5"
+        $after = "Line1
+Line2
+Line3
+Line4"  # One line removed
         
         # Act
         $result = Test-ChangeMinimality -Before $before -After $after
@@ -382,7 +392,16 @@ Describe 'Test-ChangeMinimality' -Tag 'Unit', 'AIIntegration' {
       InModuleScope AIIntegration {
         # Arrange
         $before = "Line1"
-        $after = "Line1`nLine2`nLine3`nLine4`nLine5`nLine6`nLine7`nLine8`nLine9`nLine10"
+        $after = "Line1
+Line2
+Line3
+Line4
+Line5
+Line6
+Line7
+Line8
+Line9
+Line10"
         
         # Act
         $result = Test-ChangeMinimality -Before $before -After $after
@@ -635,7 +654,8 @@ Describe 'Invoke-ModelRetraining' -Tag 'Unit', 'AIIntegration', 'ML' {
           confidence = 0.5
         } | ConvertTo-Json -Compress
         
-        "$pattern1`n$pattern2" | Set-Content -Path $dbPath
+        "$pattern1
+$pattern2" | Set-Content -Path $dbPath
         $script:AIConfig.PatternDatabasePath = $dbPath
         
         # Act & Assert
@@ -648,7 +668,9 @@ Describe 'Invoke-ModelRetraining' -Tag 'Unit', 'AIIntegration', 'ML' {
         # Arrange
         $dbPath = Join-Path $TestDrive 'patterns.jsonl'
         $validPattern = @{ rule = 'Test'; success = $true } | ConvertTo-Json -Compress
-        "$validPattern`ninvalid json`n$validPattern" | Set-Content -Path $dbPath
+        "$validPattern
+invalid json
+$validPattern" | Set-Content -Path $dbPath
         $script:AIConfig.PatternDatabasePath = $dbPath
         
         # Act & Assert - should not throw on invalid entries
@@ -667,7 +689,8 @@ Describe 'Invoke-ModelRetraining' -Tag 'Unit', 'AIIntegration', 'ML' {
           @{ rule = 'Rule2'; success = $true }
         ) | ForEach-Object { $_ | ConvertTo-Json -Compress }
         
-        $patterns -join "`n" | Set-Content -Path $dbPath
+        $patterns -join "
+" | Set-Content -Path $dbPath
         $script:AIConfig.PatternDatabasePath = $dbPath
         
         # Act & Assert

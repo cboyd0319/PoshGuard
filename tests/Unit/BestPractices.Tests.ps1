@@ -41,7 +41,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'BestPractices' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'BestPractices'
   }
 }
 
@@ -268,7 +271,7 @@ Describe 'BestPractices Error Handling' -Tag 'Unit', 'BestPractices' {
       $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/BestPractices.psm1'
       
       # Assert
-      { Import-Module -Name $modulePath -Force -ErrorAction Stop } | Should -Not -Throw
+      { Import-Module -Name $modulePath -Force -Force -ErrorAction Stop } | Should -Not -Throw
     }
   }
 }

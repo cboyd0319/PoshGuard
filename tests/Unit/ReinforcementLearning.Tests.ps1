@@ -37,7 +37,10 @@ BeforeAll {
   }
   $moduleLoaded = Get-Module -Name 'ReinforcementLearning' -ErrorAction SilentlyContinue
   if (-not $moduleLoaded) {
-    Import-Module -Name $modulePath -ErrorAction Stop
+    Import-Module -Name $modulePath -Force -ErrorAction Stop
+  
+  # Initialize performance mocks to prevent slow console I/O
+  Initialize-PerformanceMocks -ModuleName 'ReinforcementLearning'
   }
 }
 
@@ -78,7 +81,8 @@ function Test-Complex {
     }
 
     It 'Should include line and character counts' {
-      $code = "Write-Output 'test'`nWrite-Output 'test2'"
+      $code = "Write-Output 'test'
+Write-Output 'test2'"
       
       $state = Get-CodeState -Content $code
       
