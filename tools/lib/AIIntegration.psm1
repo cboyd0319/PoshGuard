@@ -652,8 +652,12 @@ function Test-AIFeatures {
     
     .EXAMPLE
         Test-AIFeatures -Verbose
+    
+    .OUTPUTS
+        PSCustomObject with test results
     #>
     [CmdletBinding()]
+    [OutputType([PSCustomObject])]
     param()
     
     Write-Host "🧪 Testing AI Features" -ForegroundColor Cyan
@@ -663,6 +667,7 @@ function Test-AIFeatures {
     $testCode = 'Get-ChildItem -Path C:\'
     $score = Get-FixConfidenceScore -OriginalContent 'gci C:\' -FixedContent $testCode
     Write-Host "   ✅ Confidence Score: $score" -ForegroundColor Green
+    $confidenceScoringPassed = $score -gt 0
     
     # Test pattern learning
     Write-Host "`n2. Testing Pattern Learning..." -ForegroundColor Yellow
@@ -670,10 +675,12 @@ function Test-AIFeatures {
         -OriginalCode "test" -FixedCode "test" -ConfidenceScore 0.9 `
         -Success $true -ExecutionTimeMs 10
     Write-Host "   ✅ Pattern recorded" -ForegroundColor Green
+    $patternLearningPassed = $true
     
     # Test MCP
     Write-Host "`n3. Testing MCP Integration..." -ForegroundColor Yellow
-    if (Test-MCPAvailable) {
+    $mcpAvailable = Test-MCPAvailable
+    if ($mcpAvailable) {
         Write-Host "   ✅ MCP available" -ForegroundColor Green
     }
     else {
@@ -681,6 +688,14 @@ function Test-AIFeatures {
     }
     
     Write-Host "`n✅ All tests passed" -ForegroundColor Green
+    
+    # Return test results
+    return [PSCustomObject]@{
+        ConfidenceScoring = $confidenceScoringPassed
+        PatternLearning = $patternLearningPassed
+        MCPIntegration = $mcpAvailable
+        AllPassed = $confidenceScoringPassed -and $patternLearningPassed
+    }
 }
 
 #endregion
