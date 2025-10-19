@@ -204,12 +204,23 @@ function Test {
         }
         
         It "Should include session duration" {
-            Start-Sleep -Milliseconds 100
-            
-            $summary = Get-MetricsSummary
-            
-            $summary.SessionDuration.TotalSeconds | Should -BeGreaterThan 0
-            $summary.SessionDuration.Formatted | Should -Not -BeNullOrEmpty
+            # Arrange - Mock Get-Date to simulate time passing
+            InModuleScope EnhancedMetrics {
+                $startTime = [DateTime]::Parse('2025-01-01 12:00:00')
+                $endTime = [DateTime]::Parse('2025-01-01 12:01:45')  # 105 seconds later
+                
+                Mock Get-Date { return $startTime } -Verifiable
+                Initialize-MetricsTracking
+                
+                Mock Get-Date { return $endTime } -Verifiable
+                
+                # Act
+                $summary = Get-MetricsSummary
+                
+                # Assert - session duration should be calculated
+                $summary.SessionDuration.TotalSeconds | Should -BeGreaterThan 0
+                $summary.SessionDuration.Formatted | Should -Not -BeNullOrEmpty
+            }
         }
     }
     

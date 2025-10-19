@@ -55,8 +55,15 @@ foreach ($SubModule in $SubModules) {
 
     if (Test-Path -Path $SubModulePath) {
         try {
-            Import-Module -Name $SubModulePath -Force -ErrorAction Stop
-            Write-Verbose "Imported Advanced submodule: $SubModule"
+            # Only reload if module is not already loaded or if -Force was used on this module
+            $loadedModule = Get-Module -Name $SubModule -ErrorAction SilentlyContinue
+            if (-not $loadedModule) {
+                Import-Module -Name $SubModulePath -ErrorAction Stop
+                Write-Verbose "Imported Advanced submodule: $SubModule"
+            }
+            else {
+                Write-Verbose "Advanced submodule already loaded: $SubModule"
+            }
         }
         catch {
             Write-Warning "Failed to import Advanced submodule $SubModule : $_"
