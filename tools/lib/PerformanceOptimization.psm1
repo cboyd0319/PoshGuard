@@ -203,8 +203,9 @@ function Get-ChangedFiles {
     )
     
     if ($Force -or -not $script:PerfConfig.EnableIncremental) {
-        # Return all files
-        return Get-ChildItem -Path $Path -Include $Extensions -Recurse -File
+        # Return all files - convert extensions to wildcards for -Include
+        $includePatterns = $Extensions | ForEach-Object { "*$_" }
+        return Get-ChildItem -Path $Path -Include $includePatterns -Recurse -File
     }
     
     # Load previous hashes
@@ -219,7 +220,9 @@ function Get-ChangedFiles {
     $changedFiles = @()
     $currentHashes = @{}
     
-    $files = Get-ChildItem -Path $Path -Include $Extensions -Recurse -File
+    # Convert extensions to wildcards for -Include
+    $includePatterns = $Extensions | ForEach-Object { "*$_" }
+    $files = Get-ChildItem -Path $Path -Include $includePatterns -Recurse -File
     
     foreach ($file in $files) {
         $hash = Get-FileHash -Path $file.FullName -Algorithm SHA256
