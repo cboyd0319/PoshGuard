@@ -30,12 +30,15 @@ BeforeAll {
     Import-Module -Name $helpersPath -ErrorAction Stop
   }
 
-  # Import Security module
+  # Import Security module (only if not already loaded)
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Security.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find Security module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'Security' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
   
   # Initialize performance mocks to prevent slow console I/O
   Initialize-PerformanceMocks -ModuleName 'Security'

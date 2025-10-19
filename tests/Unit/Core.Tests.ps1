@@ -33,7 +33,7 @@
 #>
 
 BeforeAll {
-  # Import test helpers
+  # Import test helpers (only if not already loaded)
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
   if (Test-Path $helpersPath) {
     $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
@@ -42,12 +42,15 @@ BeforeAll {
     }
   }
 
-  # Import Core module with Force for clean state
+  # Import Core module (only if not already loaded)
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/Core.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find Core module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'Core' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
   
   # Initialize performance mocks to prevent slow console I/O
   Initialize-PerformanceMocks -ModuleName 'Core'
