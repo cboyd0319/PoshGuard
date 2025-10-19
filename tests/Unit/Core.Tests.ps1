@@ -505,10 +505,21 @@ Describe 'New-FileBackup' -Tag 'Unit', 'Core', 'Backup' {
     }
 
     It 'Creates unique backups for multiple calls' {
-      # Act - create two backups (timestamps will naturally differ)
-      $backup1 = New-FileBackup -FilePath $script:testFile -Confirm:$false
-      Start-Sleep -Seconds 2  # Ensure different timestamp (format is yyyyMMddHHmmss)
-      $backup2 = New-FileBackup -FilePath $script:testFile -Confirm:$false
+      # Arrange - Mock Get-Date to ensure deterministic, different timestamps
+      $testFilePath = $script:testFile
+      $call = 0
+      
+      Mock Get-Date {
+        param($Format)
+        $script:call++
+        # Return formatted timestamps 1 second apart
+        $baseTime = [DateTime]::Parse('2025-01-01 12:00:00').AddSeconds($script:call - 1)
+        return $baseTime.ToString($Format)
+      } -ModuleName Core -ParameterFilter { $Format -eq 'yyyyMMddHHmmss' }
+      
+      # Act - create two backups
+      $backup1 = New-FileBackup -FilePath $testFilePath -Confirm:$false
+      $backup2 = New-FileBackup -FilePath $testFilePath -Confirm:$false
       
       # Assert - different backup files
       $backup1 | Should -Not -Be $backup2
