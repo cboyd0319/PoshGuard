@@ -740,7 +740,7 @@ Describe 'Update-ConfidenceWeights' -Tag 'Unit', 'AIIntegration', 'ML' {
     It 'Should require Statistics parameter' {
       InModuleScope AIIntegration {
         # Act & Assert
-        { Update-ConfidenceWeights } | Should -Throw
+        { Update-ConfidenceWeights -ErrorAction Stop } | Should -Throw
       }
     }
 
