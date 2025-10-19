@@ -20,16 +20,22 @@
 #>
 
 BeforeAll {
-  # Import test helpers
+  # Import test helpers (only if not already loaded)
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
-  Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
+  if (-not $helpersLoaded) {
+    Import-Module -Name $helpersPath -ErrorAction Stop
+  }
 
-  # Import AdvancedCodeAnalysis module
+  # Import AdvancedCodeAnalysis module (only if not already loaded)
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/AdvancedCodeAnalysis.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find AdvancedCodeAnalysis module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'AdvancedCodeAnalysis' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
 }
 
 Describe 'Find-DeadCode' -Tag 'Unit', 'AdvancedCodeAnalysis', 'Slow' {

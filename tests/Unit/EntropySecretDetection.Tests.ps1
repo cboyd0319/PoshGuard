@@ -26,14 +26,20 @@
 BeforeAll {
   # Import test helpers
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
-  Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
+  if (-not $helpersLoaded) {
+    Import-Module -Name $helpersPath -ErrorAction Stop
+  }
 
   # Import EntropySecretDetection module
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/EntropySecretDetection.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find EntropySecretDetection module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'EntropySecretDetection' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
 }
 
 Describe 'Get-ShannonEntropy' -Tag 'Unit', 'Security', 'Entropy' {

@@ -23,14 +23,20 @@
 BeforeAll {
   # Import test helpers
   $helpersPath = Join-Path -Path $PSScriptRoot -ChildPath '../Helpers/TestHelpers.psm1'
-  Import-Module -Name $helpersPath -Force -ErrorAction Stop
+  $helpersLoaded = Get-Module -Name 'TestHelpers' -ErrorAction SilentlyContinue
+  if (-not $helpersLoaded) {
+    Import-Module -Name $helpersPath -ErrorAction Stop
+  }
 
   # Import MCPIntegration module
   $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../tools/lib/MCPIntegration.psm1'
   if (-not (Test-Path -Path $modulePath)) {
     throw "Cannot find MCPIntegration module at: $modulePath"
   }
-  Import-Module -Name $modulePath -Force -ErrorAction Stop
+  $moduleLoaded = Get-Module -Name 'MCPIntegration' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
 }
 
 Describe 'Initialize-MCPConfiguration' -Tag 'Unit', 'MCPIntegration' {

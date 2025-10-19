@@ -32,7 +32,10 @@ BeforeAll {
     if (-not (Test-Path -Path $modulePath)) {
         throw "Cannot find RipGrep module at: $modulePath"
     }
-    Import-Module -Name $modulePath -Force -ErrorAction Stop
+    $moduleLoaded = Get-Module -Name 'RipGrep' -ErrorAction SilentlyContinue
+  if (-not $moduleLoaded) {
+    Import-Module -Name $modulePath -ErrorAction Stop
+  }
 
     # Create temp directory for tests
     $script:TestDir = Join-Path $TestDrive "ripgrep-tests"
