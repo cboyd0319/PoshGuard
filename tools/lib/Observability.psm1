@@ -126,6 +126,8 @@ function Write-StructuredLog {
             success = $true
         }
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used as fallback when file logging fails')]
   [CmdletBinding()]
   [OutputType([void])]
   param(

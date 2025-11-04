@@ -1,4 +1,4 @@
-﻿#Requires -Version 7.0
+#Requires -Version 7.0
 <#
 .SYNOPSIS
     Automated benchmark runner for PoshGuard with before/after metrics.
@@ -29,6 +29,7 @@
     ./tools/Run-Benchmark.ps1 -Path ./MyProject/ -OutputFormat jsonl
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', `n  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding()]
 param(
   [Parameter()]

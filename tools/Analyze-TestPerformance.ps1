@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Analyze test file performance to identify slow or problematic tests
@@ -23,6 +23,7 @@
     ./tools/Analyze-TestPerformance.ps1 -TimeoutSeconds 60 -ExcludeSlow:$false
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', `n  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding()]
 param(
   [Parameter()]

@@ -493,6 +493,8 @@ function Enable-MCPIntegration {
     .EXAMPLE
         Enable-MCPIntegration -ServerType Context7 -ConsentGiven
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in user-facing interactive command')]
   [CmdletBinding()]
   param(
     [Parameter()]
@@ -525,6 +527,8 @@ function Disable-MCPIntegration {
     .EXAMPLE
         Disable-MCPIntegration
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in user-facing interactive command')]
   [CmdletBinding()]
   param()
     
@@ -564,6 +568,8 @@ function Clear-MCPCache {
     .EXAMPLE
         Clear-MCPCache
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in user-facing interactive command')]
   [CmdletBinding()]
   param()
     

@@ -9,6 +9,10 @@
     Step-by-step guided tutorial that teaches beginners how to use PoshGuard.
     Assumes NO prior PowerShell or programming knowledge.
     
+.NOTES
+    Write-Host is used intentionally throughout this script for interactive CLI output
+    and colored user feedback, which is appropriate for tutorial/interactive tools.
+    
     Features:
     - Interactive lessons with hands-on examples
     - Visual demonstrations
@@ -37,6 +41,8 @@
     Prerequisites: NONE - We'll teach you everything!
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+  Justification = 'Write-Host is used intentionally for colored CLI output in this interactive tutorial tool')]
 [CmdletBinding()]
 param(
   [Parameter()]

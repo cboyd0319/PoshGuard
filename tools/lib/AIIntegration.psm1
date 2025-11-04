@@ -586,6 +586,8 @@ function Initialize-AIFeature {
     .EXAMPLE
         Initialize-AIFeatures -Configuration @{ MCPIntegration = $true }
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in user-facing interactive command')]
   [CmdletBinding()]
   param(
     [Parameter()]

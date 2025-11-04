@@ -34,6 +34,8 @@
         (+ all submodule directories)
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding(SupportsShouldProcess)]
 param(
   [Parameter()]
