@@ -453,7 +453,7 @@ function Update-ConfidenceWeight {
     .PARAMETER Statistics
         Array of rule statistics from pattern analysis
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]
     [object[]]$Statistics

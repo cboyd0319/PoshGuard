@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Core helper functions for PowerShell QA Engine
 
@@ -152,6 +152,8 @@ function New-FileBackup {
 }
 
 function New-UnifiedDiff {
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', 
+    Justification = 'This function creates data structures in memory and does not modify system state')]
   [CmdletBinding()]
   [OutputType([string])]
   param(

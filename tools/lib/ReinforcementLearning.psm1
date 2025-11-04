@@ -323,7 +323,7 @@ function Update-QLearning {
     .OUTPUTS
         None
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]
     [hashtable]$State,
@@ -416,7 +416,7 @@ function Start-ExperienceReplay {
     .OUTPUTS
         None
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param()
     
   if (-not $script:RLConfig.Enabled -or $script:ExperienceReplay.Count -lt $script:RLConfig.BatchSize) {

@@ -354,7 +354,7 @@ function Set-EnvironmentOverride {
     .SYNOPSIS
         Apply environment variable overrides to configuration
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]
     [hashtable]$Config

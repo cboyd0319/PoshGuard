@@ -338,7 +338,7 @@ function Update-OperationMetric {
     .EXAMPLE
         Update-OperationMetrics -FilesProcessed 1 -FilesSucceeded 1 -ViolationsFixed 5
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param(
     [Parameter()]

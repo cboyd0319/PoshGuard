@@ -252,6 +252,8 @@ function Clear-AnalysisCache {
     .EXAMPLE
         Clear-AnalysisCache
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in user-facing interactive command')]
   [CmdletBinding()]
   param()
     
@@ -479,6 +481,8 @@ function Show-PerformanceReport {
     .EXAMPLE
         Show-PerformanceReport -StartTime $start -FileCount 100
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used intentionally for colored CLI output in performance report display')]
   [CmdletBinding()]
   param(
     [Parameter(Mandatory)]

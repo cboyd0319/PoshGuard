@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Supply Chain Security - SBOM Generation & Dependency Analysis
 
@@ -234,7 +234,7 @@ function New-CycloneDXSBOM {
     .OUTPUTS
         System.Collections.Hashtable - CycloneDX SBOM structure
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([hashtable])]
   param(
     [Parameter(Mandatory)]
@@ -330,7 +330,7 @@ function New-SPDXSBOM {
     .OUTPUTS
         System.Collections.Hashtable - SPDX SBOM structure
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([hashtable])]
   param(
     [Parameter(Mandatory)]
@@ -625,7 +625,7 @@ function New-SoftwareBillOfMaterial {
     .OUTPUTS
         System.Collections.Hashtable - Complete supply chain report
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([hashtable])]
   param(
     [Parameter(Mandatory)]
