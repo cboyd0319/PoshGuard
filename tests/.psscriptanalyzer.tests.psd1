@@ -7,6 +7,8 @@
     'PSAvoidUsingWriteHost'
     # Allow positional parameters in test assertions (Pester style)
     'PSAvoidUsingPositionalParameters'
+    # Allow ConvertTo-SecureString with -AsPlainText in test context for test data setup
+    'PSAvoidUsingConvertToSecureStringWithPlainText'
   )
   
   IncludeRules = @(
@@ -19,7 +21,6 @@
     'PSAvoidUsingPlainTextForPassword',
     'PSAvoidDefaultValueForMandatoryParameter',
     'PSAvoidUsingComputerNameHardcoded',
-    'PSAvoidUsingConvertToSecureStringWithPlainText',
     'PSAvoidUsingInvokeExpression',
     'PSAvoidUsingEmptyCatchBlock',
     'PSUseCmdletCorrectly',

@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function Clear-Backups {
+function Clear-Backup {
   [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param()
@@ -188,7 +188,7 @@ function New-UnifiedDiff {
 }
 
 Export-ModuleMember -Function @(
-  'Clear-Backups',
+  'Clear-Backup',
   'Write-Log',
   'Get-PowerShellFiles',
   'New-FileBackup',

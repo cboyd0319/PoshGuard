@@ -791,7 +791,7 @@ try {
   }
 
   if ($CleanBackups) {
-    Clear-Backups
+    Clear-Backup
   }
 
   exit 0
