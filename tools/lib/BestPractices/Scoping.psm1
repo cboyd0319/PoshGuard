@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Scoping Best Practices Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-GlobalVarFix {
-    <#
+  <#
     .SYNOPSIS
         Converts global variables to script scope
 
@@ -31,65 +31,65 @@ function Invoke-GlobalVarFix {
 
         Converts $global:Var to $script:Var
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = @()
+    if ($errors.Count -eq 0) {
+      $replacements = @()
 
-            # Find all variable expressions
-            $varAsts = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
-                }, $true)
+      # Find all variable expressions
+      $varAsts = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
+        }, $true)
 
-            foreach ($varAst in $varAsts) {
-                # Check if variable uses global scope
-                if ($varAst.VariablePath.DriveName -eq 'global') {
-                    # Convert to script scope
-                    $varName = $varAst.VariablePath.UserPath
-                    $newVarText = "`$script:$varName"
+      foreach ($varAst in $varAsts) {
+        # Check if variable uses global scope
+        if ($varAst.VariablePath.DriveName -eq 'global') {
+          # Convert to script scope
+          $varName = $varAst.VariablePath.UserPath
+          $newVarText = "`$script:$varName"
 
-                    $replacements += @{
-                        Offset      = $varAst.Extent.StartOffset
-                        Length      = $varAst.Extent.Text.Length
-                        Replacement = $newVarText
-                        VarName     = $varAst.Extent.Text
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-                Write-Verbose "Converted global variable: $($replacement.VarName) → $($replacement.Replacement)"
-            }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Converted $($replacements.Count) global variable(s) to script scope"
-            }
-
-            return $fixed
+          $replacements += @{
+            Offset = $varAst.Extent.StartOffset
+            Length = $varAst.Extent.Text.Length
+            Replacement = $newVarText
+            VarName = $varAst.Extent.Text
+          }
         }
-    }
-    catch {
-        Write-Verbose "Global variable fix failed: $_"
-    }
+      }
 
-    return $Content
+      # Apply replacements in reverse order
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+        Write-Verbose "Converted global variable: $($replacement.VarName) → $($replacement.Replacement)"
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Converted $($replacements.Count) global variable(s) to script scope"
+      }
+
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Global variable fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-GlobalFunctionsFix {
-    <#
+  <#
     .SYNOPSIS
         Adds explicit scope to global functions
 
@@ -115,64 +115,64 @@ function Invoke-GlobalFunctionsFix {
             return "data"
         }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+  try {
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
 
-        # Find all function definitions
-        $functions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
-        }, $true)
+    # Find all function definitions
+    $functions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      }, $true)
 
-        $replacements = @()
+    $replacements = @()
 
-        foreach ($func in $functions) {
-            $funcName = $func.Name
+    foreach ($func in $functions) {
+      $funcName = $func.Name
 
-            # Check if function already has explicit scope
-            if ($funcName -notmatch '^(global|script|private|local):') {
-                # Find the position of the function name in the declaration
-                $funcText = $func.Extent.Text
-                $namePattern = "function\s+$([regex]::Escape($funcName))\b"
+      # Check if function already has explicit scope
+      if ($funcName -notmatch '^(global|script|private|local):') {
+        # Find the position of the function name in the declaration
+        $funcText = $func.Extent.Text
+        $namePattern = "function\s+$([regex]::Escape($funcName))\b"
 
-                if ($funcText -match $namePattern) {
-                    $newFuncText = $funcText -replace $namePattern, "function script:$funcName"
+        if ($funcText -match $namePattern) {
+          $newFuncText = $funcText -replace $namePattern, "function script:$funcName"
 
-                    $replacements += [PSCustomObject]@{
-                        Offset = $func.Extent.StartOffset
-                        Length = $func.Extent.Text.Length
-                        Replacement = $newFuncText
-                        FuncName = $funcName
-                    }
-                }
-            }
+          $replacements += [PSCustomObject]@{
+            Offset = $func.Extent.StartOffset
+            Length = $func.Extent.Text.Length
+            Replacement = $newFuncText
+            FuncName = $funcName
+          }
         }
-
-        if ($replacements.Count -gt 0) {
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-                Write-Verbose "Added script: scope to function: $($replacement.FuncName)"
-            }
-            return $fixed
-        }
-    }
-    catch {
-        Write-Verbose "Global functions fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($replacements.Count -gt 0) {
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+        Write-Verbose "Added script: scope to function: $($replacement.FuncName)"
+      }
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Global functions fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all scoping fix functions
 Export-ModuleMember -Function @(
-    'Invoke-GlobalVarFix',
-    'Invoke-GlobalFunctionsFix'
+  'Invoke-GlobalVarFix',
+  'Invoke-GlobalFunctionsFix'
 )

@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -40,27 +40,27 @@ Set-StrictMode -Version Latest
     PSCustomObject with IsAvailable and Version properties
 #>
 function Test-RipGrepAvailable {
-    [CmdletBinding()]
-    [OutputType([PSCustomObject])]
-    param()
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param()
 
-    try {
-        $version = rg --version 2>$null | Select-Object -First 1
-        if ($version -match 'ripgrep (\d+\.\d+\.\d+)') {
-            return [PSCustomObject]@{
-                IsAvailable = $true
-                Version = $Matches[1]
-            }
-        }
+  try {
+    $version = rg --version 2>$null | Select-Object -First 1
+    if ($version -match 'ripgrep (\d+\.\d+\.\d+)') {
+      return [PSCustomObject]@{
+        IsAvailable = $true
+        Version = $Matches[1]
+      }
     }
-    catch {
-        Write-Verbose "RipGrep not available: $_"
-    }
+  }
+  catch {
+    Write-Verbose "RipGrep not available: $_"
+  }
 
-    return [PSCustomObject]@{
-        IsAvailable = $false
-        Version = $null
-    }
+  return [PSCustomObject]@{
+    IsAvailable = $false
+    Version = $null
+  }
 }
 
 #endregion
@@ -96,74 +96,74 @@ function Test-RipGrepAvailable {
     Find-SuspiciousScripts -Path ./src -Patterns @('Invoke-Expression', 'DownloadString')
     Find scripts with specific patterns
 #>
-function Find-SuspiciousScripts {
-    [CmdletBinding()]
-    [OutputType([string[]])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path,
+function Find-SuspiciousScript {
+  [CmdletBinding()]
+  [OutputType([string[]])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Path,
 
-        [Parameter()]
-        [string[]]$Patterns = @(
-            'ConvertTo-SecureString\s+-AsPlainText',
-            'Invoke-Expression',
-            'iex\s+',
-            'Start-Process.*-Credential',
-            'password\s*=\s*[''"][^''"]+[''"]',
-            'api[_-]?key\s*=',
-            'DownloadString',
-            'DownloadFile',
-            'System\.Net\.WebClient',
-            'Invoke-RestMethod.*-Uri.*\$'
-        ),
+    [Parameter()]
+    [string[]]$Patterns = @(
+      'ConvertTo-SecureString\s+-AsPlainText',
+      'Invoke-Expression',
+      'iex\s+',
+      'Start-Process.*-Credential',
+      'password\s*=\s*[''"][^''"]+[''"]',
+      'api[_-]?key\s*=',
+      'DownloadString',
+      'DownloadFile',
+      'System\.Net\.WebClient',
+      'Invoke-RestMethod.*-Uri.*\$'
+    ),
 
-        [Parameter()]
-        [switch]$IncludeTests
-    )
+    [Parameter()]
+    [switch]$IncludeTests
+  )
 
-    $rgCheck = Test-RipGrepAvailable
-    if (-not $rgCheck.IsAvailable) {
-        Write-Warning "RipGrep not installed. Falling back to slower Get-ChildItem scan."
-        Write-Warning "Install RipGrep for 10-100x faster scanning: https://github.com/BurntSushi/ripgrep"
-        return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
-    }
+  $rgCheck = Test-RipGrepAvailable
+  if (-not $rgCheck.IsAvailable) {
+    Write-Warning "RipGrep not installed. Falling back to slower Get-ChildItem scan."
+    Write-Warning "Install RipGrep for 10-100x faster scanning: https://github.com/BurntSushi/ripgrep"
+    return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
+  }
 
-    $rgArgs = @(
-        '--files-with-matches',
-        '--type', 'ps1',
-        '--ignore-case'
-    )
+  $rgArgs = @(
+    '--files-with-matches',
+    '--type', 'ps1',
+    '--ignore-case'
+  )
 
-    # Exclude test files by default
-    if (-not $IncludeTests) {
-        $rgArgs += @('--glob', '!*test*', '--glob', '!*.Tests.ps1')
-    }
+  # Exclude test files by default
+  if (-not $IncludeTests) {
+    $rgArgs += @('--glob', '!*test*', '--glob', '!*.Tests.ps1')
+  }
 
-    # Build regex pattern
-    $pattern = $Patterns -join '|'
-    $rgArgs += $pattern
-    $rgArgs += $Path
+  # Build regex pattern
+  $pattern = $Patterns -join '|'
+  $rgArgs += $pattern
+  $rgArgs += $Path
 
-    try {
-        # Execute ripgrep
-        $candidateFiles = & rg @rgArgs 2>$null
+  try {
+    # Execute ripgrep
+    $candidateFiles = & rg @rgArgs 2>$null
         
-        if ($LASTEXITCODE -eq 0) {
-            return $candidateFiles
-        }
-        elseif ($LASTEXITCODE -eq 1) {
-            # No matches found (expected case)
-            return @()
-        }
-        else {
-            Write-Warning "RipGrep returned exit code $LASTEXITCODE. Falling back to Get-ChildItem."
-            return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
-        }
+    if ($LASTEXITCODE -eq 0) {
+      return $candidateFiles
     }
-    catch {
-        Write-Warning "RipGrep execution failed: $_. Falling back to Get-ChildItem."
-        return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
+    elseif ($LASTEXITCODE -eq 1) {
+      # No matches found (expected case)
+      return @()
     }
+    else {
+      Write-Warning "RipGrep returned exit code $LASTEXITCODE. Falling back to Get-ChildItem."
+      return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
+    }
+  }
+  catch {
+    Write-Warning "RipGrep execution failed: $_. Falling back to Get-ChildItem."
+    return Get-ChildItem -Path $Path -Recurse -Filter *.ps1 | Select-Object -ExpandProperty FullName
+  }
 }
 
 #endregion
@@ -199,85 +199,85 @@ function Find-SuspiciousScripts {
     if ($secrets.Count -gt 0) { exit 1 }
     Scan and fail if secrets found
 #>
-function Find-HardcodedSecrets {
-    [CmdletBinding()]
-    [OutputType([PSCustomObject[]])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path,
+function Find-HardcodedSecret {
+  [CmdletBinding()]
+  [OutputType([PSCustomObject[]])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Path,
 
-        [Parameter()]
-        [switch]$ExportSarif,
+    [Parameter()]
+    [switch]$ExportSarif,
 
-        [Parameter()]
-        [string]$SarifOutputPath = './poshguard-secrets.sarif'
-    )
+    [Parameter()]
+    [string]$SarifOutputPath = './poshguard-secrets.sarif'
+  )
 
-    $rgCheck = Test-RipGrepAvailable
-    if (-not $rgCheck.IsAvailable) {
-        Write-Warning "RipGrep not installed. Secret scanning requires RipGrep for best performance."
-        Write-Warning "Install from: https://github.com/BurntSushi/ripgrep"
-        return [PSCustomObject[]]@()
-    }
+  $rgCheck = Test-RipGrepAvailable
+  if (-not $rgCheck.IsAvailable) {
+    Write-Warning "RipGrep not installed. Secret scanning requires RipGrep for best performance."
+    Write-Warning "Install from: https://github.com/BurntSushi/ripgrep"
+    return [PSCustomObject[]]@()
+  }
 
-    $secretPatterns = @{
-        'AWS Access Key' = 'AKIA[0-9A-Z]{16}'
-        'Generic API Key' = 'api[_-]?key\s*[=:]\s*[''"][a-zA-Z0-9]{20,}[''"]'
-        'Password' = 'password\s*[=:]\s*[''"][^''"]{8,}[''"]'
-        'Private Key' = '-----BEGIN (RSA|DSA|EC) PRIVATE KEY-----'
-        'Azure Connection String' = 'DefaultEndpointsProtocol=https;AccountName='
-        'GitHub Token' = 'ghp_[a-zA-Z0-9]{36}'
-        'Slack Token' = 'xox[baprs]-[a-zA-Z0-9-]+'
-        'Generic Secret' = 'secret\s*[=:]\s*[''"][^''"]{8,}[''"]'
-        'Database Connection' = '(Server|Data Source)=.*;.*Password='
-        'Base64 Encoded' = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=){1}'
-    }
+  $secretPatterns = @{
+    'AWS Access Key' = 'AKIA[0-9A-Z]{16}'
+    'Generic API Key' = 'api[_-]?key\s*[=:]\s*[''"][a-zA-Z0-9]{20,}[''"]'
+    'Password' = 'password\s*[=:]\s*[''"][^''"]{8,}[''"]'
+    'Private Key' = '-----BEGIN (RSA|DSA|EC) PRIVATE KEY-----'
+    'Azure Connection String' = 'DefaultEndpointsProtocol=https;AccountName='
+    'GitHub Token' = 'ghp_[a-zA-Z0-9]{36}'
+    'Slack Token' = 'xox[baprs]-[a-zA-Z0-9-]+'
+    'Generic Secret' = 'secret\s*[=:]\s*[''"][^''"]{8,}[''"]'
+    'Database Connection' = '(Server|Data Source)=.*;.*Password='
+    'Base64 Encoded' = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=){1}'
+  }
 
-    $findings = @()
+  $findings = @()
 
-    foreach ($secretType in $secretPatterns.Keys) {
-        $pattern = $secretPatterns[$secretType]
+  foreach ($secretType in $secretPatterns.Keys) {
+    $pattern = $secretPatterns[$secretType]
 
-        try {
-            # Run ripgrep with context
-            $results = & rg --type ps1 `
-                          --ignore-case `
-                          --line-number `
-                          --no-heading `
-                          --color never `
-                          --only-matching `
-                          --max-count 1000 `
-                          --glob '!*test*' `
-                          --glob '!*.Tests.ps1' `
-                          $pattern $Path 2>$null
+    try {
+      # Run ripgrep with context
+      $results = & rg --type ps1 `
+        --ignore-case `
+        --line-number `
+        --no-heading `
+        --color never `
+        --only-matching `
+        --max-count 1000 `
+        --glob '!*test*' `
+        --glob '!*.Tests.ps1' `
+        $pattern $Path 2>$null
 
-            if ($LASTEXITCODE -eq 0 -and $results) {
-                foreach ($match in $results) {
-                    if ($match -match '^(.+):(\d+):(.+)$') {
-                        # Redact the actual secret for security
-                        $redactedMatch = $Matches[3] -replace '([''"])[^''"]{8,}([''"])', '$1***REDACTED***$2'
+      if ($LASTEXITCODE -eq 0 -and $results) {
+        foreach ($match in $results) {
+          if ($match -match '^(.+):(\d+):(.+)$') {
+            # Redact the actual secret for security
+            $redactedMatch = $Matches[3] -replace '([''"])[^''"]{8,}([''"])', '$1***REDACTED***$2'
                         
-                        $findings += [PSCustomObject]@{
-                            File = $Matches[1]
-                            Line = [int]$Matches[2]
-                            SecretType = $secretType
-                            Match = $redactedMatch
-                            Severity = 'CRITICAL'
-                        }
-                    }
-                }
+            $findings += [PSCustomObject]@{
+              File = $Matches[1]
+              Line = [int]$Matches[2]
+              SecretType = $secretType
+              Match = $redactedMatch
+              Severity = 'CRITICAL'
             }
+          }
         }
-        catch {
-            Write-Verbose "Error scanning for $secretType : $_"
-        }
+      }
     }
-
-    if ($ExportSarif -and $findings.Count -gt 0) {
-        Export-SecretFindingsToSarif -Findings $findings -OutputPath $SarifOutputPath
+    catch {
+      Write-Verbose "Error scanning for $secretType : $_"
     }
+  }
 
-    return $findings
+  if ($ExportSarif -and $findings.Count -gt 0) {
+    Export-SecretFindingsToSarif -Findings $findings -OutputPath $SarifOutputPath
+  }
+
+  return $findings
 }
 
 <#
@@ -297,57 +297,57 @@ function Find-HardcodedSecrets {
     Export-SecretFindingsToSarif -Findings $secrets -OutputPath ./results.sarif
 #>
 function Export-SecretFindingsToSarif {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [PSCustomObject[]]$Findings,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [PSCustomObject[]]$Findings,
 
-        [Parameter(Mandatory)]
-        [string]$OutputPath
-    )
+    [Parameter(Mandatory)]
+    [string]$OutputPath
+  )
 
-    $results = @()
-    foreach ($finding in $Findings) {
-        $results += @{
-            ruleId = "PoshGuard-Secret-$($finding.SecretType -replace '\s', '')"
-            level = 'error'
-            message = @{
-                text = "Hardcoded $($finding.SecretType) detected"
+  $results = @()
+  foreach ($finding in $Findings) {
+    $results += @{
+      ruleId = "PoshGuard-Secret-$($finding.SecretType -replace '\s', '')"
+      level = 'error'
+      message = @{
+        text = "Hardcoded $($finding.SecretType) detected"
+      }
+      locations = @(
+        @{
+          physicalLocation = @{
+            artifactLocation = @{
+              uri = $finding.File
             }
-            locations = @(
-                @{
-                    physicalLocation = @{
-                        artifactLocation = @{
-                            uri = $finding.File
-                        }
-                        region = @{
-                            startLine = $finding.Line
-                        }
-                    }
-                }
-            )
+            region = @{
+              startLine = $finding.Line
+            }
+          }
         }
+      )
     }
+  }
 
-    $sarif = @{
-        version = '2.1.0'
-        '$schema' = 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json'
-        runs = @(
-            @{
-                tool = @{
-                    driver = @{
-                        name = 'PoshGuard RipGrep Secret Scanner'
-                        version = '1.0.0'
-                        informationUri = 'https://github.com/cboyd0319/PoshGuard'
-                    }
-                }
-                results = $results
-            }
-        )
-    }
+  $sarif = @{
+    version = '2.1.0'
+    '$schema' = 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json'
+    runs = @(
+      @{
+        tool = @{
+          driver = @{
+            name = 'PoshGuard RipGrep Secret Scanner'
+            version = '1.0.0'
+            informationUri = 'https://github.com/cboyd0319/PoshGuard'
+          }
+        }
+        results = $results
+      }
+    )
+  }
 
-    $sarif | ConvertTo-Json -Depth 10 | Set-Content -Path $OutputPath -Encoding UTF8
-    Write-Verbose "SARIF report exported to: $OutputPath"
+  $sarif | ConvertTo-Json -Depth 10 | Set-Content -Path $OutputPath -Encoding UTF8
+  Write-Verbose "SARIF report exported to: $OutputPath"
 }
 
 #endregion
@@ -373,78 +373,78 @@ function Export-SecretFindingsToSarif {
     Check all modules for security issues
 #>
 function Test-ModuleSecurityConfig {
-    [CmdletBinding()]
-    [OutputType([PSCustomObject[]])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path
-    )
+  [CmdletBinding()]
+  [OutputType([PSCustomObject[]])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Path
+  )
 
-    $rgCheck = Test-RipGrepAvailable
-    if (-not $rgCheck.IsAvailable) {
-        Write-Warning "RipGrep not installed. Configuration validation requires RipGrep."
-        return [PSCustomObject[]]@()
+  $rgCheck = Test-RipGrepAvailable
+  if (-not $rgCheck.IsAvailable) {
+    Write-Warning "RipGrep not installed. Configuration validation requires RipGrep."
+    return [PSCustomObject[]]@()
+  }
+
+  $issues = @()
+
+  try {
+    # Check for execution policy bypasses
+    $bypassFiles = & rg --type ps1 `
+      --files-with-matches `
+      'Set-ExecutionPolicy.*-Scope.*Process.*-Force' `
+      $Path 2>$null
+
+    if ($LASTEXITCODE -eq 0 -and $bypassFiles) {
+      foreach ($file in $bypassFiles) {
+        $issues += [PSCustomObject]@{
+          File = $file
+          Issue = 'ExecutionPolicy bypass detected'
+          Rule = 'SEC-001'
+          Severity = 'HIGH'
+        }
+      }
     }
 
-    $issues = @()
+    # Check for unsigned script execution indicators
+    $unsignedFiles = & rg --glob '*.ps1' `
+      --files-without-match `
+      '# SIG # Begin signature block' `
+      $Path 2>$null
 
-    try {
-        # Check for execution policy bypasses
-        $bypassFiles = & rg --type ps1 `
-                          --files-with-matches `
-                          'Set-ExecutionPolicy.*-Scope.*Process.*-Force' `
-                          $Path 2>$null
-
-        if ($LASTEXITCODE -eq 0 -and $bypassFiles) {
-            foreach ($file in $bypassFiles) {
-                $issues += [PSCustomObject]@{
-                    File = $file
-                    Issue = 'ExecutionPolicy bypass detected'
-                    Rule = 'SEC-001'
-                    Severity = 'HIGH'
-                }
-            }
+    if ($LASTEXITCODE -eq 0 -and $unsignedFiles) {
+      foreach ($file in $unsignedFiles) {
+        $issues += [PSCustomObject]@{
+          File = $file
+          Issue = 'Unsigned script detected'
+          Rule = 'SEC-002'
+          Severity = 'MEDIUM'
         }
-
-        # Check for unsigned script execution indicators
-        $unsignedFiles = & rg --glob '*.ps1' `
-                            --files-without-match `
-                            '# SIG # Begin signature block' `
-                            $Path 2>$null
-
-        if ($LASTEXITCODE -eq 0 -and $unsignedFiles) {
-            foreach ($file in $unsignedFiles) {
-                $issues += [PSCustomObject]@{
-                    File = $file
-                    Issue = 'Unsigned script detected'
-                    Rule = 'SEC-002'
-                    Severity = 'MEDIUM'
-                }
-            }
-        }
-
-        # Check for dangerous cmdlet usage
-        $dangerousCmdlets = & rg --type ps1 `
-                              --files-with-matches `
-                              'Invoke-Expression|Start-Process.*-Credential|ConvertTo-SecureString.*-AsPlainText' `
-                              $Path 2>$null
-
-        if ($LASTEXITCODE -eq 0 -and $dangerousCmdlets) {
-            foreach ($file in $dangerousCmdlets) {
-                $issues += [PSCustomObject]@{
-                    File = $file
-                    Issue = 'Dangerous cmdlet usage detected'
-                    Rule = 'SEC-003'
-                    Severity = 'HIGH'
-                }
-            }
-        }
-    }
-    catch {
-        Write-Warning "Configuration validation error: $_"
+      }
     }
 
-    return $issues
+    # Check for dangerous cmdlet usage
+    $dangerousCmdlets = & rg --type ps1 `
+      --files-with-matches `
+      'Invoke-Expression|Start-Process.*-Credential|ConvertTo-SecureString.*-AsPlainText' `
+      $Path 2>$null
+
+    if ($LASTEXITCODE -eq 0 -and $dangerousCmdlets) {
+      foreach ($file in $dangerousCmdlets) {
+        $issues += [PSCustomObject]@{
+          File = $file
+          Issue = 'Dangerous cmdlet usage detected'
+          Rule = 'SEC-003'
+          Severity = 'HIGH'
+        }
+      }
+    }
+  }
+  catch {
+    Write-Warning "Configuration validation error: $_"
+  }
+
+  return $issues
 }
 
 #endregion
@@ -473,67 +473,67 @@ function Test-ModuleSecurityConfig {
     Scan all repos in ./repos directory
 #>
 function Invoke-OrgWideScan {
-    [CmdletBinding()]
-    [OutputType([PSCustomObject])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$OrgPath,
+  [CmdletBinding()]
+  [OutputType([PSCustomObject])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$OrgPath,
 
-        [Parameter()]
-        [string]$OutputPath = './org-scan-results'
-    )
+    [Parameter()]
+    [string]$OutputPath = './org-scan-results'
+  )
 
-    $rgCheck = Test-RipGrepAvailable
-    if (-not $rgCheck.IsAvailable) {
-        Write-Warning "RipGrep not installed. Organization-wide scanning requires RipGrep."
-        return $null
+  $rgCheck = Test-RipGrepAvailable
+  if (-not $rgCheck.IsAvailable) {
+    Write-Warning "RipGrep not installed. Organization-wide scanning requires RipGrep."
+    return $null
+  }
+
+  # Create output directory
+  if (-not (Test-Path $OutputPath)) {
+    New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
+  }
+
+  try {
+    # Find all PowerShell scripts across all repos
+    $allScripts = & rg --files --type ps1 $OrgPath 2>$null
+    $scriptCount = if ($allScripts) { ($allScripts | Measure-Object).Count } else { 0 }
+
+    Write-Host "Found $scriptCount PowerShell scripts across organization"
+
+    # Pre-filter for high-risk patterns
+    $highRiskScripts = & rg --files-with-matches `
+      --type ps1 `
+      'Invoke-Expression|DownloadString|ConvertTo-SecureString.*-AsPlainText' `
+      $OrgPath 2>$null
+
+    $highRiskCount = if ($highRiskScripts) { ($highRiskScripts | Measure-Object).Count } else { 0 }
+    Write-Host "Prioritizing $highRiskCount high-risk scripts for detailed analysis"
+
+    # Scan for secrets
+    $secrets = Find-HardcodedSecrets -Path $OrgPath
+    $secretsPath = Join-Path $OutputPath 'secrets.json'
+    $secrets | ConvertTo-Json -Depth 10 | Set-Content -Path $secretsPath -Encoding UTF8
+
+    # Scan for configuration issues
+    $configIssues = Test-ModuleSecurityConfig -Path $OrgPath
+    $configPath = Join-Path $OutputPath 'config-issues.json'
+    $configIssues | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath -Encoding UTF8
+
+    # Return summary
+    return [PSCustomObject]@{
+      TotalScripts = $scriptCount
+      HighRiskScripts = $highRiskCount
+      SecretsFound = $secrets.Count
+      ConfigIssues = $configIssues.Count
+      OutputPath = $OutputPath
+      Timestamp = Get-Date
     }
-
-    # Create output directory
-    if (-not (Test-Path $OutputPath)) {
-        New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
-    }
-
-    try {
-        # Find all PowerShell scripts across all repos
-        $allScripts = & rg --files --type ps1 $OrgPath 2>$null
-        $scriptCount = if ($allScripts) { ($allScripts | Measure-Object).Count } else { 0 }
-
-        Write-Host "Found $scriptCount PowerShell scripts across organization"
-
-        # Pre-filter for high-risk patterns
-        $highRiskScripts = & rg --files-with-matches `
-                              --type ps1 `
-                              'Invoke-Expression|DownloadString|ConvertTo-SecureString.*-AsPlainText' `
-                              $OrgPath 2>$null
-
-        $highRiskCount = if ($highRiskScripts) { ($highRiskScripts | Measure-Object).Count } else { 0 }
-        Write-Host "Prioritizing $highRiskCount high-risk scripts for detailed analysis"
-
-        # Scan for secrets
-        $secrets = Find-HardcodedSecrets -Path $OrgPath
-        $secretsPath = Join-Path $OutputPath 'secrets.json'
-        $secrets | ConvertTo-Json -Depth 10 | Set-Content -Path $secretsPath -Encoding UTF8
-
-        # Scan for configuration issues
-        $configIssues = Test-ModuleSecurityConfig -Path $OrgPath
-        $configPath = Join-Path $OutputPath 'config-issues.json'
-        $configIssues | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath -Encoding UTF8
-
-        # Return summary
-        return [PSCustomObject]@{
-            TotalScripts = $scriptCount
-            HighRiskScripts = $highRiskCount
-            SecretsFound = $secrets.Count
-            ConfigIssues = $configIssues.Count
-            OutputPath = $OutputPath
-            Timestamp = Get-Date
-        }
-    }
-    catch {
-        Write-Error "Organization-wide scan failed: $_"
-        return $null
-    }
+  }
+  catch {
+    Write-Error "Organization-wide scan failed: $_"
+    return $null
+  }
 }
 
 #endregion
@@ -560,77 +560,77 @@ function Invoke-OrgWideScan {
     Get-CriticalFindings -SarifPath ./results.sarif -CWEFilter @('CWE-798')
     Extract CWE-798 findings from SARIF
 #>
-function Get-CriticalFindings {
-    [CmdletBinding()]
-    [OutputType([PSCustomObject[]])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$SarifPath,
+function Get-CriticalFinding {
+  [CmdletBinding()]
+  [OutputType([PSCustomObject[]])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$SarifPath,
 
-        [Parameter()]
-        [string[]]$CWEFilter = @('CWE-798', 'CWE-327', 'CWE-502')
-    )
+    [Parameter()]
+    [string[]]$CWEFilter = @('CWE-798', 'CWE-327', 'CWE-502')
+  )
 
-    $rgCheck = Test-RipGrepAvailable
-    if (-not $rgCheck.IsAvailable) {
-        Write-Warning "RipGrep not installed. SARIF querying requires RipGrep."
-        return [PSCustomObject[]]@()
-    }
+  $rgCheck = Test-RipGrepAvailable
+  if (-not $rgCheck.IsAvailable) {
+    Write-Warning "RipGrep not installed. SARIF querying requires RipGrep."
+    return [PSCustomObject[]]@()
+  }
 
-    if (-not (Test-Path $SarifPath)) {
-        Write-Warning "SARIF file not found: $SarifPath"
-        return [PSCustomObject[]]@()
-    }
+  if (-not (Test-Path $SarifPath)) {
+    Write-Warning "SARIF file not found: $SarifPath"
+    return [PSCustomObject[]]@()
+  }
 
-    $findings = @()
-    $cwePattern = $CWEFilter -join '|'
+  $findings = @()
+  $cwePattern = $CWEFilter -join '|'
 
-    try {
-        $criticalLines = & rg --json `
-                            --max-count 1000 `
-                            $cwePattern `
-                            $SarifPath 2>$null
+  try {
+    $criticalLines = & rg --json `
+      --max-count 1000 `
+      $cwePattern `
+      $SarifPath 2>$null
 
-        if ($LASTEXITCODE -eq 0 -and $criticalLines) {
-            # Parse JSON output and extract findings
-            $criticalLines | ForEach-Object {
-                try {
-                    $jsonLine = $_ | ConvertFrom-Json
-                    if ($jsonLine.type -eq 'match') {
-                        $cweMatch = $jsonLine.data.lines.text | Select-String -Pattern 'CWE-\d+' -AllMatches
-                        if ($cweMatch) {
-                            foreach ($match in $cweMatch.Matches) {
-                                $findings += [PSCustomObject]@{
-                                    Line = $jsonLine.data.line_number
-                                    CWE = $match.Value
-                                    Context = $jsonLine.data.lines.text
-                                }
-                            }
-                        }
-                    }
+    if ($LASTEXITCODE -eq 0 -and $criticalLines) {
+      # Parse JSON output and extract findings
+      $criticalLines | ForEach-Object {
+        try {
+          $jsonLine = $_ | ConvertFrom-Json
+          if ($jsonLine.type -eq 'match') {
+            $cweMatch = $jsonLine.data.lines.text | Select-String -Pattern 'CWE-\d+' -AllMatches
+            if ($cweMatch) {
+              foreach ($match in $cweMatch.Matches) {
+                $findings += [PSCustomObject]@{
+                  Line = $jsonLine.data.line_number
+                  CWE = $match.Value
+                  Context = $jsonLine.data.lines.text
                 }
-                catch {
-                    Write-Verbose "Error parsing JSON line: $_"
-                }
+              }
             }
+          }
         }
+        catch {
+          Write-Verbose "Error parsing JSON line: $_"
+        }
+      }
     }
-    catch {
-        Write-Warning "Error querying SARIF file: $_"
-    }
+  }
+  catch {
+    Write-Warning "Error querying SARIF file: $_"
+  }
 
-    return $findings
+  return $findings
 }
 
 #endregion
 
 # Export all functions
 Export-ModuleMember -Function @(
-    'Test-RipGrepAvailable',
-    'Find-SuspiciousScripts',
-    'Find-HardcodedSecrets',
-    'Export-SecretFindingsToSarif',
-    'Test-ModuleSecurityConfig',
-    'Invoke-OrgWideScan',
-    'Get-CriticalFindings'
+  'Test-RipGrepAvailable',
+  'Find-SuspiciousScripts',
+  'Find-HardcodedSecrets',
+  'Export-SecretFindingsToSarif',
+  'Test-ModuleSecurityConfig',
+  'Invoke-OrgWideScan',
+  'Get-CriticalFindings'
 )

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Parameter Management Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-ReservedParamsFix {
-    <#
+  <#
     .SYNOPSIS
         Renames parameters that conflict with PowerShell reserved/common parameter names
 
@@ -49,106 +49,106 @@ function Invoke-ReservedParamsFix {
 
         Renames reserved parameter names to avoid conflicts
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    # Reserved parameter name mappings
-    $reservedMappings = @{
-        'Verbose'             = 'VerboseOutput'
-        'Debug'               = 'DebugMode'
-        'ErrorAction'         = 'ErrorHandling'
-        'WarningAction'       = 'WarningHandling'
-        'InformationAction'   = 'InformationHandling'
-        'ErrorVariable'       = 'ErrorVar'
-        'WarningVariable'     = 'WarningVar'
-        'InformationVariable' = 'InformationVar'
-        'OutVariable'         = 'OutputVariable'
-        'OutBuffer'           = 'OutputBuffer'
-        'PipelineVariable'    = 'PipelineVar'
-        'WhatIf'              = 'WhatIfMode'
-        'Confirm'             = 'ConfirmAction'
-    }
+  # Reserved parameter name mappings
+  $reservedMappings = @{
+    'Verbose' = 'VerboseOutput'
+    'Debug' = 'DebugMode'
+    'ErrorAction' = 'ErrorHandling'
+    'WarningAction' = 'WarningHandling'
+    'InformationAction' = 'InformationHandling'
+    'ErrorVariable' = 'ErrorVar'
+    'WarningVariable' = 'WarningVar'
+    'InformationVariable' = 'InformationVar'
+    'OutVariable' = 'OutputVariable'
+    'OutBuffer' = 'OutputBuffer'
+    'PipelineVariable' = 'PipelineVar'
+    'WhatIf' = 'WhatIfMode'
+    'Confirm' = 'ConfirmAction'
+  }
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = [System.Collections.ArrayList]::new()
+    if ($errors.Count -eq 0) {
+      $replacements = [System.Collections.ArrayList]::new()
 
-            # Find all function definitions
-            $functions = $ast.FindAll({
-                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
-            }, $true)
+      # Find all function definitions
+      $functions = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true)
 
-            foreach ($funcAst in $functions) {
-                # Get all parameters in this function
-                $parameters = $funcAst.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.ParameterAst]
-                }, $true)
+      foreach ($funcAst in $functions) {
+        # Get all parameters in this function
+        $parameters = $funcAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.ParameterAst]
+          }, $true)
 
-                foreach ($paramAst in $parameters) {
-                    $paramName = $paramAst.Name.VariablePath.UserPath
+        foreach ($paramAst in $parameters) {
+          $paramName = $paramAst.Name.VariablePath.UserPath
 
-                    # Check if parameter name conflicts with reserved names
-                    if ($reservedMappings.ContainsKey($paramName)) {
-                        $newParamName = $reservedMappings[$paramName]
+          # Check if parameter name conflicts with reserved names
+          if ($reservedMappings.ContainsKey($paramName)) {
+            $newParamName = $reservedMappings[$paramName]
 
-                        # Find all references to this parameter within the function
-                        $varRefs = $funcAst.FindAll({
-                            $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
-                            $args[0].VariablePath.UserPath -eq $paramName
-                        }, $true)
+            # Find all references to this parameter within the function
+            $varRefs = $funcAst.FindAll({
+                $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                $args[0].VariablePath.UserPath -eq $paramName
+              }, $true)
 
-                        # Add replacements for all references (sorted by position descending)
-                        foreach ($varRef in $varRefs) {
-                            $extent = $varRef.Extent
-                            $oldText = $extent.Text
-                            $newText = "`$$newParamName"
+            # Add replacements for all references (sorted by position descending)
+            foreach ($varRef in $varRefs) {
+              $extent = $varRef.Extent
+              $oldText = $extent.Text
+              $newText = "`$$newParamName"
 
-                            $replacements.Add([PSCustomObject]@{
-                                StartOffset = $extent.StartOffset
-                                EndOffset = $extent.EndOffset
-                                OldText = $oldText
-                                NewText = $newText
-                            }) | Out-Null
-                        }
-
-                        Write-Verbose "Renaming reserved parameter: $paramName → $newParamName in function $($funcAst.Name)"
-                    }
-                }
+              $replacements.Add([PSCustomObject]@{
+                  StartOffset = $extent.StartOffset
+                  EndOffset = $extent.EndOffset
+                  OldText = $oldText
+                  NewText = $newText
+                }) | Out-Null
             }
 
-            # Apply replacements in reverse order (end to start)
-            if ($replacements.Count -gt 0) {
-                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
-                $fixed = $Content
-
-                foreach ($replacement in $replacements) {
-                    $before = $fixed.Substring(0, $replacement.StartOffset)
-                    $after = $fixed.Substring($replacement.EndOffset)
-                    $fixed = $before + $replacement.NewText + $after
-                }
-
-                Write-Verbose "Renamed $($replacements.Count) reserved parameter reference(s)"
-                return $fixed
-            }
+            Write-Verbose "Renaming reserved parameter: $paramName → $newParamName in function $($funcAst.Name)"
+          }
         }
-    }
-    catch {
-        Write-Verbose "Reserved params fix failed: $_"
-    }
+      }
 
-    return $Content
+      # Apply replacements in reverse order (end to start)
+      if ($replacements.Count -gt 0) {
+        $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+        $fixed = $Content
+
+        foreach ($replacement in $replacements) {
+          $before = $fixed.Substring(0, $replacement.StartOffset)
+          $after = $fixed.Substring($replacement.EndOffset)
+          $fixed = $before + $replacement.NewText + $after
+        }
+
+        Write-Verbose "Renamed $($replacements.Count) reserved parameter reference(s)"
+        return $fixed
+      }
+    }
+  }
+  catch {
+    Write-Verbose "Reserved params fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-SwitchParameterDefaultFix {
-    <#
+  <#
     .SYNOPSIS
         Removes default values from [switch] parameters
 
@@ -168,90 +168,90 @@ function Invoke-SwitchParameterDefaultFix {
 
         Removes default values from switch parameters
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = [System.Collections.ArrayList]::new()
+    if ($errors.Count -eq 0) {
+      $replacements = [System.Collections.ArrayList]::new()
 
-            # Find all parameters with [switch] type
-            $parameters = $ast.FindAll({
-                $args[0] -is [System.Management.Automation.Language.ParameterAst]
-            }, $true)
+      # Find all parameters with [switch] type
+      $parameters = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.ParameterAst]
+        }, $true)
 
-            foreach ($paramAst in $parameters) {
-                # Check if parameter has [switch] attribute
-                $hasSwitch = $false
-                foreach ($attr in $paramAst.Attributes) {
-                    if ($attr.TypeName.FullName -eq 'switch') {
-                        $hasSwitch = $true
-                        break
-                    }
-                }
-
-                if ($hasSwitch -and $paramAst.DefaultValue) {
-                    # Has a default value - remove it
-                    $paramName = $paramAst.Name.VariablePath.UserPath
-
-                    # Get the text from parameter start to default value end
-                    $paramStartOffset = $paramAst.Extent.StartOffset
-                    $defaultValueEndOffset = $paramAst.DefaultValue.Extent.EndOffset
-
-                    # Find the = sign before the default value
-                    $textBetween = $Content.Substring($paramAst.Name.Extent.EndOffset,
-                                                      $paramAst.DefaultValue.Extent.StartOffset - $paramAst.Name.Extent.EndOffset)
-
-                    if ($textBetween -match '\s*=\s*') {
-                        # Remove everything from the end of variable name to end of default value
-                        $oldText = $Content.Substring($paramAst.Name.Extent.EndOffset,
-                                                      $defaultValueEndOffset - $paramAst.Name.Extent.EndOffset)
-
-                        $replacements.Add([PSCustomObject]@{
-                            StartOffset = $paramAst.Name.Extent.EndOffset
-                            EndOffset = $defaultValueEndOffset
-                            OldText = $oldText
-                            NewText = ''
-                        }) | Out-Null
-
-                        Write-Verbose "Removing default value from switch parameter: $paramName"
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order (end to start)
-            if ($replacements.Count -gt 0) {
-                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
-                $fixed = $Content
-
-                foreach ($replacement in $replacements) {
-                    $before = $fixed.Substring(0, $replacement.StartOffset)
-                    $after = $fixed.Substring($replacement.EndOffset)
-                    $fixed = $before + $replacement.NewText + $after
-                }
-
-                Write-Verbose "Removed default values from $($replacements.Count) switch parameter(s)"
-                return $fixed
-            }
+      foreach ($paramAst in $parameters) {
+        # Check if parameter has [switch] attribute
+        $hasSwitch = $false
+        foreach ($attr in $paramAst.Attributes) {
+          if ($attr.TypeName.FullName -eq 'switch') {
+            $hasSwitch = $true
+            break
+          }
         }
-    }
-    catch {
-        Write-Verbose "Switch parameter default fix failed: $_"
-    }
 
-    return $Content
+        if ($hasSwitch -and $paramAst.DefaultValue) {
+          # Has a default value - remove it
+          $paramName = $paramAst.Name.VariablePath.UserPath
+
+          # Get the text from parameter start to default value end
+          $paramStartOffset = $paramAst.Extent.StartOffset
+          $defaultValueEndOffset = $paramAst.DefaultValue.Extent.EndOffset
+
+          # Find the = sign before the default value
+          $textBetween = $Content.Substring($paramAst.Name.Extent.EndOffset,
+            $paramAst.DefaultValue.Extent.StartOffset - $paramAst.Name.Extent.EndOffset)
+
+          if ($textBetween -match '\s*=\s*') {
+            # Remove everything from the end of variable name to end of default value
+            $oldText = $Content.Substring($paramAst.Name.Extent.EndOffset,
+              $defaultValueEndOffset - $paramAst.Name.Extent.EndOffset)
+
+            $replacements.Add([PSCustomObject]@{
+                StartOffset = $paramAst.Name.Extent.EndOffset
+                EndOffset = $defaultValueEndOffset
+                OldText = $oldText
+                NewText = ''
+              }) | Out-Null
+
+            Write-Verbose "Removing default value from switch parameter: $paramName"
+          }
+        }
+      }
+
+      # Apply replacements in reverse order (end to start)
+      if ($replacements.Count -gt 0) {
+        $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+        $fixed = $Content
+
+        foreach ($replacement in $replacements) {
+          $before = $fixed.Substring(0, $replacement.StartOffset)
+          $after = $fixed.Substring($replacement.EndOffset)
+          $fixed = $before + $replacement.NewText + $after
+        }
+
+        Write-Verbose "Removed default values from $($replacements.Count) switch parameter(s)"
+        return $fixed
+      }
+    }
+  }
+  catch {
+    Write-Verbose "Switch parameter default fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-UnusedParameterFix {
-    <#
+  <#
     .SYNOPSIS
         Comments out unused parameters in functions
 
@@ -275,114 +275,114 @@ function Invoke-UnusedParameterFix {
 
         Comments out unused parameters with explanatory notes
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = [System.Collections.ArrayList]::new()
+    if ($errors.Count -eq 0) {
+      $replacements = [System.Collections.ArrayList]::new()
 
-            # Find all function definitions
-            $functions = $ast.FindAll({
-                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
-            }, $true)
+      # Find all function definitions
+      $functions = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true)
 
-            foreach ($funcAst in $functions) {
-                # Get all parameters in this function
-                $parameters = $funcAst.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.ParameterAst]
-                }, $true)
+      foreach ($funcAst in $functions) {
+        # Get all parameters in this function
+        $parameters = $funcAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.ParameterAst]
+          }, $true)
 
-                # Get all variable references in the function body
-                $varRefs = $funcAst.Body.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
-                }, $true)
+        # Get all variable references in the function body
+        $varRefs = $funcAst.Body.FindAll({
+            $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
+          }, $true)
 
-                # Check for splatting or $PSBoundParameters usage (means all params might be used)
-                $splattingRefs = @($funcAst.Body.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
-                    ($args[0].VariablePath.UserPath -eq 'PSBoundParameters' -or $args[0].Splatted)
-                }, $true))
-                $usesSplatting = $splattingRefs.Count -gt 0
+        # Check for splatting or $PSBoundParameters usage (means all params might be used)
+        $splattingRefs = @($funcAst.Body.FindAll({
+              $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] -and
+              ($args[0].VariablePath.UserPath -eq 'PSBoundParameters' -or $args[0].Splatted)
+            }, $true))
+        $usesSplatting = $splattingRefs.Count -gt 0
 
-                if ($usesSplatting) {
-                    # Skip this function - splatting means params might be used indirectly
-                    continue
-                }
-
-                foreach ($paramAst in $parameters) {
-                    $paramName = $paramAst.Name.VariablePath.UserPath
-
-                    # Count references to this parameter in function body
-                    $paramRefs = @($varRefs | Where-Object {
-                        $_.VariablePath.UserPath -eq $paramName
-                    })
-                    $refCount = $paramRefs.Count
-
-                    if ($refCount -eq 0) {
-                        # Parameter is unused - comment it out
-                        $paramExtent = $paramAst.Extent
-                        $paramText = $paramExtent.Text
-
-                        # Get the full line to check indentation
-                        $startLine = $paramExtent.StartLineNumber - 1
-                        $lines = $Content -split "`r?`n"
-                        $lineText = $lines[$startLine]
-
-                        # Preserve indentation
-                        $indent = ''
-                        if ($lineText -match '^(\s+)') {
-                            $indent = $Matches[1]
-                        }
-
-                        # Create commented version with note
-                        $commentedParam = "# REMOVED (unused parameter): $paramText"
-
-                        $replacements.Add([PSCustomObject]@{
-                            StartOffset = $paramExtent.StartOffset
-                            EndOffset = $paramExtent.EndOffset
-                            OldText = $paramText
-                            NewText = $commentedParam
-                        }) | Out-Null
-
-                        Write-Verbose "Commenting out unused parameter: $paramName in function $($funcAst.Name)"
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order (end to start)
-            if ($replacements.Count -gt 0) {
-                $replacements = $replacements | Sort-Object -Property StartOffset -Descending
-                $fixed = $Content
-
-                foreach ($replacement in $replacements) {
-                    $before = $fixed.Substring(0, $replacement.StartOffset)
-                    $after = $fixed.Substring($replacement.EndOffset)
-                    $fixed = $before + $replacement.NewText + $after
-                }
-
-                Write-Verbose "Commented out $($replacements.Count) unused parameter(s)"
-                return $fixed
-            }
+        if ($usesSplatting) {
+          # Skip this function - splatting means params might be used indirectly
+          continue
         }
-    }
-    catch {
-        Write-Verbose "Unused parameter fix failed: $_"
-    }
 
-    return $Content
+        foreach ($paramAst in $parameters) {
+          $paramName = $paramAst.Name.VariablePath.UserPath
+
+          # Count references to this parameter in function body
+          $paramRefs = @($varRefs | Where-Object {
+              $_.VariablePath.UserPath -eq $paramName
+            })
+          $refCount = $paramRefs.Count
+
+          if ($refCount -eq 0) {
+            # Parameter is unused - comment it out
+            $paramExtent = $paramAst.Extent
+            $paramText = $paramExtent.Text
+
+            # Get the full line to check indentation
+            $startLine = $paramExtent.StartLineNumber - 1
+            $lines = $Content -split "`r?`n"
+            $lineText = $lines[$startLine]
+
+            # Preserve indentation
+            $indent = ''
+            if ($lineText -match '^(\s+)') {
+              $indent = $Matches[1]
+            }
+
+            # Create commented version with note
+            $commentedParam = "# REMOVED (unused parameter): $paramText"
+
+            $replacements.Add([PSCustomObject]@{
+                StartOffset = $paramExtent.StartOffset
+                EndOffset = $paramExtent.EndOffset
+                OldText = $paramText
+                NewText = $commentedParam
+              }) | Out-Null
+
+            Write-Verbose "Commenting out unused parameter: $paramName in function $($funcAst.Name)"
+          }
+        }
+      }
+
+      # Apply replacements in reverse order (end to start)
+      if ($replacements.Count -gt 0) {
+        $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+        $fixed = $Content
+
+        foreach ($replacement in $replacements) {
+          $before = $fixed.Substring(0, $replacement.StartOffset)
+          $after = $fixed.Substring($replacement.EndOffset)
+          $fixed = $before + $replacement.NewText + $after
+        }
+
+        Write-Verbose "Commented out $($replacements.Count) unused parameter(s)"
+        return $fixed
+      }
+    }
+  }
+  catch {
+    Write-Verbose "Unused parameter fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-NullHelpMessageFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes null or empty HelpMessage attributes
 
@@ -403,76 +403,76 @@ function Invoke-NullHelpMessageFix {
             [string]$Name
         )
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+  try {
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
 
-        # Find all parameters with HelpMessage attribute
-        $params = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.ParameterAst]
-        }, $true)
+    # Find all parameters with HelpMessage attribute
+    $params = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.ParameterAst]
+      }, $true)
 
-        $replacements = @()
+    $replacements = @()
 
-        foreach ($param in $params) {
-            $paramName = $param.Name.VariablePath.UserPath
+    foreach ($param in $params) {
+      $paramName = $param.Name.VariablePath.UserPath
 
-            # Look for Parameter attribute with HelpMessage
-            foreach ($attr in $param.Attributes) {
-                if ($attr -is [System.Management.Automation.Language.AttributeAst]) {
-                    if ($attr.TypeName.Name -eq 'Parameter') {
-                        # Check named arguments for HelpMessage
-                        foreach ($namedArg in $attr.NamedArguments) {
-                            if ($namedArg.ArgumentName -eq 'HelpMessage') {
-                                $argValue = $namedArg.Argument.Extent.Text
+      # Look for Parameter attribute with HelpMessage
+      foreach ($attr in $param.Attributes) {
+        if ($attr -is [System.Management.Automation.Language.AttributeAst]) {
+          if ($attr.TypeName.Name -eq 'Parameter') {
+            # Check named arguments for HelpMessage
+            foreach ($namedArg in $attr.NamedArguments) {
+              if ($namedArg.ArgumentName -eq 'HelpMessage') {
+                $argValue = $namedArg.Argument.Extent.Text
 
-                                # Check if HelpMessage is empty or null
-                                if ($argValue -match '^["'']?\s*["'']?$' -or $argValue -eq '$null') {
-                                    $newMessage = "Please provide a value for $paramName"
-                                    $oldText = $namedArg.Extent.Text
-                                    $newText = "HelpMessage=`"$newMessage`""
+                # Check if HelpMessage is empty or null
+                if ($argValue -match '^["'']?\s*["'']?$' -or $argValue -eq '$null') {
+                  $newMessage = "Please provide a value for $paramName"
+                  $oldText = $namedArg.Extent.Text
+                  $newText = "HelpMessage=`"$newMessage`""
 
-                                    $replacements += [PSCustomObject]@{
-                                        Offset = $namedArg.Extent.StartOffset
-                                        Length = $namedArg.Extent.Text.Length
-                                        Replacement = $newText
-                                        ParamName = $paramName
-                                    }
-                                }
-                            }
-                        }
-                    }
+                  $replacements += [PSCustomObject]@{
+                    Offset = $namedArg.Extent.StartOffset
+                    Length = $namedArg.Extent.Text.Length
+                    Replacement = $newText
+                    ParamName = $paramName
+                  }
                 }
+              }
             }
+          }
         }
-
-        if ($replacements.Count -gt 0) {
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-                Write-Verbose "Fixed empty HelpMessage for parameter: $($replacement.ParamName)"
-            }
-            return $fixed
-        }
-    }
-    catch {
-        Write-Verbose "Null help message fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($replacements.Count -gt 0) {
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+        Write-Verbose "Fixed empty HelpMessage for parameter: $($replacement.ParamName)"
+      }
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Null help message fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all parameter management functions
 Export-ModuleMember -Function @(
-    'Invoke-ReservedParamsFix',
-    'Invoke-SwitchParameterDefaultFix',
-    'Invoke-UnusedParameterFix',
-    'Invoke-NullHelpMessageFix'
+  'Invoke-ReservedParamsFix',
+  'Invoke-SwitchParameterDefaultFix',
+  'Invoke-UnusedParameterFix',
+  'Invoke-NullHelpMessageFix'
 )

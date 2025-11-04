@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Best Practices Auto-Fix Module
 
@@ -33,61 +33,61 @@ $ModuleRoot = $PSScriptRoot
 
 # Import all BestPractices submodules
 $SubModules = @(
-    'Syntax',
-    'Naming',
-    'Scoping',
-    'StringHandling',
-    'TypeSafety',
-    'UsagePatterns',
-    'CodeQuality'
+  'Syntax',
+  'Naming',
+  'Scoping',
+  'StringHandling',
+  'TypeSafety',
+  'UsagePatterns',
+  'CodeQuality'
 )
 
 foreach ($SubModule in $SubModules) {
-    $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "BestPractices\$SubModule.psm1"
-    if (Test-Path -Path $SubModulePath) {
-        Import-Module -Name $SubModulePath -Force -ErrorAction Stop
-    }
-    else {
-        Write-Warning "Submodule not found: $SubModulePath"
-    }
+  $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "BestPractices\$SubModule.psm1"
+  if (Test-Path -Path $SubModulePath) {
+    Import-Module -Name $SubModulePath -Force -ErrorAction Stop
+  }
+  else {
+    Write-Warning "Submodule not found: $SubModulePath"
+  }
 }
 
 # Export all functions from all BestPractices submodules
 $FunctionsToExport = @(
-    # Syntax
-    'Invoke-SemicolonFix',
-    'Invoke-NullComparisonFix',
-    'Invoke-ExclaimOperatorFix',
+  # Syntax
+  'Invoke-SemicolonFix',
+  'Invoke-NullComparisonFix',
+  'Invoke-ExclaimOperatorFix',
 
-    # Naming
-    'Invoke-SingularNounFix',
-    'Invoke-ApprovedVerbFix',
-    'Invoke-ReservedCmdletCharFix',
+  # Naming
+  'Invoke-SingularNounFix',
+  'Invoke-ApprovedVerbFix',
+  'Invoke-ReservedCmdletCharFix',
 
-    # Scoping
-    'Invoke-GlobalVarFix',
-    'Invoke-GlobalFunctionsFix',
+  # Scoping
+  'Invoke-GlobalVarFix',
+  'Invoke-GlobalFunctionsFix',
 
-    # StringHandling
-    'Invoke-DoubleQuoteFix',
-    'Invoke-LiteralHashtableFix',
+  # StringHandling
+  'Invoke-DoubleQuoteFix',
+  'Invoke-LiteralHashtableFix',
 
-    # TypeSafety
-    'Invoke-AutomaticVariableFix',
-    'Invoke-MultipleTypeAttributesFix',
-    'Invoke-PSCredentialTypeFix',
+  # TypeSafety
+  'Invoke-AutomaticVariableFix',
+  'Invoke-MultipleTypeAttributesFix',
+  'Invoke-PSCredentialTypeFix',
 
-    # UsagePatterns
-    'Invoke-PositionalParametersFix',
-    'Invoke-DeclaredVarsMoreThanAssignmentsFix',
-    'Invoke-IncorrectAssignmentOperatorFix',
+  # UsagePatterns
+  'Invoke-PositionalParametersFix',
+  'Invoke-DeclaredVarsMoreThanAssignmentsFix',
+  'Invoke-IncorrectAssignmentOperatorFix',
     
-    # CodeQuality (Beyond-PSSA)
-    'Invoke-TodoCommentDetectionFix',
-    'Invoke-UnusedNamespaceDetectionFix',
-    'Invoke-AsciiCharacterWarningFix',
-    'Invoke-ConvertFromJsonOptimizationFix',
-    'Invoke-SecureStringDisclosureFix'
+  # CodeQuality (Beyond-PSSA)
+  'Invoke-TodoCommentDetectionFix',
+  'Invoke-UnusedNamespaceDetectionFix',
+  'Invoke-AsciiCharacterWarningFix',
+  'Invoke-ConvertFromJsonOptimizationFix',
+  'Invoke-SecureStringDisclosureFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport

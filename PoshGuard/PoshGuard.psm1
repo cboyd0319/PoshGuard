@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard - PowerShell Auto-Fix Engine
 
@@ -28,28 +28,28 @@ $ModuleRoot = $PSScriptRoot
     Relative path for development/repository installation
 #>
 function Resolve-PoshGuardPath {
-    param(
-        [string]$GalleryRelativePath,
-        [string]$DevRelativePath
-    )
+  param(
+    [string]$GalleryRelativePath,
+    [string]$DevRelativePath
+  )
 
-    $GalleryPath = Join-Path $ModuleRoot $GalleryRelativePath
-    $DevPath = Join-Path (Split-Path $ModuleRoot -Parent) $DevRelativePath
+  $GalleryPath = Join-Path $ModuleRoot $GalleryRelativePath
+  $DevPath = Join-Path (Split-Path $ModuleRoot -Parent) $DevRelativePath
 
-    if (Test-Path $GalleryPath) {
-        return $GalleryPath
-    } elseif (Test-Path $DevPath) {
-        return $DevPath
-    } else {
-        return $null
-    }
+  if (Test-Path $GalleryPath) {
+    return $GalleryPath
+  } elseif (Test-Path $DevPath) {
+    return $DevPath
+  } else {
+    return $null
+  }
 }
 
 # Resolve library path (Gallery: PoshGuard/lib/, Dev: tools/lib/)
 $LibPath = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath (Join-Path 'tools' 'lib')
 
 if (-not $LibPath) {
-    $warningMessage = @"
+  $warningMessage = @"
 PoshGuard library path not found. Module may not function correctly.
 
 Installation Checklist:
@@ -67,26 +67,26 @@ Expected Paths Checked:
 - Gallery: $(Join-Path -Path $ModuleRoot -ChildPath 'lib')
 - Dev: $(Join-Path -Path (Split-Path -Path $ModuleRoot -Parent) -ChildPath 'tools/lib')
 "@
-    Write-Warning $warningMessage
+  Write-Warning $warningMessage
 }
 
 # Import core modules if they exist
 $CoreModules = @('Core', 'Security', 'BestPractices', 'Formatting', 'Advanced')
 foreach ($Module in $CoreModules) {
-    $ModulePath = Join-Path $LibPath "$Module.psm1"
-    if (Test-Path $ModulePath) {
-        try {
-            Import-Module $ModulePath -Force -ErrorAction Stop
-            Write-Verbose "Loaded PoshGuard module: $Module"
-        } catch {
-            Write-Warning "Failed to load PoshGuard module $Module : $_"
-        }
+  $ModulePath = Join-Path $LibPath "$Module.psm1"
+  if (Test-Path $ModulePath) {
+    try {
+      Import-Module $ModulePath -Force -ErrorAction Stop
+      Write-Verbose "Loaded PoshGuard module: $Module"
+    } catch {
+      Write-Warning "Failed to load PoshGuard module $Module : $_"
     }
+  }
 }
 
 # Main entry point function for module usage
 function Invoke-PoshGuard {
-    <#
+  <#
     .SYNOPSIS
         Run PoshGuard auto-fix on PowerShell scripts.
 
@@ -133,57 +133,57 @@ function Invoke-PoshGuard {
         Invoke-PoshGuard -Path ./src -FastScan -Recurse
         Use RipGrep pre-filtering for faster scanning of large codebases
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory, Position = 0)]
-        [string]$Path,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory, Position = 0)]
+    [string]$Path,
 
-        [Parameter()]
-        [switch]$DryRun,
+    [Parameter()]
+    [switch]$DryRun,
 
-        [Parameter()]
-        [switch]$ShowDiff,
+    [Parameter()]
+    [switch]$ShowDiff,
 
-        [Parameter()]
-        [switch]$Recurse,
+    [Parameter()]
+    [switch]$Recurse,
 
-        [Parameter()]
-        [string[]]$Skip,
+    [Parameter()]
+    [string[]]$Skip,
 
-        [Parameter()]
-        [switch]$ExportSarif,
+    [Parameter()]
+    [switch]$ExportSarif,
 
-        [Parameter()]
-        [string]$SarifOutputPath = './poshguard-results.sarif',
+    [Parameter()]
+    [string]$SarifOutputPath = './poshguard-results.sarif',
 
-        [Parameter()]
-        [switch]$FastScan
-    )
+    [Parameter()]
+    [switch]$FastScan
+  )
 
-    # Locate Apply-AutoFix.ps1 using helper function
-    $ScriptPath = Resolve-PoshGuardPath `
-        -GalleryRelativePath 'Apply-AutoFix.ps1' `
-        -DevRelativePath (Join-Path 'tools' 'Apply-AutoFix.ps1')
+  # Locate Apply-AutoFix.ps1 using helper function
+  $ScriptPath = Resolve-PoshGuardPath `
+    -GalleryRelativePath 'Apply-AutoFix.ps1' `
+    -DevRelativePath (Join-Path 'tools' 'Apply-AutoFix.ps1')
 
-    if (-not $ScriptPath) {
-        throw "Cannot locate Apply-AutoFix.ps1. Please ensure module installation is complete."
-    }
+  if (-not $ScriptPath) {
+    throw "Cannot locate Apply-AutoFix.ps1. Please ensure module installation is complete."
+  }
 
-    # Build parameter splat
-    $params = @{
-        Path = $Path
-    }
+  # Build parameter splat
+  $params = @{
+    Path = $Path
+  }
 
-    if ($DryRun) { $params['DryRun'] = $true }
-    if ($ShowDiff) { $params['ShowDiff'] = $true }
-    if ($Recurse) { $params['Recurse'] = $true }
-    if ($Skip) { $params['Skip'] = $Skip }
-    if ($ExportSarif) { $params['ExportSarif'] = $true }
-    if ($SarifOutputPath) { $params['SarifOutputPath'] = $SarifOutputPath }
-    if ($FastScan) { $params['FastScan'] = $true }
+  if ($DryRun) { $params['DryRun'] = $true }
+  if ($ShowDiff) { $params['ShowDiff'] = $true }
+  if ($Recurse) { $params['Recurse'] = $true }
+  if ($Skip) { $params['Skip'] = $Skip }
+  if ($ExportSarif) { $params['ExportSarif'] = $true }
+  if ($SarifOutputPath) { $params['SarifOutputPath'] = $SarifOutputPath }
+  if ($FastScan) { $params['FastScan'] = $true }
 
-    # Execute the script
-    & $ScriptPath @params
+  # Execute the script
+  & $ScriptPath @params
 }
 
 # Export main function

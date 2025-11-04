@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Code Analysis Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-SafetyFix {
-    <#
+  <#
     .SYNOPSIS
         Adds ErrorAction Stop to file I/O cmdlets for safer error handling
 
@@ -38,73 +38,73 @@ function Invoke-SafetyFix {
         # AFTER:
         Get-Content $path -ErrorAction Stop
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    $fixed = $Content
+  $fixed = $Content
 
-    # AST-based ErrorAction addition
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($fixed, [ref]$tokens, [ref]$errors)
+  # AST-based ErrorAction addition
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($fixed, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            # Find all command ASTs
-            $commandAsts = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.CommandAst]
-                }, $true)
+    if ($errors.Count -eq 0) {
+      # Find all command ASTs
+      $commandAsts = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.CommandAst]
+        }, $true)
 
-            $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
-            $replacements = @()
+      $ioCmdlets = @('Get-Content', 'Set-Content', 'Add-Content', 'Copy-Item', 'Move-Item', 'Remove-Item', 'New-Item')
+      $replacements = @()
 
-            foreach ($cmdAst in $commandAsts) {
-                $cmdName = $cmdAst.GetCommandName()
-                if ($cmdName -in $ioCmdlets) {
-                    # Check if -ErrorAction parameter already exists
-                    $hasErrorAction = $false
-                    foreach ($element in $cmdAst.CommandElements) {
-                        if ($element -is [System.Management.Automation.Language.CommandParameterAst] -and
-                            $element.ParameterName -eq 'ErrorAction') {
-                            $hasErrorAction = $true
-                            break
-                        }
-                    }
-
-                    if (-not $hasErrorAction) {
-                        # Add to replacements list (we'll apply them in reverse order)
-                        $replacements += @{
-                            Offset = $cmdAst.Extent.EndOffset
-                            Text   = ' -ErrorAction Stop'
-                        }
-                    }
-                }
+      foreach ($cmdAst in $commandAsts) {
+        $cmdName = $cmdAst.GetCommandName()
+        if ($cmdName -in $ioCmdlets) {
+          # Check if -ErrorAction parameter already exists
+          $hasErrorAction = $false
+          foreach ($element in $cmdAst.CommandElements) {
+            if ($element -is [System.Management.Automation.Language.CommandParameterAst] -and
+              $element.ParameterName -eq 'ErrorAction') {
+              $hasErrorAction = $true
+              break
             }
+          }
 
-            # Apply replacements in reverse order to preserve offsets
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Insert($replacement.Offset, $replacement.Text)
+          if (-not $hasErrorAction) {
+            # Add to replacements list (we'll apply them in reverse order)
+            $replacements += @{
+              Offset = $cmdAst.Extent.EndOffset
+              Text = ' -ErrorAction Stop'
             }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Added -ErrorAction Stop to $($replacements.Count) I/O cmdlet(s)"
-            }
+          }
         }
-    }
-    catch {
-        # If AST parsing fails, don't apply ErrorAction fixes
-        Write-Verbose "AST-based safety fix failed: $_"
-    }
+      }
 
-    return $fixed
+      # Apply replacements in reverse order to preserve offsets
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Insert($replacement.Offset, $replacement.Text)
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Added -ErrorAction Stop to $($replacements.Count) I/O cmdlet(s)"
+      }
+    }
+  }
+  catch {
+    # If AST parsing fails, don't apply ErrorAction fixes
+    Write-Verbose "AST-based safety fix failed: $_"
+  }
+
+  return $fixed
 }
 
 function Invoke-DuplicateLineFix {
-    <#
+  <#
     .SYNOPSIS
         Removes duplicate consecutive lines
 
@@ -125,37 +125,37 @@ function Invoke-DuplicateLineFix {
         # AFTER:
         Import-Module Foo
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    $lines = $Content -split '\r?\n'
-    $result = @()
-    $previousLine = $null
+  $lines = $Content -split '\r?\n'
+  $result = @()
+  $previousLine = $null
 
-    foreach ($line in $lines) {
-        # Always keep blank lines and lines different from previous
-        if ([string]::IsNullOrWhiteSpace($line) -or $line -ne $previousLine) {
-            $result += $line
-            if (-not [string]::IsNullOrWhiteSpace($line)) {
-                $previousLine = $line
-            }
-        }
-        # Skip duplicate consecutive non-empty lines
+  foreach ($line in $lines) {
+    # Always keep blank lines and lines different from previous
+    if ([string]::IsNullOrWhiteSpace($line) -or $line -ne $previousLine) {
+      $result += $line
+      if (-not [string]::IsNullOrWhiteSpace($line)) {
+        $previousLine = $line
+      }
     }
+    # Skip duplicate consecutive non-empty lines
+  }
 
-    if ($result.Count -lt $lines.Count) {
-        Write-Verbose "Removed $($lines.Count - $result.Count) duplicate consecutive line(s)"
-    }
+  if ($result.Count -lt $lines.Count) {
+    Write-Verbose "Removed $($lines.Count - $result.Count) duplicate consecutive line(s)"
+  }
 
-    return $result -join "`n"
+  return $result -join "`n"
 }
 
 function Invoke-CmdletParameterFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes cmdlets with invalid parameter combinations
 
@@ -177,79 +177,79 @@ function Invoke-CmdletParameterFix {
         # AFTER (fixed):
         Write-Host "Success!" -ForegroundColor Green
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    $fixed = $Content
+  $fixed = $Content
 
-    # AST-based cmdlet parameter validation
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  # AST-based cmdlet parameter validation
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            # Find all Write-Output commands
-            $writeOutputAsts = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.CommandAst] -and
-                    $args[0].GetCommandName() -eq 'Write-Output'
-                }, $true)
+    if ($errors.Count -eq 0) {
+      # Find all Write-Output commands
+      $writeOutputAsts = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+          $args[0].GetCommandName() -eq 'Write-Output'
+        }, $true)
 
-            $replacements = @()
+      $replacements = @()
 
-            foreach ($cmdAst in $writeOutputAsts) {
-                $hasInvalidParam = $false
+      foreach ($cmdAst in $writeOutputAsts) {
+        $hasInvalidParam = $false
 
-                # Check for parameters that Write-Output doesn't support
-                $invalidParams = @('ForegroundColor', 'BackgroundColor', 'NoNewline')
+        # Check for parameters that Write-Output doesn't support
+        $invalidParams = @('ForegroundColor', 'BackgroundColor', 'NoNewline')
 
-                foreach ($element in $cmdAst.CommandElements) {
-                    if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
-                        if ($invalidParams -contains $element.ParameterName) {
-                            $hasInvalidParam = $true
-                            break
-                        }
-                    }
-                }
-
-                # If Write-Output has invalid parameters, replace with Write-Host
-                if ($hasInvalidParam) {
-                    # Find the exact position of "Write-Output" in the command
-                    $cmdName = $cmdAst.CommandElements[0]
-                    $replacements += @{
-                        Offset      = $cmdName.Extent.StartOffset
-                        Length      = $cmdName.Extent.Text.Length
-                        Replacement = 'Write-Host'
-                        Line        = $cmdName.Extent.StartLineNumber
-                    }
-                }
+        foreach ($element in $cmdAst.CommandElements) {
+          if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+            if ($invalidParams -contains $element.ParameterName) {
+              $hasInvalidParam = $true
+              break
             }
-
-            # Apply replacements in reverse order to preserve offsets
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-                Write-Verbose "Fixed Write-Output → Write-Host at line $($replacement.Line)"
-            }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Fixed $($replacements.Count) Write-Output cmdlet(s) with invalid parameters"
-            }
+          }
         }
-    }
-    catch {
-        Write-Verbose "Cmdlet parameter fix failed: $_"
-    }
 
-    return $fixed
+        # If Write-Output has invalid parameters, replace with Write-Host
+        if ($hasInvalidParam) {
+          # Find the exact position of "Write-Output" in the command
+          $cmdName = $cmdAst.CommandElements[0]
+          $replacements += @{
+            Offset = $cmdName.Extent.StartOffset
+            Length = $cmdName.Extent.Text.Length
+            Replacement = 'Write-Host'
+            Line = $cmdName.Extent.StartLineNumber
+          }
+        }
+      }
+
+      # Apply replacements in reverse order to preserve offsets
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+        Write-Verbose "Fixed Write-Output → Write-Host at line $($replacement.Line)"
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Fixed $($replacements.Count) Write-Output cmdlet(s) with invalid parameters"
+      }
+    }
+  }
+  catch {
+    Write-Verbose "Cmdlet parameter fix failed: $_"
+  }
+
+  return $fixed
 }
 
 # Export all code analysis functions
 Export-ModuleMember -Function @(
-    'Invoke-SafetyFix',
-    'Invoke-DuplicateLineFix',
-    'Invoke-CmdletParameterFix'
+  'Invoke-SafetyFix',
+  'Invoke-DuplicateLineFix',
+  'Invoke-CmdletParameterFix'
 )

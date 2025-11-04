@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Output Formatting Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-WriteHostFix {
-    <#
+  <#
     .SYNOPSIS
         Smart Write-Host replacement that preserves UI/display components
 
@@ -44,81 +44,81 @@ function Invoke-WriteHostFix {
         # Plain output - REPLACED:
         Write-Host "Processing file..."  # → Write-Output "Processing file..."
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    $fixed = $Content
+  $fixed = $Content
 
-    # AST-based Write-Host analysis
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  # AST-based Write-Host analysis
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            # Find all command ASTs for Write-Host
-            $writeHostAsts = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.CommandAst] -and
-                    $args[0].GetCommandName() -eq 'Write-Host'
-                }, $true)
+    if ($errors.Count -eq 0) {
+      # Find all command ASTs for Write-Host
+      $writeHostAsts = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+          $args[0].GetCommandName() -eq 'Write-Host'
+        }, $true)
 
-            $replacements = @()
+      $replacements = @()
 
-            foreach ($cmdAst in $writeHostAsts) {
-                $shouldReplace = $true
+      foreach ($cmdAst in $writeHostAsts) {
+        $shouldReplace = $true
 
-                # Check for UI indicators that mean we should KEEP Write-Host
-                $cmdText = $cmdAst.Extent.Text
+        # Check for UI indicators that mean we should KEEP Write-Host
+        $cmdText = $cmdAst.Extent.Text
 
-                # Check for color parameters
-                if ($cmdText -match '-ForegroundColor|-BackgroundColor') {
-                    $shouldReplace = $false
-                }
-
-                # Check for -NoNewline (progress indicators)
-                if ($cmdText -match '-NoNewline') {
-                    $shouldReplace = $false
-                }
-
-                # Check for emojis in the output string
-                if ($cmdText -match '[✅⚠️❌🔍⏳🎯📊💡🚀🔥💻🌟⭐🎉]') {
-                    $shouldReplace = $false
-                }
-
-                # Check for box-drawing characters (tables, banners)
-                if ($cmdText -match '[╔║╚╗╝═─│┌┐└┘┬┴├┤┼▀▄█▌▐░▒▓]') {
-                    $shouldReplace = $false
-                }
-
-                # If none of the UI indicators were found, replace Write-Host → Write-Output
-                if ($shouldReplace) {
-                    $replacements += @{
-                        Offset      = $cmdAst.Extent.StartOffset
-                        Length      = 10  # Length of "Write-Host"
-                        Replacement = 'Write-Output'
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order to preserve offsets
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-            }
+        # Check for color parameters
+        if ($cmdText -match '-ForegroundColor|-BackgroundColor') {
+          $shouldReplace = $false
         }
-    }
-    catch {
-        Write-Verbose "Write-Host fix failed: $_"
-    }
 
-    return $fixed
+        # Check for -NoNewline (progress indicators)
+        if ($cmdText -match '-NoNewline') {
+          $shouldReplace = $false
+        }
+
+        # Check for emojis in the output string
+        if ($cmdText -match '[✅⚠️❌🔍⏳🎯📊💡🚀🔥💻🌟⭐🎉]') {
+          $shouldReplace = $false
+        }
+
+        # Check for box-drawing characters (tables, banners)
+        if ($cmdText -match '[╔║╚╗╝═─│┌┐└┘┬┴├┤┼▀▄█▌▐░▒▓]') {
+          $shouldReplace = $false
+        }
+
+        # If none of the UI indicators were found, replace Write-Host → Write-Output
+        if ($shouldReplace) {
+          $replacements += @{
+            Offset = $cmdAst.Extent.StartOffset
+            Length = 10  # Length of "Write-Host"
+            Replacement = 'Write-Output'
+          }
+        }
+      }
+
+      # Apply replacements in reverse order to preserve offsets
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+      }
+    }
+  }
+  catch {
+    Write-Verbose "Write-Host fix failed: $_"
+  }
+
+  return $fixed
 }
 
 function Invoke-RedirectionOperatorFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes incorrect redirection operator usage
 
@@ -133,37 +133,37 @@ function Invoke-RedirectionOperatorFix {
         # AFTER:
         command > output.txt
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        # Normalize 1> to >
-        $fixed = $Content -replace '\b1\s*>', ' >'
+  try {
+    # Normalize 1> to >
+    $fixed = $Content -replace '\b1\s*>', ' >'
 
-        # Normalize 1>> to >>
-        $fixed = $fixed -replace '\b1\s*>>', ' >>'
+    # Normalize 1>> to >>
+    $fixed = $fixed -replace '\b1\s*>>', ' >>'
 
-        # Ensure proper spacing for redirection operators
-        $fixed = $fixed -replace '(\w)\s*([2-6]?>)', '$1 $2'
+    # Ensure proper spacing for redirection operators
+    $fixed = $fixed -replace '(\w)\s*([2-6]?>)', '$1 $2'
 
-        if ($fixed -ne $Content) {
-            Write-Verbose "Normalized redirection operators"
-            return $fixed
-        }
+    if ($fixed -ne $Content) {
+      Write-Verbose "Normalized redirection operators"
+      return $fixed
     }
-    catch {
-        Write-Verbose "Redirection operator fix failed: $_"
-    }
+  }
+  catch {
+    Write-Verbose "Redirection operator fix failed: $_"
+  }
 
-    return $Content
+  return $Content
 }
 
 # Export all output fix functions
 Export-ModuleMember -Function @(
-    'Invoke-WriteHostFix',
-    'Invoke-RedirectionOperatorFix'
+  'Invoke-WriteHostFix',
+  'Invoke-RedirectionOperatorFix'
 )

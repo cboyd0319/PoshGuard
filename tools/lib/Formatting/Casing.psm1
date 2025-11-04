@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Casing Formatting Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-CasingFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes cmdlet and parameter casing
 
@@ -33,96 +33,96 @@ function Invoke-CasingFix {
         # AFTER:
         Get-ChildItem -Path C:\ -Force
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    # AST-based cmdlet/parameter casing fix
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  # AST-based cmdlet/parameter casing fix
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = @()
+    if ($errors.Count -eq 0) {
+      $replacements = @()
 
-            # Find all command elements and fix casing
-            foreach ($token in $tokens) {
-                if ($token.Kind -eq 'Generic' -or $token.Kind -eq 'Identifier') {
-                    # Check if this is a known cmdlet with wrong casing
-                    try {
-                        $cmd = Get-Command -Name $token.Text -ErrorAction SilentlyContinue
-                        if ($cmd -and $cmd.Name -cne $token.Text) {
-                            # Found a casing mismatch
-                            $replacements += @{
-                                Offset      = $token.Extent.StartOffset
-                                Length      = $token.Extent.EndOffset - $token.Extent.StartOffset
-                                Replacement = $cmd.Name
-                            }
-                        }
-                    }
-                    catch {
-                        # Ignore - not a valid cmdlet
-                        Write-Verbose "Token '$($token.Text)' is not a recognized cmdlet: $_"
-                    }
-                }
-                elseif ($token.Kind -eq 'Parameter') {
-                    # Fix parameter casing (e.g., -pathType -> -PathType)
-                    $paramName = $token.Text
-                    if ($paramName -match '^-(.+)$') {
-                        $paramWithoutDash = $Matches[1]
-                        # Common parameter names with correct casing
-                        $correctCasing = @{
-                            'path'          = 'Path'
-                            'pathtype'      = 'PathType'
-                            'force'         = 'Force'
-                            'recurse'       = 'Recurse'
-                            'filter'        = 'Filter'
-                            'include'       = 'Include'
-                            'exclude'       = 'Exclude'
-                            'erroraction'   = 'ErrorAction'
-                            'warningaction' = 'WarningAction'
-                            'verbose'       = 'Verbose'
-                            'debug'         = 'Debug'
-                            'whatif'        = 'WhatIf'
-                            'confirm'       = 'Confirm'
-                            'completed'     = 'Completed'
-                        }
-
-                        $lowerParam = $paramWithoutDash.ToLower()
-                        if ($correctCasing.ContainsKey($lowerParam)) {
-                            $correctParam = "-$($correctCasing[$lowerParam])"
-                            if ($correctParam -cne $paramName) {
-                                $replacements += @{
-                                    Offset      = $token.Extent.StartOffset
-                                    Length      = $token.Extent.EndOffset - $token.Extent.StartOffset
-                                    Replacement = $correctParam
-                                }
-                            }
-                        }
-                    }
-                }
+      # Find all command elements and fix casing
+      foreach ($token in $tokens) {
+        if ($token.Kind -eq 'Generic' -or $token.Kind -eq 'Identifier') {
+          # Check if this is a known cmdlet with wrong casing
+          try {
+            $cmd = Get-Command -Name $token.Text -ErrorAction SilentlyContinue
+            if ($cmd -and $cmd.Name -cne $token.Text) {
+              # Found a casing mismatch
+              $replacements += @{
+                Offset = $token.Extent.StartOffset
+                Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                Replacement = $cmd.Name
+              }
             }
-
-            # Apply replacements in reverse order
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-            }
-            return $fixed
+          }
+          catch {
+            # Ignore - not a valid cmdlet
+            Write-Verbose "Token '$($token.Text)' is not a recognized cmdlet: $_"
+          }
         }
-    }
-    catch {
-        Write-Verbose "Casing fix failed: $_"
-    }
+        elseif ($token.Kind -eq 'Parameter') {
+          # Fix parameter casing (e.g., -pathType -> -PathType)
+          $paramName = $token.Text
+          if ($paramName -match '^-(.+)$') {
+            $paramWithoutDash = $Matches[1]
+            # Common parameter names with correct casing
+            $correctCasing = @{
+              'path' = 'Path'
+              'pathtype' = 'PathType'
+              'force' = 'Force'
+              'recurse' = 'Recurse'
+              'filter' = 'Filter'
+              'include' = 'Include'
+              'exclude' = 'Exclude'
+              'erroraction' = 'ErrorAction'
+              'warningaction' = 'WarningAction'
+              'verbose' = 'Verbose'
+              'debug' = 'Debug'
+              'whatif' = 'WhatIf'
+              'confirm' = 'Confirm'
+              'completed' = 'Completed'
+            }
 
-    return $Content
+            $lowerParam = $paramWithoutDash.ToLower()
+            if ($correctCasing.ContainsKey($lowerParam)) {
+              $correctParam = "-$($correctCasing[$lowerParam])"
+              if ($correctParam -cne $paramName) {
+                $replacements += @{
+                  Offset = $token.Extent.StartOffset
+                  Length = $token.Extent.EndOffset - $token.Extent.StartOffset
+                  Replacement = $correctParam
+                }
+              }
+            }
+          }
+        }
+      }
+
+      # Apply replacements in reverse order
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+      }
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Casing fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all casing fix functions
 Export-ModuleMember -Function @(
-    'Invoke-CasingFix'
+  'Invoke-CasingFix'
 )
