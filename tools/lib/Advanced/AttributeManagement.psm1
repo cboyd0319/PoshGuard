@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Attribute Management Module
 
@@ -19,7 +19,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-SupportsShouldProcessFix {
-    <#
+  <#
     .SYNOPSIS
         Adds SupportsShouldProcess to CmdletBinding when ShouldProcess is used
 
@@ -32,105 +32,105 @@ function Invoke-SupportsShouldProcessFix {
 
         Adds SupportsShouldProcess=$true to functions using ShouldProcess
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = @()
+    if ($errors.Count -eq 0) {
+      $replacements = @()
 
-            # Find all function definitions
-            $functionAsts = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
-                }, $true)
+      # Find all function definitions
+      $functionAsts = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true)
 
-            foreach ($funcAst in $functionAsts) {
-                # Check if function uses $PSCmdlet.ShouldProcess
-                $usesShouldProcess = $false
+      foreach ($funcAst in $functionAsts) {
+        # Check if function uses $PSCmdlet.ShouldProcess
+        $usesShouldProcess = $false
 
-                $shouldProcessCalls = $funcAst.FindAll({
-                        $args[0] -is [System.Management.Automation.Language.MemberExpressionAst] -and
-                        $args[0].Member.Extent.Text -eq 'ShouldProcess'
-                    }, $true)
+        $shouldProcessCalls = $funcAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.MemberExpressionAst] -and
+            $args[0].Member.Extent.Text -eq 'ShouldProcess'
+          }, $true)
 
-                if ($shouldProcessCalls.Count -gt 0) {
-                    $usesShouldProcess = $true
-                }
-
-                if ($usesShouldProcess) {
-                    # Check if function has CmdletBinding attribute
-                    $paramBlock = $funcAst.Body.ParamBlock
-
-                    if ($paramBlock -and $paramBlock.Attributes) {
-                        foreach ($attr in $paramBlock.Attributes) {
-                            if ($attr.TypeName.Name -eq 'CmdletBinding') {
-                                # Check if SupportsShouldProcess is already present
-                                $hasSupportsShouldProcess = $false
-
-                                foreach ($namedArg in $attr.NamedArguments) {
-                                    if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
-                                        $hasSupportsShouldProcess = $true
-                                        break
-                                    }
-                                }
-
-                                if (-not $hasSupportsShouldProcess) {
-                                    # Add SupportsShouldProcess to existing CmdletBinding
-                                    $attrText = $attr.Extent.Text
-
-                                    if ($attrText -match '^\[CmdletBinding\(\s*\)\]$') {
-                                        # Empty CmdletBinding()
-                                        $newAttrText = '[CmdletBinding(SupportsShouldProcess=$true)]'
-                                    }
-                                    else {
-                                        # Has existing arguments
-                                        $newAttrText = $attrText -replace '\)\]$', ', SupportsShouldProcess=$true)]'
-                                    }
-
-                                    $replacements += @{
-                                        Offset      = $attr.Extent.StartOffset
-                                        Length      = $attr.Extent.Text.Length
-                                        Replacement = $newAttrText
-                                        FuncName    = $funcAst.Name
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-                Write-Verbose "Added SupportsShouldProcess to: $($replacement.FuncName)"
-            }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Added SupportsShouldProcess to $($replacements.Count) function(s)"
-            }
-
-            return $fixed
+        if ($shouldProcessCalls.Count -gt 0) {
+          $usesShouldProcess = $true
         }
-    }
-    catch {
-        Write-Verbose "SupportsShouldProcess fix failed: $_"
-    }
 
-    return $Content
+        if ($usesShouldProcess) {
+          # Check if function has CmdletBinding attribute
+          $paramBlock = $funcAst.Body.ParamBlock
+
+          if ($paramBlock -and $paramBlock.Attributes) {
+            foreach ($attr in $paramBlock.Attributes) {
+              if ($attr.TypeName.Name -eq 'CmdletBinding') {
+                # Check if SupportsShouldProcess is already present
+                $hasSupportsShouldProcess = $false
+
+                foreach ($namedArg in $attr.NamedArguments) {
+                  if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
+                    $hasSupportsShouldProcess = $true
+                    break
+                  }
+                }
+
+                if (-not $hasSupportsShouldProcess) {
+                  # Add SupportsShouldProcess to existing CmdletBinding
+                  $attrText = $attr.Extent.Text
+
+                  if ($attrText -match '^\[CmdletBinding\(\s*\)\]$') {
+                    # Empty CmdletBinding()
+                    $newAttrText = '[CmdletBinding(SupportsShouldProcess=$true)]'
+                  }
+                  else {
+                    # Has existing arguments
+                    $newAttrText = $attrText -replace '\)\]$', ', SupportsShouldProcess=$true)]'
+                  }
+
+                  $replacements += @{
+                    Offset = $attr.Extent.StartOffset
+                    Length = $attr.Extent.Text.Length
+                    Replacement = $newAttrText
+                    FuncName = $funcAst.Name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      # Apply replacements in reverse order
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+        Write-Verbose "Added SupportsShouldProcess to: $($replacement.FuncName)"
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Added SupportsShouldProcess to $($replacements.Count) function(s)"
+      }
+
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "SupportsShouldProcess fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-ShouldProcessForStateChangingFix {
-    <#
+  <#
     .SYNOPSIS
         Adds ShouldProcess support to state-changing functions
 
@@ -154,76 +154,76 @@ function Invoke-ShouldProcessForStateChangingFix {
             }
         }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+  try {
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
 
-        # State-changing verbs
-        $stateChangingVerbs = @('Remove', 'Set', 'New', 'Add', 'Clear', 'Update', 'Reset', 'Stop', 'Start', 'Restart', 'Install', 'Uninstall')
+    # State-changing verbs
+    $stateChangingVerbs = @('Remove', 'Set', 'New', 'Add', 'Clear', 'Update', 'Reset', 'Stop', 'Start', 'Restart', 'Install', 'Uninstall')
 
-        $functions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
-        }, $true)
+    $functions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      }, $true)
 
-        $replacements = @()
+    $replacements = @()
 
-        foreach ($func in $functions) {
-            $funcName = $func.Name
-            $verb = ($funcName -split '-')[0]
+    foreach ($func in $functions) {
+      $funcName = $func.Name
+      $verb = ($funcName -split '-')[0]
 
-            if ($verb -in $stateChangingVerbs) {
-                # Check if already has SupportsShouldProcess
-                $hasShouldProcess = $func.Body.ParamBlock -and
-                    $func.Body.ParamBlock.Attributes | Where-Object {
-                        $_ -is [System.Management.Automation.Language.AttributeAst] -and
-                        $_.TypeName.Name -eq 'CmdletBinding' -and
-                        $_.NamedArguments.ArgumentName -contains 'SupportsShouldProcess'
-                    }
-
-                if (-not $hasShouldProcess) {
-                    Write-Verbose "Function $funcName needs SupportsShouldProcess"
-                    # For now, add a comment suggesting the addition
-                    $replacements += [PSCustomObject]@{
-                        FuncName = $funcName
-                        Offset = $func.Extent.StartOffset
-                    }
-                }
-            }
+      if ($verb -in $stateChangingVerbs) {
+        # Check if already has SupportsShouldProcess
+        $hasShouldProcess = $func.Body.ParamBlock -and
+        $func.Body.ParamBlock.Attributes | Where-Object {
+          $_ -is [System.Management.Automation.Language.AttributeAst] -and
+          $_.TypeName.Name -eq 'CmdletBinding' -and
+          $_.NamedArguments.ArgumentName -contains 'SupportsShouldProcess'
         }
 
-        if ($replacements.Count -gt 0) {
-            $lines = $Content -split "`n"
-            $newLines = @()
-
-            foreach ($line in $lines) {
-                foreach ($replacement in $replacements) {
-                    if ($line -match "function\s+$([regex]::Escape($replacement.FuncName))") {
-                        $newLines += "# TODO: Add [CmdletBinding(SupportsShouldProcess=`$true)] and ShouldProcess checks"
-                    }
-                }
-                $newLines += $line
-            }
-
-            Write-Verbose "Added TODO comments for $($replacements.Count) state-changing function(s)"
-            return ($newLines -join "`n")
+        if (-not $hasShouldProcess) {
+          Write-Verbose "Function $funcName needs SupportsShouldProcess"
+          # For now, add a comment suggesting the addition
+          $replacements += [PSCustomObject]@{
+            FuncName = $funcName
+            Offset = $func.Extent.StartOffset
+          }
         }
-    }
-    catch {
-        Write-Verbose "ShouldProcess for state-changing fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($replacements.Count -gt 0) {
+      $lines = $Content -split "`n"
+      $newLines = @()
+
+      foreach ($line in $lines) {
+        foreach ($replacement in $replacements) {
+          if ($line -match "function\s+$([regex]::Escape($replacement.FuncName))") {
+            $newLines += "# TODO: Add [CmdletBinding(SupportsShouldProcess=`$true)] and ShouldProcess checks"
+          }
+        }
+        $newLines += $line
+      }
+
+      Write-Verbose "Added TODO comments for $($replacements.Count) state-changing function(s)"
+      return ($newLines -join "`n")
+    }
+  }
+  catch {
+    Write-Verbose "ShouldProcess for state-changing fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-CmdletCorrectlyFix {
-    <#
+  <#
     .SYNOPSIS
         Adds [CmdletBinding()] to functions using advanced features
 
@@ -243,69 +243,69 @@ function Invoke-CmdletCorrectlyFix {
             $PSCmdlet.WriteVerbose("test")
         }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+  try {
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
 
-        $functions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+    $functions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      }, $true)
+
+    $replacements = @()
+
+    foreach ($func in $functions) {
+      # Check if uses $PSCmdlet
+      $usesPSCmdlet = $func.Body.FindAll({
+          param($node)
+          $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
+          $node.VariablePath.UserPath -eq 'PSCmdlet'
         }, $true)
 
-        $replacements = @()
-
-        foreach ($func in $functions) {
-            # Check if uses $PSCmdlet
-            $usesPSCmdlet = $func.Body.FindAll({
-                param($node)
-                $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
-                $node.VariablePath.UserPath -eq 'PSCmdlet'
-            }, $true)
-
-            if ($usesPSCmdlet.Count -gt 0) {
-                # Check if already has CmdletBinding
-                $hasCmdletBinding = $func.Body.ParamBlock -and
-                    $func.Body.ParamBlock.Attributes | Where-Object {
-                        $_ -is [System.Management.Automation.Language.AttributeAst] -and
-                        $_.TypeName.Name -eq 'CmdletBinding'
-                    }
-
-                if (-not $hasCmdletBinding) {
-                    $replacements += [PSCustomObject]@{
-                        FuncName = $func.Name
-                        Offset = $func.Extent.StartOffset
-                        Text = $func.Extent.Text
-                    }
-                }
-            }
+      if ($usesPSCmdlet.Count -gt 0) {
+        # Check if already has CmdletBinding
+        $hasCmdletBinding = $func.Body.ParamBlock -and
+        $func.Body.ParamBlock.Attributes | Where-Object {
+          $_ -is [System.Management.Automation.Language.AttributeAst] -and
+          $_.TypeName.Name -eq 'CmdletBinding'
         }
 
-        if ($replacements.Count -gt 0) {
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                # Add [CmdletBinding()] before function
-                $newText = "[CmdletBinding()]`n$($replacement.Text)"
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Text.Length).Insert($replacement.Offset, $newText)
-                Write-Verbose "Added [CmdletBinding()] to function: $($replacement.FuncName)"
-            }
-            return $fixed
+        if (-not $hasCmdletBinding) {
+          $replacements += [PSCustomObject]@{
+            FuncName = $func.Name
+            Offset = $func.Extent.StartOffset
+            Text = $func.Extent.Text
+          }
         }
-    }
-    catch {
-        Write-Verbose "CmdletCorrectly fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($replacements.Count -gt 0) {
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        # Add [CmdletBinding()] before function
+        $newText = "[CmdletBinding()]`n$($replacement.Text)"
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Text.Length).Insert($replacement.Offset, $newText)
+        Write-Verbose "Added [CmdletBinding()] to function: $($replacement.FuncName)"
+      }
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "CmdletCorrectly fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-ProcessBlockForPipelineFix {
-    <#
+  <#
     .SYNOPSIS
         Adds Process{} block to functions with pipeline input
 
@@ -334,80 +334,80 @@ function Invoke-ProcessBlockForPipelineFix {
             }
         }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+  try {
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
 
-        $functions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
-        }, $true)
+    $functions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      }, $true)
 
-        $functionsNeedingProcess = @()
+    $functionsNeedingProcess = @()
 
-        foreach ($func in $functions) {
-            if ($func.Body.ParamBlock) {
-                # Check for ValueFromPipeline parameters
-                $hasPipelineParam = $false
-                foreach ($param in $func.Body.ParamBlock.Parameters) {
-                    foreach ($attr in $param.Attributes) {
-                        if ($attr.NamedArguments) {
-                            foreach ($arg in $attr.NamedArguments) {
-                                if ($arg.ArgumentName -eq 'ValueFromPipeline' -and $arg.Argument.Value -eq $true) {
-                                    $hasPipelineParam = $true
-                                    break
-                                }
-                            }
-                        }
-                    }
+    foreach ($func in $functions) {
+      if ($func.Body.ParamBlock) {
+        # Check for ValueFromPipeline parameters
+        $hasPipelineParam = $false
+        foreach ($param in $func.Body.ParamBlock.Parameters) {
+          foreach ($attr in $param.Attributes) {
+            if ($attr.NamedArguments) {
+              foreach ($arg in $attr.NamedArguments) {
+                if ($arg.ArgumentName -eq 'ValueFromPipeline' -and $arg.Argument.Value -eq $true) {
+                  $hasPipelineParam = $true
+                  break
                 }
-
-                if ($hasPipelineParam) {
-                    # Check if has process block
-                    $hasProcessBlock = $func.Body.ProcessBlock -ne $null
-
-                    if (-not $hasProcessBlock) {
-                        $functionsNeedingProcess += $func.Name
-                        Write-Verbose "Function $($func.Name) needs Process{} block"
-                    }
-                }
+              }
             }
+          }
         }
 
-        if ($functionsNeedingProcess.Count -gt 0) {
-            $lines = $Content -split "`n"
-            $newLines = @()
+        if ($hasPipelineParam) {
+          # Check if has process block
+          $hasProcessBlock = $func.Body.ProcessBlock -ne $null
 
-            foreach ($line in $lines) {
-                foreach ($funcName in $functionsNeedingProcess) {
-                    if ($line -match "function\s+$([regex]::Escape($funcName))") {
-                        $newLines += "# TODO: Add process{} block for proper pipeline processing"
-                    }
-                }
-                $newLines += $line
-            }
-
-            Write-Verbose "Added TODO comments for $($functionsNeedingProcess.Count) function(s) needing process block"
-            return ($newLines -join "`n")
+          if (-not $hasProcessBlock) {
+            $functionsNeedingProcess += $func.Name
+            Write-Verbose "Function $($func.Name) needs Process{} block"
+          }
         }
-    }
-    catch {
-        Write-Verbose "Process block fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($functionsNeedingProcess.Count -gt 0) {
+      $lines = $Content -split "`n"
+      $newLines = @()
+
+      foreach ($line in $lines) {
+        foreach ($funcName in $functionsNeedingProcess) {
+          if ($line -match "function\s+$([regex]::Escape($funcName))") {
+            $newLines += "# TODO: Add process{} block for proper pipeline processing"
+          }
+        }
+        $newLines += $line
+      }
+
+      Write-Verbose "Added TODO comments for $($functionsNeedingProcess.Count) function(s) needing process block"
+      return ($newLines -join "`n")
+    }
+  }
+  catch {
+    Write-Verbose "Process block fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all attribute management functions
 Export-ModuleMember -Function @(
-    'Invoke-SupportsShouldProcessFix',
-    'Invoke-ShouldProcessForStateChangingFix',
-    'Invoke-CmdletCorrectlyFix',
-    'Invoke-ProcessBlockForPipelineFix'
+  'Invoke-SupportsShouldProcessFix',
+  'Invoke-ShouldProcessForStateChangingFix',
+  'Invoke-CmdletCorrectlyFix',
+  'Invoke-ProcessBlockForPipelineFix'
 )

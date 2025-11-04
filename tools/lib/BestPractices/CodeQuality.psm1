@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Code Quality Enhancement Module
 
@@ -24,7 +24,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-TodoCommentDetectionFix {
-    <#
+  <#
     .SYNOPSIS
         Detects and tracks TODO/FIXME comments for technical debt management
     
@@ -58,62 +58,62 @@ function Invoke-TodoCommentDetectionFix {
         Low priority - This is informational only, does not modify code structure.
         Helps teams track technical debt systematically.
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
     
-    try {
-        $lines = $Content -split "`r?`n"
-        $modified = $false
-        $newLines = @()
-        $todoPattern = '^\s*#\s*(TODO|FIXME|HACK|XXX|NOTE)[\s:]*(.*)$'
+  try {
+    $lines = $Content -split "`r?`n"
+    $modified = $false
+    $newLines = @()
+    $todoPattern = '^\s*#\s*(TODO|FIXME|HACK|XXX|NOTE)[\s:]*(.*)$'
         
-        foreach ($line in $lines) {
-            if ($line -match $todoPattern) {
-                $keyword = $Matches[1].ToUpper()
-                $description = $Matches[2].Trim()
+    foreach ($line in $lines) {
+      if ($line -match $todoPattern) {
+        $keyword = $Matches[1].ToUpper()
+        $description = $Matches[2].Trim()
                 
-                # Ensure consistent format: # KEYWORD: Description
-                if ($line -notmatch '^\s*#\s*(TODO|FIXME|HACK|XXX|NOTE):\s+\S+') {
-                    $indent = ''
-                    if ($line -match '^(\s*)') {
-                        $indent = $Matches[1]
-                    }
+        # Ensure consistent format: # KEYWORD: Description
+        if ($line -notmatch '^\s*#\s*(TODO|FIXME|HACK|XXX|NOTE):\s+\S+') {
+          $indent = ''
+          if ($line -match '^(\s*)') {
+            $indent = $Matches[1]
+          }
                     
-                    if ([string]::IsNullOrWhiteSpace($description)) {
-                        $description = 'Review and address this item'
-                    }
+          if ([string]::IsNullOrWhiteSpace($description)) {
+            $description = 'Review and address this item'
+          }
                     
-                    $newLine = "$indent# $keyword`: $description"
-                    $newLines += $newLine
-                    $modified = $true
-                    Write-Verbose "Standardized $keyword comment format"
-                }
-                else {
-                    $newLines += $line
-                }
-            }
-            else {
-                $newLines += $line
-            }
+          $newLine = "$indent# $keyword`: $description"
+          $newLines += $newLine
+          $modified = $true
+          Write-Verbose "Standardized $keyword comment format"
         }
+        else {
+          $newLines += $line
+        }
+      }
+      else {
+        $newLines += $line
+      }
+    }
         
-        if ($modified) {
-            return ($newLines -join "`n")
-        }
+    if ($modified) {
+      return ($newLines -join "`n")
     }
-    catch {
-        Write-Verbose "TODO comment detection failed: $_"
-    }
+  }
+  catch {
+    Write-Verbose "TODO comment detection failed: $_"
+  }
     
-    return $Content
+  return $Content
 }
 
 function Invoke-UnusedNamespaceDetectionFix {
-    <#
+  <#
     .SYNOPSIS
         Detects and warns about potentially unused namespace imports
     
@@ -149,95 +149,95 @@ function Invoke-UnusedNamespaceDetectionFix {
         Performance optimization - Helps identify namespaces that could be removed.
         Conservative approach - marks as "REVIEW" rather than removing automatically.
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
     
-    try {
-        $lines = $Content -split "`r?`n"
-        $usingPattern = '^\s*using\s+namespace\s+([^\s]+)\s*$'
-        $namespaces = @()
+  try {
+    $lines = $Content -split "`r?`n"
+    $usingPattern = '^\s*using\s+namespace\s+([^\s]+)\s*$'
+    $namespaces = @()
         
-        # Find all using namespace statements
-        for ($i = 0; $i -lt $lines.Count; $i++) {
-            if ($lines[$i] -match $usingPattern) {
-                $namespaces += @{
-                    LineNumber = $i
-                    Line = $lines[$i]
-                    Namespace = $Matches[1]
-                    Used = $false
-                }
-            }
+    # Find all using namespace statements
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+      if ($lines[$i] -match $usingPattern) {
+        $namespaces += @{
+          LineNumber = $i
+          Line = $lines[$i]
+          Namespace = $Matches[1]
+          Used = $false
         }
-        
-        if ($namespaces.Count -eq 0) {
-            return $Content
-        }
-        
-        # Get content after all using statements for checking usage
-        $lastUsingLine = ($namespaces | Measure-Object -Property LineNumber -Maximum).Maximum
-        $contentToCheck = ($lines[($lastUsingLine + 1)..($lines.Count - 1)] -join "`n")
-        
-        # Check if each namespace is used
-        foreach ($ns in $namespaces) {
-            $namespaceParts = $ns.Namespace.Split('.')
-            $lastPart = $namespaceParts[-1]
-            
-            # Check various usage patterns
-            # 1. Full namespace path used explicitly
-            if ($contentToCheck -match [regex]::Escape($ns.Namespace)) {
-                $ns.Used = $true
-                continue
-            }
-            
-            # 2. Qualified type name (e.g., Generic.List, Collections.ArrayList)
-            if ($contentToCheck -match "\[$lastPart\." -or 
-                $contentToCheck -match "\b$lastPart\.") {
-                $ns.Used = $true
-                continue
-            }
-            
-            # 3. Static member access (e.g., Math::Pow)
-            if ($contentToCheck -match "::$lastPart") {
-                $ns.Used = $true
-                continue
-            }
-        }
-        
-        # Add warnings for potentially unused namespaces
-        $newLines = @()
-        $modified = $false
-        
-        foreach ($ns in $namespaces) {
-            if (-not $ns.Used) {
-                # Add comment line before the using statement
-                $newLines += "# REVIEW: Namespace may be unused - $($ns.Line)"
-                $modified = $true
-                Write-Verbose "Marked potentially unused namespace: $($ns.Namespace)"
-            }
-            $newLines += $ns.Line
-        }
-        
-        # Add remaining content
-        $lastUsingLine = ($namespaces | Measure-Object -Property LineNumber -Maximum).Maximum
-        $newLines += $lines[($lastUsingLine + 1)..($lines.Count - 1)]
-        
-        if ($modified) {
-            return ($newLines -join "`n")
-        }
+      }
     }
-    catch {
-        Write-Verbose "Unused namespace detection failed: $_"
+        
+    if ($namespaces.Count -eq 0) {
+      return $Content
     }
+        
+    # Get content after all using statements for checking usage
+    $lastUsingLine = ($namespaces | Measure-Object -Property LineNumber -Maximum).Maximum
+    $contentToCheck = ($lines[($lastUsingLine + 1)..($lines.Count - 1)] -join "`n")
+        
+    # Check if each namespace is used
+    foreach ($ns in $namespaces) {
+      $namespaceParts = $ns.Namespace.Split('.')
+      $lastPart = $namespaceParts[-1]
+            
+      # Check various usage patterns
+      # 1. Full namespace path used explicitly
+      if ($contentToCheck -match [regex]::Escape($ns.Namespace)) {
+        $ns.Used = $true
+        continue
+      }
+            
+      # 2. Qualified type name (e.g., Generic.List, Collections.ArrayList)
+      if ($contentToCheck -match "\[$lastPart\." -or 
+        $contentToCheck -match "\b$lastPart\.") {
+        $ns.Used = $true
+        continue
+      }
+            
+      # 3. Static member access (e.g., Math::Pow)
+      if ($contentToCheck -match "::$lastPart") {
+        $ns.Used = $true
+        continue
+      }
+    }
+        
+    # Add warnings for potentially unused namespaces
+    $newLines = @()
+    $modified = $false
+        
+    foreach ($ns in $namespaces) {
+      if (-not $ns.Used) {
+        # Add comment line before the using statement
+        $newLines += "# REVIEW: Namespace may be unused - $($ns.Line)"
+        $modified = $true
+        Write-Verbose "Marked potentially unused namespace: $($ns.Namespace)"
+      }
+      $newLines += $ns.Line
+    }
+        
+    # Add remaining content
+    $lastUsingLine = ($namespaces | Measure-Object -Property LineNumber -Maximum).Maximum
+    $newLines += $lines[($lastUsingLine + 1)..($lines.Count - 1)]
+        
+    if ($modified) {
+      return ($newLines -join "`n")
+    }
+  }
+  catch {
+    Write-Verbose "Unused namespace detection failed: $_"
+  }
     
-    return $Content
+  return $Content
 }
 
 function Invoke-AsciiCharacterWarningFix {
-    <#
+  <#
     .SYNOPSIS
         Detects non-ASCII characters and adds warnings
     
@@ -267,58 +267,58 @@ function Invoke-AsciiCharacterWarningFix {
         Encoding compatibility - Prevents cross-platform encoding issues.
         Informational only - does not modify the actual characters.
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
     
-    try {
-        $lines = $Content -split "`r?`n"
-        $newLines = @()
-        $modified = $false
+  try {
+    $lines = $Content -split "`r?`n"
+    $newLines = @()
+    $modified = $false
         
-        foreach ($line in $lines) {
-            # Check if line already has our warning
-            if ($line -match 'WARNING: Non-ASCII character detected') {
-                $newLines += $line
-                continue
-            }
+    foreach ($line in $lines) {
+      # Check if line already has our warning
+      if ($line -match 'WARNING: Non-ASCII character detected') {
+        $newLines += $line
+        continue
+      }
             
-            # Check for non-ASCII characters
-            $nonAsciiMatch = [regex]::Match($line, '[^\u0000-\u007F]')
+      # Check for non-ASCII characters
+      $nonAsciiMatch = [regex]::Match($line, '[^\u0000-\u007F]')
             
-            if ($nonAsciiMatch.Success) {
-                # Get the non-ASCII character and its Unicode code point
-                $char = $nonAsciiMatch.Value
-                $codePoint = [string]::Format('U+{0:X4}', [int][char]$char)
+      if ($nonAsciiMatch.Success) {
+        # Get the non-ASCII character and its Unicode code point
+        $char = $nonAsciiMatch.Value
+        $codePoint = [string]::Format('U+{0:X4}', [int][char]$char)
                 
-                # Add warning comment
-                $warning = "  # WARNING: Non-ASCII character detected ($codePoint). Consider using ASCII equivalent."
-                $newLine = $line + $warning
-                $newLines += $newLine
-                $modified = $true
-                Write-Verbose "Added warning for non-ASCII character: $codePoint"
-            }
-            else {
-                $newLines += $line
-            }
-        }
+        # Add warning comment
+        $warning = "  # WARNING: Non-ASCII character detected ($codePoint). Consider using ASCII equivalent."
+        $newLine = $line + $warning
+        $newLines += $newLine
+        $modified = $true
+        Write-Verbose "Added warning for non-ASCII character: $codePoint"
+      }
+      else {
+        $newLines += $line
+      }
+    }
         
-        if ($modified) {
-            return ($newLines -join "`n")
-        }
+    if ($modified) {
+      return ($newLines -join "`n")
     }
-    catch {
-        Write-Verbose "ASCII character warning fix failed: $_"
-    }
+  }
+  catch {
+    Write-Verbose "ASCII character warning fix failed: $_"
+  }
     
-    return $Content
+  return $Content
 }
 
 function Invoke-ConvertFromJsonOptimizationFix {
-    <#
+  <#
     .SYNOPSIS
         Optimizes Get-Content | ConvertFrom-Json to use -Raw parameter
     
@@ -350,50 +350,50 @@ function Invoke-ConvertFromJsonOptimizationFix {
         Performance optimization - Significantly improves JSON parsing speed.
         Safe transformation - maintains same output.
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
     
-    try {
-        # Pattern: Get-Content <path> | ConvertFrom-Json (without -Raw)
-        $pattern = '(Get-Content\s+[^|]+?)(\s*\|\s*ConvertFrom-Json)'
+  try {
+    # Pattern: Get-Content <path> | ConvertFrom-Json (without -Raw)
+    $pattern = '(Get-Content\s+[^|]+?)(\s*\|\s*ConvertFrom-Json)'
         
-        if ($Content -match $pattern) {
-            $modified = $Content
+    if ($Content -match $pattern) {
+      $modified = $Content
             
-            # Find all matches
-            $matches = [regex]::Matches($Content, $pattern)
+      # Find all matches
+      $matches = [regex]::Matches($Content, $pattern)
             
-            foreach ($match in $matches) {
-                $getContentPart = $match.Groups[1].Value
-                $pipelinePart = $match.Groups[2].Value
+      foreach ($match in $matches) {
+        $getContentPart = $match.Groups[1].Value
+        $pipelinePart = $match.Groups[2].Value
                 
-                # Check if -Raw is already present
-                if ($getContentPart -notmatch '-Raw\b') {
-                    # Add -Raw before the pipeline
-                    $fixed = "$getContentPart -Raw$pipelinePart"
-                    $modified = $modified.Replace($match.Value, $fixed)
-                    Write-Verbose "Added -Raw parameter to Get-Content | ConvertFrom-Json"
-                }
-            }
-            
-            if ($modified -ne $Content) {
-                return $modified
-            }
+        # Check if -Raw is already present
+        if ($getContentPart -notmatch '-Raw\b') {
+          # Add -Raw before the pipeline
+          $fixed = "$getContentPart -Raw$pipelinePart"
+          $modified = $modified.Replace($match.Value, $fixed)
+          Write-Verbose "Added -Raw parameter to Get-Content | ConvertFrom-Json"
         }
+      }
+            
+      if ($modified -ne $Content) {
+        return $modified
+      }
     }
-    catch {
-        Write-Verbose "ConvertFrom-Json optimization failed: $_"
-    }
+  }
+  catch {
+    Write-Verbose "ConvertFrom-Json optimization failed: $_"
+  }
     
-    return $Content
+  return $Content
 }
 
 function Invoke-SecureStringDisclosureFix {
-    <#
+  <#
     .SYNOPSIS
         Detects potential SecureString disclosure vulnerabilities
     
@@ -423,70 +423,70 @@ function Invoke-SecureStringDisclosureFix {
         Security - Prevents accidental credential disclosure.
         Maps to OWASP ASVS V6: Stored Cryptography and V8: Data Protection.
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
+    
+  try {
+    $lines = $Content -split "`r?`n"
+    $newLines = @()
+    $modified = $false
+        
+    # Patterns that might indicate SecureString disclosure
+    $vulnerablePatterns = @(
+      'Write-Host.*\$.*[Pp]assword',
+      'Write-Output.*\$.*[Pp]assword',
+      'Write-Verbose.*\$.*[Ss]ecure',
+      '".*\$.*[Ss]ecure.*"',
+      "'.*\$.*[Pp]assword.*'"
     )
-    
-    try {
-        $lines = $Content -split "`r?`n"
-        $newLines = @()
-        $modified = $false
         
-        # Patterns that might indicate SecureString disclosure
-        $vulnerablePatterns = @(
-            'Write-Host.*\$.*[Pp]assword',
-            'Write-Output.*\$.*[Pp]assword',
-            'Write-Verbose.*\$.*[Ss]ecure',
-            '".*\$.*[Ss]ecure.*"',
-            "'.*\$.*[Pp]assword.*'"
-        )
-        
-        foreach ($line in $lines) {
-            # Skip if line already has our warning
-            if ($line -match 'SECURITY WARNING: Potential SecureString disclosure') {
-                $newLines += $line
-                continue
-            }
+    foreach ($line in $lines) {
+      # Skip if line already has our warning
+      if ($line -match 'SECURITY WARNING: Potential SecureString disclosure') {
+        $newLines += $line
+        continue
+      }
             
-            $hasVulnerability = $false
-            foreach ($pattern in $vulnerablePatterns) {
-                if ($line -match $pattern) {
-                    $hasVulnerability = $true
-                    break
-                }
-            }
+      $hasVulnerability = $false
+      foreach ($pattern in $vulnerablePatterns) {
+        if ($line -match $pattern) {
+          $hasVulnerability = $true
+          break
+        }
+      }
             
-            if ($hasVulnerability) {
-                $warning = "  # SECURITY WARNING: Potential SecureString disclosure"
-                $newLine = $line + $warning
-                $newLines += $newLine
-                $modified = $true
-                Write-Verbose "Added security warning for potential SecureString disclosure"
-            }
-            else {
-                $newLines += $line
-            }
-        }
+      if ($hasVulnerability) {
+        $warning = "  # SECURITY WARNING: Potential SecureString disclosure"
+        $newLine = $line + $warning
+        $newLines += $newLine
+        $modified = $true
+        Write-Verbose "Added security warning for potential SecureString disclosure"
+      }
+      else {
+        $newLines += $line
+      }
+    }
         
-        if ($modified) {
-            return ($newLines -join "`n")
-        }
+    if ($modified) {
+      return ($newLines -join "`n")
     }
-    catch {
-        Write-Verbose "SecureString disclosure detection failed: $_"
-    }
+  }
+  catch {
+    Write-Verbose "SecureString disclosure detection failed: $_"
+  }
     
-    return $Content
+  return $Content
 }
 
 # Export all code quality functions
 Export-ModuleMember -Function @(
-    'Invoke-TodoCommentDetectionFix',
-    'Invoke-UnusedNamespaceDetectionFix',
-    'Invoke-AsciiCharacterWarningFix',
-    'Invoke-ConvertFromJsonOptimizationFix',
-    'Invoke-SecureStringDisclosureFix'
+  'Invoke-TodoCommentDetectionFix',
+  'Invoke-UnusedNamespaceDetectionFix',
+  'Invoke-AsciiCharacterWarningFix',
+  'Invoke-ConvertFromJsonOptimizationFix',
+  'Invoke-SecureStringDisclosureFix'
 )

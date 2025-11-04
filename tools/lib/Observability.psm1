@@ -25,16 +25,16 @@ $ErrorActionPreference = 'Stop'
 $script:CurrentTraceId = $null
 $script:OperationStartTime = $null
 $script:Metrics = @{
-    FilesProcessed = 0
-    FilesSucceeded = 0
-    FilesFailed = 0
-    ViolationsDetected = 0
-    ViolationsFixed = 0
-    TotalDurationMs = 0
+  FilesProcessed = 0
+  FilesSucceeded = 0
+  FilesFailed = 0
+  ViolationsDetected = 0
+  ViolationsFixed = 0
+  TotalDurationMs = 0
 }
 
 function Initialize-Observability {
-    <#
+  <#
     .SYNOPSIS
         Initializes observability context for an operation
     
@@ -49,34 +49,34 @@ function Initialize-Observability {
     .OUTPUTS
         System.String - The generated trace ID
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
+  [CmdletBinding()]
+  [OutputType([string])]
+  param()
     
-    $script:CurrentTraceId = [guid]::NewGuid().ToString()
-    $script:OperationStartTime = Get-Date
+  $script:CurrentTraceId = [guid]::NewGuid().ToString()
+  $script:OperationStartTime = Get-Date
     
-    # Reset metrics for new operation
-    $script:Metrics = @{
-        FilesProcessed = 0
-        FilesSucceeded = 0
-        FilesFailed = 0
-        ViolationsDetected = 0
-        ViolationsFixed = 0
-        TotalDurationMs = 0
-    }
+  # Reset metrics for new operation
+  $script:Metrics = @{
+    FilesProcessed = 0
+    FilesSucceeded = 0
+    FilesFailed = 0
+    ViolationsDetected = 0
+    ViolationsFixed = 0
+    TotalDurationMs = 0
+  }
     
-    Write-StructuredLog -Level INFO -Message "Operation started" -Properties @{
-        operation = "initialize"
-        powershell_version = $PSVersionTable.PSVersion.ToString()
-        platform = $PSVersionTable.Platform
-    }
+  Write-StructuredLog -Level INFO -Message "Operation started" -Properties @{
+    operation = "initialize"
+    powershell_version = $PSVersionTable.PSVersion.ToString()
+    platform = $PSVersionTable.Platform
+  }
     
-    return $script:CurrentTraceId
+  return $script:CurrentTraceId
 }
 
 function Get-TraceId {
-    <#
+  <#
     .SYNOPSIS
         Gets the current trace ID
     
@@ -87,19 +87,19 @@ function Get-TraceId {
     .OUTPUTS
         System.String - The current trace ID
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
+  [CmdletBinding()]
+  [OutputType([string])]
+  param()
     
-    if (-not $script:CurrentTraceId) {
-        $script:CurrentTraceId = [guid]::NewGuid().ToString()
-    }
+  if (-not $script:CurrentTraceId) {
+    $script:CurrentTraceId = [guid]::NewGuid().ToString()
+  }
     
-    return $script:CurrentTraceId
+  return $script:CurrentTraceId
 }
 
 function Write-StructuredLog {
-    <#
+  <#
     .SYNOPSIS
         Writes structured log entry in JSONL format
     
@@ -126,55 +126,55 @@ function Write-StructuredLog {
             success = $true
         }
     #>
-    [CmdletBinding()]
-    [OutputType([void])]
-    param(
-        [Parameter(Mandatory)]
-        [ValidateSet('TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL')]
-        [string]$Level,
+  [CmdletBinding()]
+  [OutputType([void])]
+  param(
+    [Parameter(Mandatory)]
+    [ValidateSet('TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL')]
+    [string]$Level,
         
-        [Parameter(Mandatory)]
-        [string]$Message,
+    [Parameter(Mandatory)]
+    [string]$Message,
         
-        [Parameter()]
-        [hashtable]$Properties = @{},
+    [Parameter()]
+    [hashtable]$Properties = @{},
         
-        [Parameter()]
-        [string]$FilePath = './logs/poshguard.jsonl'
-    )
+    [Parameter()]
+    [string]$FilePath = './logs/poshguard.jsonl'
+  )
     
-    $logEntry = @{
-        timestamp = (Get-Date).ToUniversalTime().ToString("o")
-        level = $Level
-        message = $Message
-        trace_id = Get-TraceId
-    }
+  $logEntry = @{
+    timestamp = (Get-Date).ToUniversalTime().ToString("o")
+    level = $Level
+    message = $Message
+    trace_id = Get-TraceId
+  }
     
-    # Merge custom properties
-    foreach ($key in $Properties.Keys) {
-        $logEntry[$key] = $Properties[$key]
-    }
+  # Merge custom properties
+  foreach ($key in $Properties.Keys) {
+    $logEntry[$key] = $Properties[$key]
+  }
     
-    # Ensure log directory exists
-    $logDir = Split-Path -Path $FilePath -Parent
-    if (-not (Test-Path -Path $logDir)) {
-        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
-    }
+  # Ensure log directory exists
+  $logDir = Split-Path -Path $FilePath -Parent
+  if (-not (Test-Path -Path $logDir)) {
+    New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+  }
     
-    # Write as JSON Lines (one JSON object per line)
-    try {
-        $jsonLine = $logEntry | ConvertTo-Json -Compress -Depth 10
-        Add-Content -Path $FilePath -Value $jsonLine -Encoding UTF8 -ErrorAction Stop
-    }
-    catch {
-        # Fallback: write to console if file logging fails
-        Write-Warning "Failed to write structured log: $_"
-        Write-Host ($logEntry | ConvertTo-Json -Depth 10)
-    }
+  # Write as JSON Lines (one JSON object per line)
+  try {
+    $jsonLine = $logEntry | ConvertTo-Json -Compress -Depth 10
+    Add-Content -Path $FilePath -Value $jsonLine -Encoding UTF8 -ErrorAction Stop
+  }
+  catch {
+    # Fallback: write to console if file logging fails
+    Write-Warning "Failed to write structured log: $_"
+    Write-Host ($logEntry | ConvertTo-Json -Depth 10)
+  }
 }
 
 function Write-Metric {
-    <#
+  <#
     .SYNOPSIS
         Records a metric value
     
@@ -198,41 +198,41 @@ function Write-Metric {
         Write-Metric -Name "poshguard.files.processed" -Value 1 -Unit "count"
         Write-Metric -Name "poshguard.processing.duration" -Value 1234 -Unit "ms" -Tags @{ file_size = "large" }
     #>
-    [CmdletBinding()]
-    [OutputType([void])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Name,
+  [CmdletBinding()]
+  [OutputType([void])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Name,
         
-        [Parameter(Mandatory)]
-        [double]$Value,
+    [Parameter(Mandatory)]
+    [double]$Value,
         
-        [Parameter()]
-        [string]$Unit = 'count',
+    [Parameter()]
+    [string]$Unit = 'count',
         
-        [Parameter()]
-        [hashtable]$Tags = @{}
-    )
+    [Parameter()]
+    [hashtable]$Tags = @{}
+  )
     
-    $metric = @{
-        timestamp = (Get-Date).ToUniversalTime().ToString("o")
-        name = $Name
-        value = $Value
-        unit = $Unit
-        trace_id = Get-TraceId
-    }
+  $metric = @{
+    timestamp = (Get-Date).ToUniversalTime().ToString("o")
+    name = $Name
+    value = $Value
+    unit = $Unit
+    trace_id = Get-TraceId
+  }
     
-    # Add tags
-    foreach ($key in $Tags.Keys) {
-        $metric["tag_$key"] = $Tags[$key]
-    }
+  # Add tags
+  foreach ($key in $Tags.Keys) {
+    $metric["tag_$key"] = $Tags[$key]
+  }
     
-    # Log metric as structured log
-    Write-StructuredLog -Level TRACE -Message "Metric recorded" -Properties $metric
+  # Log metric as structured log
+  Write-StructuredLog -Level TRACE -Message "Metric recorded" -Properties $metric
 }
 
 function Measure-Operation {
-    <#
+  <#
     .SYNOPSIS
         Measures operation duration and emits metrics
     
@@ -257,61 +257,61 @@ function Measure-Operation {
     .OUTPUTS
         Returns the result of the script block execution
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Name,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Name,
         
-        [Parameter(Mandatory)]
-        [scriptblock]$ScriptBlock,
+    [Parameter(Mandatory)]
+    [scriptblock]$ScriptBlock,
         
-        [Parameter()]
-        [hashtable]$Tags = @{}
-    )
+    [Parameter()]
+    [hashtable]$Tags = @{}
+  )
     
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $success = $false
-    $errorMessage = $null
-    $result = $null
+  $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+  $success = $false
+  $errorMessage = $null
+  $result = $null
     
-    Write-StructuredLog -Level DEBUG -Message "Operation starting" -Properties @{
-        operation = $Name
-    }
+  Write-StructuredLog -Level DEBUG -Message "Operation starting" -Properties @{
+    operation = $Name
+  }
     
-    try {
-        $result = & $ScriptBlock
-        $success = $true
+  try {
+    $result = & $ScriptBlock
+    $success = $true
+  }
+  catch {
+    $errorMessage = $_.Exception.Message
+    Write-StructuredLog -Level ERROR -Message "Operation failed" -Properties @{
+      operation = $Name
+      error = $errorMessage
     }
-    catch {
-        $errorMessage = $_.Exception.Message
-        Write-StructuredLog -Level ERROR -Message "Operation failed" -Properties @{
-            operation = $Name
-            error = $errorMessage
-        }
-        throw
-    }
-    finally {
-        $stopwatch.Stop()
-        $durationMs = $stopwatch.ElapsedMilliseconds
+    throw
+  }
+  finally {
+    $stopwatch.Stop()
+    $durationMs = $stopwatch.ElapsedMilliseconds
         
-        # Record metrics
-        Write-Metric -Name "poshguard.operation.duration" -Value $durationMs -Unit "ms" -Tags (@{ operation = $Name; success = $success.ToString() } + $Tags)
-        Write-Metric -Name "poshguard.operation.count" -Value 1 -Unit "count" -Tags (@{ operation = $Name; success = $success.ToString() } + $Tags)
+    # Record metrics
+    Write-Metric -Name "poshguard.operation.duration" -Value $durationMs -Unit "ms" -Tags (@{ operation = $Name; success = $success.ToString() } + $Tags)
+    Write-Metric -Name "poshguard.operation.count" -Value 1 -Unit "count" -Tags (@{ operation = $Name; success = $success.ToString() } + $Tags)
         
-        # Log completion
-        Write-StructuredLog -Level INFO -Message "Operation completed" -Properties @{
-            operation = $Name
-            duration_ms = $durationMs
-            success = $success
-            error = $errorMessage
-        }
+    # Log completion
+    Write-StructuredLog -Level INFO -Message "Operation completed" -Properties @{
+      operation = $Name
+      duration_ms = $durationMs
+      success = $success
+      error = $errorMessage
     }
+  }
     
-    return $result
+  return $result
 }
 
-function Update-OperationMetrics {
-    <#
+function Update-OperationMetric {
+  <#
     .SYNOPSIS
         Updates aggregate operation metrics
     
@@ -336,39 +336,39 @@ function Update-OperationMetrics {
     .EXAMPLE
         Update-OperationMetrics -FilesProcessed 1 -FilesSucceeded 1 -ViolationsFixed 5
     #>
-    [CmdletBinding()]
-    [OutputType([void])]
-    param(
-        [Parameter()]
-        [int]$FilesProcessed = 0,
+  [CmdletBinding()]
+  [OutputType([void])]
+  param(
+    [Parameter()]
+    [int]$FilesProcessed = 0,
         
-        [Parameter()]
-        [int]$FilesSucceeded = 0,
+    [Parameter()]
+    [int]$FilesSucceeded = 0,
         
-        [Parameter()]
-        [int]$FilesFailed = 0,
+    [Parameter()]
+    [int]$FilesFailed = 0,
         
-        [Parameter()]
-        [int]$ViolationsDetected = 0,
+    [Parameter()]
+    [int]$ViolationsDetected = 0,
         
-        [Parameter()]
-        [int]$ViolationsFixed = 0
-    )
+    [Parameter()]
+    [int]$ViolationsFixed = 0
+  )
     
-    $script:Metrics.FilesProcessed += $FilesProcessed
-    $script:Metrics.FilesSucceeded += $FilesSucceeded
-    $script:Metrics.FilesFailed += $FilesFailed
-    $script:Metrics.ViolationsDetected += $ViolationsDetected
-    $script:Metrics.ViolationsFixed += $ViolationsFixed
+  $script:Metrics.FilesProcessed += $FilesProcessed
+  $script:Metrics.FilesSucceeded += $FilesSucceeded
+  $script:Metrics.FilesFailed += $FilesFailed
+  $script:Metrics.ViolationsDetected += $ViolationsDetected
+  $script:Metrics.ViolationsFixed += $ViolationsFixed
     
-    # Calculate duration since operation start
-    if ($script:OperationStartTime) {
-        $script:Metrics.TotalDurationMs = ((Get-Date) - $script:OperationStartTime).TotalMilliseconds
-    }
+  # Calculate duration since operation start
+  if ($script:OperationStartTime) {
+    $script:Metrics.TotalDurationMs = ((Get-Date) - $script:OperationStartTime).TotalMilliseconds
+  }
 }
 
-function Get-OperationMetrics {
-    <#
+function Get-OperationMetric {
+  <#
     .SYNOPSIS
         Gets current operation metrics
     
@@ -382,33 +382,33 @@ function Get-OperationMetrics {
     .OUTPUTS
         Hashtable with operation metrics and calculated rates
     #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param()
+  [CmdletBinding()]
+  [OutputType([hashtable])]
+  param()
     
-    $successRate = if ($script:Metrics.FilesProcessed -gt 0) {
-        [math]::Round(($script:Metrics.FilesSucceeded / $script:Metrics.FilesProcessed) * 100, 2)
-    } else { 0 }
+  $successRate = if ($script:Metrics.FilesProcessed -gt 0) {
+    [math]::Round(($script:Metrics.FilesSucceeded / $script:Metrics.FilesProcessed) * 100, 2)
+  } else { 0 }
     
-    $fixRate = if ($script:Metrics.ViolationsDetected -gt 0) {
-        [math]::Round(($script:Metrics.ViolationsFixed / $script:Metrics.ViolationsDetected) * 100, 2)
-    } else { 0 }
+  $fixRate = if ($script:Metrics.ViolationsDetected -gt 0) {
+    [math]::Round(($script:Metrics.ViolationsFixed / $script:Metrics.ViolationsDetected) * 100, 2)
+  } else { 0 }
     
-    return @{
-        FilesProcessed = $script:Metrics.FilesProcessed
-        FilesSucceeded = $script:Metrics.FilesSucceeded
-        FilesFailed = $script:Metrics.FilesFailed
-        ViolationsDetected = $script:Metrics.ViolationsDetected
-        ViolationsFixed = $script:Metrics.ViolationsFixed
-        TotalDurationMs = $script:Metrics.TotalDurationMs
-        SuccessRate = $successRate
-        FixRate = $fixRate
-        TraceId = Get-TraceId
-    }
+  return @{
+    FilesProcessed = $script:Metrics.FilesProcessed
+    FilesSucceeded = $script:Metrics.FilesSucceeded
+    FilesFailed = $script:Metrics.FilesFailed
+    ViolationsDetected = $script:Metrics.ViolationsDetected
+    ViolationsFixed = $script:Metrics.ViolationsFixed
+    TotalDurationMs = $script:Metrics.TotalDurationMs
+    SuccessRate = $successRate
+    FixRate = $fixRate
+    TraceId = Get-TraceId
+  }
 }
 
-function Export-OperationMetrics {
-    <#
+function Export-OperationMetric {
+  <#
     .SYNOPSIS
         Exports operation metrics to file
     
@@ -422,33 +422,33 @@ function Export-OperationMetrics {
         Export-OperationMetrics
         Export-OperationMetrics -FilePath ./reports/metrics.json
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter()]
-        [string]$FilePath = "./logs/metrics_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter()]
+    [string]$FilePath = "./logs/metrics_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+  )
     
-    $metrics = Get-OperationMetrics
-    $metrics['exported_at'] = (Get-Date).ToUniversalTime().ToString("o")
+  $metrics = Get-OperationMetrics
+  $metrics['exported_at'] = (Get-Date).ToUniversalTime().ToString("o")
     
-    # Ensure directory exists
-    $dir = Split-Path -Path $FilePath -Parent
-    if (-not (Test-Path -Path $dir)) {
-        New-Item -Path $dir -ItemType Directory -Force | Out-Null
-    }
+  # Ensure directory exists
+  $dir = Split-Path -Path $FilePath -Parent
+  if (-not (Test-Path -Path $dir)) {
+    New-Item -Path $dir -ItemType Directory -Force | Out-Null
+  }
     
-    $metrics | ConvertTo-Json -Depth 10 | Set-Content -Path $FilePath -Encoding UTF8
+  $metrics | ConvertTo-Json -Depth 10 | Set-Content -Path $FilePath -Encoding UTF8
     
-    Write-StructuredLog -Level INFO -Message "Metrics exported" -Properties @{
-        metrics_file = $FilePath
-    }
+  Write-StructuredLog -Level INFO -Message "Metrics exported" -Properties @{
+    metrics_file = $FilePath
+  }
     
-    return $FilePath
+  return $FilePath
 }
 
 function Test-SLO {
-    <#
+  <#
     .SYNOPSIS
         Tests if operation meets Service Level Objectives
     
@@ -465,67 +465,67 @@ function Test-SLO {
     .OUTPUTS
         Hashtable with SLO compliance status
     #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param()
+  [CmdletBinding()]
+  [OutputType([hashtable])]
+  param()
     
-    $metrics = Get-OperationMetrics
+  $metrics = Get-OperationMetrics
     
-    # Define SLO targets (from docs/development/SRE-PRINCIPLES.md)
-    $sloTargets = @{
-        AvailabilityTarget = 99.5  # 99.5% success rate
-        LatencyP95Target = 5000    # 5s per file (p95)
-        QualityTarget = 70.0       # 70% fix rate
-        CorrectnessTarget = 100.0  # 100% valid syntax after fix
+  # Define SLO targets (from docs/development/SRE-PRINCIPLES.md)
+  $sloTargets = @{
+    AvailabilityTarget = 99.5  # 99.5% success rate
+    LatencyP95Target = 5000    # 5s per file (p95)
+    QualityTarget = 70.0       # 70% fix rate
+    CorrectnessTarget = 100.0  # 100% valid syntax after fix
+  }
+    
+  # Calculate SLO compliance
+  $availabilityMet = $metrics.SuccessRate -ge $sloTargets.AvailabilityTarget
+  $qualityMet = $metrics.FixRate -ge $sloTargets.QualityTarget
+    
+  # Latency: Approximate p95 as average (would need percentile calculation for exact)
+  $avgLatency = if ($metrics.FilesProcessed -gt 0) {
+    $metrics.TotalDurationMs / $metrics.FilesProcessed
+  } else { 0 }
+  $latencyMet = $avgLatency -le $sloTargets.LatencyP95Target
+    
+  $allMet = $availabilityMet -and $qualityMet -and $latencyMet
+    
+  $sloStatus = @{
+    AllSLOsMet = $allMet
+    Availability = @{
+      Target = $sloTargets.AvailabilityTarget
+      Actual = $metrics.SuccessRate
+      Met = $availabilityMet
     }
-    
-    # Calculate SLO compliance
-    $availabilityMet = $metrics.SuccessRate -ge $sloTargets.AvailabilityTarget
-    $qualityMet = $metrics.FixRate -ge $sloTargets.QualityTarget
-    
-    # Latency: Approximate p95 as average (would need percentile calculation for exact)
-    $avgLatency = if ($metrics.FilesProcessed -gt 0) {
-        $metrics.TotalDurationMs / $metrics.FilesProcessed
-    } else { 0 }
-    $latencyMet = $avgLatency -le $sloTargets.LatencyP95Target
-    
-    $allMet = $availabilityMet -and $qualityMet -and $latencyMet
-    
-    $sloStatus = @{
-        AllSLOsMet = $allMet
-        Availability = @{
-            Target = $sloTargets.AvailabilityTarget
-            Actual = $metrics.SuccessRate
-            Met = $availabilityMet
-        }
-        Quality = @{
-            Target = $sloTargets.QualityTarget
-            Actual = $metrics.FixRate
-            Met = $qualityMet
-        }
-        Latency = @{
-            Target = $sloTargets.LatencyP95Target
-            Actual = [math]::Round($avgLatency, 2)
-            Met = $latencyMet
-        }
+    Quality = @{
+      Target = $sloTargets.QualityTarget
+      Actual = $metrics.FixRate
+      Met = $qualityMet
     }
-    
-    Write-StructuredLog -Level INFO -Message "SLO evaluation completed" -Properties @{
-        slo_status = $sloStatus
+    Latency = @{
+      Target = $sloTargets.LatencyP95Target
+      Actual = [math]::Round($avgLatency, 2)
+      Met = $latencyMet
     }
+  }
     
-    return $sloStatus
+  Write-StructuredLog -Level INFO -Message "SLO evaluation completed" -Properties @{
+    slo_status = $sloStatus
+  }
+    
+  return $sloStatus
 }
 
 # Export all observability functions
 Export-ModuleMember -Function @(
-    'Initialize-Observability',
-    'Get-TraceId',
-    'Write-StructuredLog',
-    'Write-Metric',
-    'Measure-Operation',
-    'Update-OperationMetrics',
-    'Get-OperationMetrics',
-    'Export-OperationMetrics',
-    'Test-SLO'
+  'Initialize-Observability',
+  'Get-TraceId',
+  'Write-StructuredLog',
+  'Write-Metric',
+  'Measure-Operation',
+  'Update-OperationMetrics',
+  'Get-OperationMetrics',
+  'Export-OperationMetrics',
+  'Test-SLO'
 )

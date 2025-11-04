@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Syntax Best Practices Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-SemicolonFix {
-    <#
+  <#
     .SYNOPSIS
         Removes unnecessary trailing semicolons from PowerShell code
 
@@ -44,62 +44,62 @@ function Invoke-SemicolonFix {
         $x = 5
         Write-Output "Hello"
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    # AST token-based semicolon removal
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  # AST token-based semicolon removal
+  try {
+    $tokens = $null
+    $errors = $null
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = @()
+    if ($errors.Count -eq 0) {
+      $replacements = @()
 
-            # Find all semicolon tokens
-            $semicolonTokens = $tokens | Where-Object { $_.Kind -eq 'Semi' }
+      # Find all semicolon tokens
+      $semicolonTokens = $tokens | Where-Object { $_.Kind -eq 'Semi' }
 
-            foreach ($token in $semicolonTokens) {
-                # Check if this semicolon is a line terminator (not a statement separator)
-                # A semicolon is a line terminator if it's followed only by whitespace/newline/comment
-                $afterSemicolon = $Content.Substring($token.Extent.EndOffset)
+      foreach ($token in $semicolonTokens) {
+        # Check if this semicolon is a line terminator (not a statement separator)
+        # A semicolon is a line terminator if it's followed only by whitespace/newline/comment
+        $afterSemicolon = $Content.Substring($token.Extent.EndOffset)
 
-                # Check if there's only whitespace/newline before the next statement
-                if ($afterSemicolon -match '^\s*($|#)') {
-                    # This is a line terminator - safe to remove
-                    $replacements += @{
-                        Offset = $token.Extent.StartOffset
-                        Length = 1  # Length of semicolon
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order to preserve offsets
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length)
-            }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Removed $($replacements.Count) unnecessary trailing semicolon(s)"
-            }
-
-            return $fixed
+        # Check if there's only whitespace/newline before the next statement
+        if ($afterSemicolon -match '^\s*($|#)') {
+          # This is a line terminator - safe to remove
+          $replacements += @{
+            Offset = $token.Extent.StartOffset
+            Length = 1  # Length of semicolon
+          }
         }
-    }
-    catch {
-        Write-Verbose "Semicolon fix failed: $_"
-    }
+      }
 
-    return $Content
+      # Apply replacements in reverse order to preserve offsets
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length)
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Removed $($replacements.Count) unnecessary trailing semicolon(s)"
+      }
+
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Semicolon fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-NullComparisonFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes incorrect $null comparison order
 
@@ -119,99 +119,99 @@ function Invoke-NullComparisonFix {
         # AFTER:
         if ($null -eq $value) { }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    # AST-based null comparison fix
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  # AST-based null comparison fix
+  try {
+    $tokens = $null
+    $errors = $null
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -eq 0) {
-            $replacements = @()
+    if ($errors.Count -eq 0) {
+      $replacements = @()
 
-            # Find all binary expression ASTs (comparisons)
-            $binaryExprs = $ast.FindAll({
-                    $args[0] -is [System.Management.Automation.Language.BinaryExpressionAst]
-                }, $true)
+      # Find all binary expression ASTs (comparisons)
+      $binaryExprs = $ast.FindAll({
+          $args[0] -is [System.Management.Automation.Language.BinaryExpressionAst]
+        }, $true)
 
-            foreach ($expr in $binaryExprs) {
-                # Check if this is a comparison with $null
-                $isNullComparison = $false
-                $nullOnRight = $false
-                $comparisonOp = $expr.Operator
+      foreach ($expr in $binaryExprs) {
+        # Check if this is a comparison with $null
+        $isNullComparison = $false
+        $nullOnRight = $false
+        $comparisonOp = $expr.Operator
 
-                # Check if operator is a comparison operator
-                # PowerShell uses case-insensitive operators by default (Ieq, Ine, etc.)
-                if ($comparisonOp -match '^(I|C)?(eq|ne|gt|lt|ge|le)$') {
-                    # Check if right side is $null
-                    if ($expr.Right -is [System.Management.Automation.Language.VariableExpressionAst] -and
-                        $expr.Right.VariablePath.UserPath -eq 'null') {
-                        $isNullComparison = $true
-                        $nullOnRight = $true
-                    }
-                }
-
-                # If we found a comparison with $null on the right side, swap it
-                if ($isNullComparison -and $nullOnRight) {
-                    # Get the text of left and right expressions
-                    $leftText = $expr.Left.Extent.Text
-                    $rightText = $expr.Right.Extent.Text  # This should be '$null'
-
-                    # Map operator to its text representation - preserve case sensitivity
-                    $opText = switch -Regex ($comparisonOp) {
-                        '^I?eq$' { '-eq' }
-                        '^Ceq$' { '-ceq' }
-                        '^I?ne$' { '-ne' }
-                        '^Cne$' { '-cne' }
-                        '^I?gt$' { '-gt' }
-                        '^Cgt$' { '-cgt' }
-                        '^I?lt$' { '-lt' }
-                        '^Clt$' { '-clt' }
-                        '^I?ge$' { '-ge' }
-                        '^Cge$' { '-cge' }
-                        '^I?le$' { '-le' }
-                        '^Cle$' { '-cle' }
-                    }
-
-                    # Swap: $var -eq $null → $null -eq $var
-                    $newText = "$rightText $opText $leftText"
-
-                    $replacements += @{
-                        Offset      = $expr.Extent.StartOffset
-                        Length      = $expr.Extent.Text.Length
-                        Replacement = $newText
-                    }
-                }
-            }
-
-            # Apply replacements in reverse order to preserve offsets
-            $fixed = $Content
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-            }
-
-            if ($replacements.Count -gt 0) {
-                Write-Verbose "Fixed $($replacements.Count) null comparison(s)"
-            }
-
-            return $fixed
+        # Check if operator is a comparison operator
+        # PowerShell uses case-insensitive operators by default (Ieq, Ine, etc.)
+        if ($comparisonOp -match '^(I|C)?(eq|ne|gt|lt|ge|le)$') {
+          # Check if right side is $null
+          if ($expr.Right -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $expr.Right.VariablePath.UserPath -eq 'null') {
+            $isNullComparison = $true
+            $nullOnRight = $true
+          }
         }
-    }
-    catch {
-        Write-Verbose "Null comparison fix failed: $_"
-    }
 
-    return $Content
+        # If we found a comparison with $null on the right side, swap it
+        if ($isNullComparison -and $nullOnRight) {
+          # Get the text of left and right expressions
+          $leftText = $expr.Left.Extent.Text
+          $rightText = $expr.Right.Extent.Text  # This should be '$null'
+
+          # Map operator to its text representation - preserve case sensitivity
+          $opText = switch -Regex ($comparisonOp) {
+            '^I?eq$' { '-eq' }
+            '^Ceq$' { '-ceq' }
+            '^I?ne$' { '-ne' }
+            '^Cne$' { '-cne' }
+            '^I?gt$' { '-gt' }
+            '^Cgt$' { '-cgt' }
+            '^I?lt$' { '-lt' }
+            '^Clt$' { '-clt' }
+            '^I?ge$' { '-ge' }
+            '^Cge$' { '-cge' }
+            '^I?le$' { '-le' }
+            '^Cle$' { '-cle' }
+          }
+
+          # Swap: $var -eq $null → $null -eq $var
+          $newText = "$rightText $opText $leftText"
+
+          $replacements += @{
+            Offset = $expr.Extent.StartOffset
+            Length = $expr.Extent.Text.Length
+            Replacement = $newText
+          }
+        }
+      }
+
+      # Apply replacements in reverse order to preserve offsets
+      $fixed = $Content
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+      }
+
+      if ($replacements.Count -gt 0) {
+        Write-Verbose "Fixed $($replacements.Count) null comparison(s)"
+      }
+
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Null comparison fix failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-ExclaimOperatorFix {
-    <#
+  <#
     .SYNOPSIS
         Replaces ! operator with -not operator
 
@@ -239,61 +239,61 @@ function Invoke-ExclaimOperatorFix {
             Write-Output "Disabled"
         }
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
-        $replacements = @()
+  try {
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+    $replacements = @()
 
-        # Find all unary expression AST nodes with ! operator
-        $unaryExpressions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.UnaryExpressionAst] -and
-            $node.TokenKind -eq 'Exclaim'
-        }, $true)
+    # Find all unary expression AST nodes with ! operator
+    $unaryExpressions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.UnaryExpressionAst] -and
+        $node.TokenKind -eq 'Exclaim'
+      }, $true)
 
-        foreach ($expr in $unaryExpressions) {
-            # Get the extent of just the ! token
-            $exclaimExtent = $expr.Extent
-            $startOffset = $exclaimExtent.StartOffset
+    foreach ($expr in $unaryExpressions) {
+      # Get the extent of just the ! token
+      $exclaimExtent = $expr.Extent
+      $startOffset = $exclaimExtent.StartOffset
 
-            # Find the actual ! character position
-            $exclaimPos = $Content.IndexOf('!', $startOffset)
-            if ($exclaimPos -ge $startOffset -and $exclaimPos -lt $exclaimExtent.EndOffset) {
-                $replacements += [PSCustomObject]@{
-                    Offset = $exclaimPos
-                    Length = 1
-                    Replacement = '-not '
-                }
-            }
+      # Find the actual ! character position
+      $exclaimPos = $Content.IndexOf('!', $startOffset)
+      if ($exclaimPos -ge $startOffset -and $exclaimPos -lt $exclaimExtent.EndOffset) {
+        $replacements += [PSCustomObject]@{
+          Offset = $exclaimPos
+          Length = 1
+          Replacement = '-not '
         }
-
-        if ($replacements.Count -gt 0) {
-            $fixed = $Content
-            # Apply replacements in reverse order to maintain offsets
-            foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
-                $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
-            }
-
-            Write-Verbose "Replaced $($replacements.Count) exclaim operator(s) with -not"
-            return $fixed
-        }
-    }
-    catch {
-        Write-Verbose "Exclaim operator fix failed: $_"
+      }
     }
 
-    return $Content
+    if ($replacements.Count -gt 0) {
+      $fixed = $Content
+      # Apply replacements in reverse order to maintain offsets
+      foreach ($replacement in ($replacements | Sort-Object -Property Offset -Descending)) {
+        $fixed = $fixed.Remove($replacement.Offset, $replacement.Length).Insert($replacement.Offset, $replacement.Replacement)
+      }
+
+      Write-Verbose "Replaced $($replacements.Count) exclaim operator(s) with -not"
+      return $fixed
+    }
+  }
+  catch {
+    Write-Verbose "Exclaim operator fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all syntax fix functions
 Export-ModuleMember -Function @(
-    'Invoke-SemicolonFix',
-    'Invoke-NullComparisonFix',
-    'Invoke-ExclaimOperatorFix'
+  'Invoke-SemicolonFix',
+  'Invoke-NullComparisonFix',
+  'Invoke-ExclaimOperatorFix'
 )

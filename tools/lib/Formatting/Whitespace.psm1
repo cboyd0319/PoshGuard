@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Whitespace Formatting Module
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 
 function Invoke-FormatterFix {
-    <#
+  <#
     .SYNOPSIS
         Applies PSScriptAnalyzer code formatter
 
@@ -35,37 +35,37 @@ function Invoke-FormatterFix {
     .EXAMPLE
         Invoke-FormatterFix -Content $scriptContent
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content,
-        [Parameter()]
-        [string]$FilePath = ''
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content,
+    [Parameter()]
+    [string]$FilePath = ''
+  )
 
-    if ($FilePath -match 'PSQAAutoFixer\.psm1$') {
-        Write-Verbose "Skipping Invoke-Formatter on PSQAAutoFixer to prevent self-corruption"
-        return $Content
-    }
-
-    if (-not (Get-Command -Name Invoke-Formatter -ErrorAction SilentlyContinue)) {
-        Write-Verbose "Invoke-Formatter not available (PSScriptAnalyzer not installed)"
-        return $Content
-    }
-
-    try {
-        return Invoke-Formatter -ScriptDefinition $Content
-    }
-    catch {
-        Write-Verbose "Invoke-Formatter failed: $_"
-    }
-
+  if ($FilePath -match 'PSQAAutoFixer\.psm1$') {
+    Write-Verbose "Skipping Invoke-Formatter on PSQAAutoFixer to prevent self-corruption"
     return $Content
+  }
+
+  if (-not (Get-Command -Name Invoke-Formatter -ErrorAction SilentlyContinue)) {
+    Write-Verbose "Invoke-Formatter not available (PSScriptAnalyzer not installed)"
+    return $Content
+  }
+
+  try {
+    return Invoke-Formatter -ScriptDefinition $Content
+  }
+  catch {
+    Write-Verbose "Invoke-Formatter failed: $_"
+  }
+
+  return $Content
 }
 
 function Invoke-WhitespaceFix {
-    <#
+  <#
     .SYNOPSIS
         Removes trailing whitespace from lines
 
@@ -76,26 +76,26 @@ function Invoke-WhitespaceFix {
     .EXAMPLE
         Invoke-WhitespaceFix -Content $scriptContent
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    $lines = $Content -split "`r?`n"
-    $fixed = $lines | ForEach-Object { $_.TrimEnd() }
-    $result = $fixed -join "`n"
+  $lines = $Content -split "`r?`n"
+  $fixed = $lines | ForEach-Object { $_.TrimEnd() }
+  $result = $fixed -join "`n"
 
-    if (-not $result.EndsWith("`n")) {
-        $result += "`n"
-    }
+  if (-not $result.EndsWith("`n")) {
+    $result += "`n"
+  }
 
-    return $result
+  return $result
 }
 
 function Invoke-MisleadingBacktickFix {
-    <#
+  <#
     .SYNOPSIS
         Fixes backticks followed by whitespace
 
@@ -116,48 +116,48 @@ function Invoke-MisleadingBacktickFix {
         Get-ChildItem `
             -Path C:\
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        # Pattern: backtick followed by whitespace before newline
-        $pattern = '`\s+$'
+  try {
+    # Pattern: backtick followed by whitespace before newline
+    $pattern = '`\s+$'
 
-        $lines = $Content -split "`n"
-        $modified = $false
-        $newLines = @()
+    $lines = $Content -split "`n"
+    $modified = $false
+    $newLines = @()
 
-        foreach ($line in $lines) {
-            if ($line -match $pattern) {
-                # Remove whitespace after backtick
-                $fixed = $line -replace '`\s+$', '`'
-                $newLines += $fixed
-                $modified = $true
-                Write-Verbose "Fixed misleading backtick with trailing whitespace"
-            }
-            else {
-                $newLines += $line
-            }
-        }
-
-        if ($modified) {
-            return ($newLines -join "`n")
-        }
-    }
-    catch {
-        Write-Verbose "Misleading backtick fix failed: $_"
+    foreach ($line in $lines) {
+      if ($line -match $pattern) {
+        # Remove whitespace after backtick
+        $fixed = $line -replace '`\s+$', '`'
+        $newLines += $fixed
+        $modified = $true
+        Write-Verbose "Fixed misleading backtick with trailing whitespace"
+      }
+      else {
+        $newLines += $line
+      }
     }
 
-    return $Content
+    if ($modified) {
+      return ($newLines -join "`n")
+    }
+  }
+  catch {
+    Write-Verbose "Misleading backtick fix failed: $_"
+  }
+
+  return $Content
 }
 
 # Export all whitespace fix functions
 Export-ModuleMember -Function @(
-    'Invoke-FormatterFix',
-    'Invoke-WhitespaceFix',
-    'Invoke-MisleadingBacktickFix'
+  'Invoke-FormatterFix',
+  'Invoke-WhitespaceFix',
+  'Invoke-MisleadingBacktickFix'
 )

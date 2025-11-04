@@ -1,8 +1,8 @@
-# ShouldProcessTransformation.psm1
+﻿# ShouldProcessTransformation.psm1
 # Full PSShouldProcess implementation - wraps function bodies with ShouldProcess logic
 
 function Invoke-PSShouldProcessFix {
-    <#
+  <#
     .SYNOPSIS
         Implements complete PSShouldProcess support for functions with SupportsShouldProcess
 
@@ -40,194 +40,194 @@ function Invoke-PSShouldProcessFix {
         - Must wrap all statements while preserving formatting
         - Must handle edge cases (multiple returns, complex control flow)
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Content
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Content
+  )
 
-    try {
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+  try {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
-        if ($errors.Count -gt 0) {
-            Write-Verbose "Parse errors, skipping PSShouldProcess fix"
-            return $Content
+    if ($errors.Count -gt 0) {
+      Write-Verbose "Parse errors, skipping PSShouldProcess fix"
+      return $Content
+    }
+
+    # Find all functions with SupportsShouldProcess but no ShouldProcess call
+    $functions = $ast.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      }, $true)
+
+    $result = $Content
+    $offsetAdjustment = 0
+
+    foreach ($func in $functions) {
+      # Check if has SupportsShouldProcess attribute (check both param block and function body)
+      $hasSupportsShouldProcess = $false
+
+      # Check param block attributes (most common location)
+      if ($func.Body.ParamBlock) {
+        foreach ($attr in $func.Body.ParamBlock.Attributes) {
+          if ($attr.TypeName.Name -eq 'CmdletBinding') {
+            foreach ($namedArg in $attr.NamedArguments) {
+              if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
+                # Check for both VariableExpressionAst ($true) and other boolean representations
+                $argValue = $null
+                if ($namedArg.Argument -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                  $argValue = $namedArg.Argument.VariablePath.UserPath
+                } else {
+                  $argValue = $namedArg.Argument.ToString()
+                }
+                if ($argValue -in @('true', 'True', '$true')) {
+                  $hasSupportsShouldProcess = $true
+                  break
+                }
+              }
+            }
+          }
         }
+      }
 
-        # Find all functions with SupportsShouldProcess but no ShouldProcess call
-        $functions = $ast.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+      # Also check function body attributes (alternative syntax)
+      if (-not $hasSupportsShouldProcess) {
+        foreach ($attr in $func.Body.Attributes) {
+          if ($attr.TypeName.Name -eq 'CmdletBinding') {
+            foreach ($namedArg in $attr.NamedArguments) {
+              if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
+                $argValue = $null
+                if ($namedArg.Argument -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                  $argValue = $namedArg.Argument.VariablePath.UserPath
+                } else {
+                  $argValue = $namedArg.Argument.ToString()
+                }
+                if ($argValue -in @('true', 'True', '$true')) {
+                  $hasSupportsShouldProcess = $true
+                  break
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (-not $hasSupportsShouldProcess) {
+        continue
+      }
+
+      # Check if already has ShouldProcess call
+      $hasShouldProcessCall = $func.Body.Find({
+          param($node)
+          $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and
+          $node.Member.Value -eq 'ShouldProcess'
         }, $true)
 
-        $result = $Content
-        $offsetAdjustment = 0
+      if ($hasShouldProcessCall) {
+        Write-Verbose "Function $($func.Name) already has ShouldProcess call"
+        continue
+      }
 
-        foreach ($func in $functions) {
-            # Check if has SupportsShouldProcess attribute (check both param block and function body)
-            $hasSupportsShouldProcess = $false
+      Write-Verbose "Function $($func.Name) needs ShouldProcess wrapping"
 
-            # Check param block attributes (most common location)
-            if ($func.Body.ParamBlock) {
-                foreach ($attr in $func.Body.ParamBlock.Attributes) {
-                    if ($attr.TypeName.Name -eq 'CmdletBinding') {
-                        foreach ($namedArg in $attr.NamedArguments) {
-                            if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
-                                # Check for both VariableExpressionAst ($true) and other boolean representations
-                                $argValue = $null
-                                if ($namedArg.Argument -is [System.Management.Automation.Language.VariableExpressionAst]) {
-                                    $argValue = $namedArg.Argument.VariablePath.UserPath
-                                } else {
-                                    $argValue = $namedArg.Argument.ToString()
-                                }
-                                if ($argValue -in @('true', 'True', '$true')) {
-                                    $hasSupportsShouldProcess = $true
-                                    break
-                                }
-                            }
-                        }
-                    }
-                }
+      # Extract function verb and noun
+      $funcName = $func.Name
+      $parts = $funcName -split '-'
+      $verb = if ($parts.Count -ge 2) { $parts[0] } else { "Modify" }
+      $noun = if ($parts.Count -ge 2) { $parts[1..($parts.Count - 1)] -join '-' } else { "item" }
+
+      # Try to identify the target parameter (usually first mandatory param or Path/Name param)
+      $targetParam = $null
+      if ($func.Body.ParamBlock -and $func.Body.ParamBlock.Parameters) {
+        # Look for common target parameters
+        $commonTargetNames = @('Path', 'Name', 'Identity', 'Id', 'File', 'Target', 'Object')
+        foreach ($paramName in $commonTargetNames) {
+          $param = $func.Body.ParamBlock.Parameters | Where-Object {
+            $_.Name.VariablePath.UserPath -eq $paramName
+          } | Select-Object -First 1
+          if ($param) {
+            $targetParam = "`$$($param.Name.VariablePath.UserPath)"
+            break
+          }
+        }
+
+        # If no common name found, use first mandatory parameter
+        if (-not $targetParam) {
+          $mandatoryParam = $func.Body.ParamBlock.Parameters | Where-Object {
+            $_.Attributes | Where-Object {
+              $_.TypeName.Name -eq 'Parameter' -and
+              ($_.NamedArguments | Where-Object { $_.ArgumentName -eq 'Mandatory' -and $_.Argument.VariablePath.UserPath -eq 'true' })
             }
+          } | Select-Object -First 1
 
-            # Also check function body attributes (alternative syntax)
-            if (-not $hasSupportsShouldProcess) {
-                foreach ($attr in $func.Body.Attributes) {
-                    if ($attr.TypeName.Name -eq 'CmdletBinding') {
-                        foreach ($namedArg in $attr.NamedArguments) {
-                            if ($namedArg.ArgumentName -eq 'SupportsShouldProcess') {
-                                $argValue = $null
-                                if ($namedArg.Argument -is [System.Management.Automation.Language.VariableExpressionAst]) {
-                                    $argValue = $namedArg.Argument.VariablePath.UserPath
-                                } else {
-                                    $argValue = $namedArg.Argument.ToString()
-                                }
-                                if ($argValue -in @('true', 'True', '$true')) {
-                                    $hasSupportsShouldProcess = $true
-                                    break
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+          if ($mandatoryParam) {
+            $targetParam = "`$$($mandatoryParam.Name.VariablePath.UserPath)"
+          }
+        }
 
-            if (-not $hasSupportsShouldProcess) {
-                continue
-            }
+        # Fallback: use first parameter
+        if (-not $targetParam -and $func.Body.ParamBlock.Parameters.Count -gt 0) {
+          $targetParam = "`$$($func.Body.ParamBlock.Parameters[0].Name.VariablePath.UserPath)"
+        }
+      }
 
-            # Check if already has ShouldProcess call
-            $hasShouldProcessCall = $func.Body.Find({
-                param($node)
-                $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and
-                $node.Member.Value -eq 'ShouldProcess'
-            }, $true)
+      # Default target if nothing found
+      if (-not $targetParam) {
+        $targetParam = '"target"'
+      }
 
-            if ($hasShouldProcessCall) {
-                Write-Verbose "Function $($func.Name) already has ShouldProcess call"
-                continue
-            }
+      # Create action description
+      $action = "$verb $noun"
 
-            Write-Verbose "Function $($func.Name) needs ShouldProcess wrapping"
+      # Find the function body (after param block)
+      $bodyStart = if ($func.Body.ParamBlock) {
+        $func.Body.ParamBlock.Extent.EndOffset
+      } else {
+        $func.Body.Extent.StartOffset + 1  # After opening brace
+      }
 
-            # Extract function verb and noun
-            $funcName = $func.Name
-            $parts = $funcName -split '-'
-            $verb = if ($parts.Count -ge 2) { $parts[0] } else { "Modify" }
-            $noun = if ($parts.Count -ge 2) { $parts[1..($parts.Count-1)] -join '-' } else { "item" }
+      $bodyEnd = $func.Body.Extent.EndOffset - 1  # Before closing brace
 
-            # Try to identify the target parameter (usually first mandatory param or Path/Name param)
-            $targetParam = $null
-            if ($func.Body.ParamBlock -and $func.Body.ParamBlock.Parameters) {
-                # Look for common target parameters
-                $commonTargetNames = @('Path', 'Name', 'Identity', 'Id', 'File', 'Target', 'Object')
-                foreach ($paramName in $commonTargetNames) {
-                    $param = $func.Body.ParamBlock.Parameters | Where-Object {
-                        $_.Name.VariablePath.UserPath -eq $paramName
-                    } | Select-Object -First 1
-                    if ($param) {
-                        $targetParam = "`$$($param.Name.VariablePath.UserPath)"
-                        break
-                    }
-                }
+      # Extract the body content
+      $originalBody = $result.Substring($bodyStart + $offsetAdjustment, $bodyEnd - $bodyStart)
 
-                # If no common name found, use first mandatory parameter
-                if (-not $targetParam) {
-                    $mandatoryParam = $func.Body.ParamBlock.Parameters | Where-Object {
-                        $_.Attributes | Where-Object {
-                            $_.TypeName.Name -eq 'Parameter' -and
-                            ($_.NamedArguments | Where-Object { $_.ArgumentName -eq 'Mandatory' -and $_.Argument.VariablePath.UserPath -eq 'true' })
-                        }
-                    } | Select-Object -First 1
+      # Skip if body is empty or only whitespace
+      if ([string]::IsNullOrWhiteSpace($originalBody)) {
+        continue
+      }
 
-                    if ($mandatoryParam) {
-                        $targetParam = "`$$($mandatoryParam.Name.VariablePath.UserPath)"
-                    }
-                }
+      # Determine indentation
+      $lines = $originalBody -split "`r?`n"
+      $firstNonEmptyLine = $lines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 1
+      $indent = if ($firstNonEmptyLine -match '^(\s+)') { $matches[1] } else { "    " }
 
-                # Fallback: use first parameter
-                if (-not $targetParam -and $func.Body.ParamBlock.Parameters.Count -gt 0) {
-                    $targetParam = "`$$($func.Body.ParamBlock.Parameters[0].Name.VariablePath.UserPath)"
-                }
-            }
-
-            # Default target if nothing found
-            if (-not $targetParam) {
-                $targetParam = '"target"'
-            }
-
-            # Create action description
-            $action = "$verb $noun"
-
-            # Find the function body (after param block)
-            $bodyStart = if ($func.Body.ParamBlock) {
-                $func.Body.ParamBlock.Extent.EndOffset
-            } else {
-                $func.Body.Extent.StartOffset + 1  # After opening brace
-            }
-
-            $bodyEnd = $func.Body.Extent.EndOffset - 1  # Before closing brace
-
-            # Extract the body content
-            $originalBody = $result.Substring($bodyStart + $offsetAdjustment, $bodyEnd - $bodyStart)
-
-            # Skip if body is empty or only whitespace
-            if ([string]::IsNullOrWhiteSpace($originalBody)) {
-                continue
-            }
-
-            # Determine indentation
-            $lines = $originalBody -split "`r?`n"
-            $firstNonEmptyLine = $lines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 1
-            $indent = if ($firstNonEmptyLine -match '^(\s+)') { $matches[1] } else { "    " }
-
-            # Create the wrapped body
-            $wrappedBody = @"
+      # Create the wrapped body
+      $wrappedBody = @"
 
 $indent`if (`$PSCmdlet.ShouldProcess($targetParam, "$action")) {
 $originalBody
 $indent}
 "@
 
-            # Replace the body
-            $result = $result.Remove($bodyStart + $offsetAdjustment, $bodyEnd - $bodyStart)
-            $result = $result.Insert($bodyStart + $offsetAdjustment, $wrappedBody)
+      # Replace the body
+      $result = $result.Remove($bodyStart + $offsetAdjustment, $bodyEnd - $bodyStart)
+      $result = $result.Insert($bodyStart + $offsetAdjustment, $wrappedBody)
 
-            # Adjust offset for next iteration
-            $offsetAdjustment += $wrappedBody.Length - ($bodyEnd - $bodyStart)
+      # Adjust offset for next iteration
+      $offsetAdjustment += $wrappedBody.Length - ($bodyEnd - $bodyStart)
 
-            Write-Verbose "Wrapped function $funcName with ShouldProcess (target: $targetParam, action: $action)"
-        }
-
-        return $result
+      Write-Verbose "Wrapped function $funcName with ShouldProcess (target: $targetParam, action: $action)"
     }
-    catch {
-        Write-Verbose "PSShouldProcess fix failed: $_"
-        return $Content
-    }
+
+    return $result
+  }
+  catch {
+    Write-Verbose "PSShouldProcess fix failed: $_"
+    return $Content
+  }
 }
 
 Export-ModuleMember -Function 'Invoke-PSShouldProcessFix'

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     OpenTelemetry Distributed Tracing - Enterprise Observability
 
@@ -39,28 +39,28 @@ $ErrorActionPreference = 'Stop'
 #region Configuration
 
 $script:OTelConfig = @{
-    Enabled = $true
-    ServiceName = 'PoshGuard'
-    ServiceVersion = '4.2.0'
-    Environment = 'production'
+  Enabled = $true
+  ServiceName = 'PoshGuard'
+  ServiceVersion = '4.2.0'
+  Environment = 'production'
     
-    # Trace configuration
-    SamplingRate = 1.0  # 100% sampling (adjust in production)
-    MaxSpansPerTrace = 1000
+  # Trace configuration
+  SamplingRate = 1.0  # 100% sampling (adjust in production)
+  MaxSpansPerTrace = 1000
     
-    # Export configuration
-    ExportProtocol = 'OTLP/HTTP'  # OTLP/HTTP, OTLP/gRPC, Jaeger, Zipkin
-    ExportEndpoint = 'http://localhost:4318/v1/traces'  # OTLP HTTP endpoint
-    ExportBatchSize = 32
-    ExportTimeoutMs = 5000
+  # Export configuration
+  ExportProtocol = 'OTLP/HTTP'  # OTLP/HTTP, OTLP/gRPC, Jaeger, Zipkin
+  ExportEndpoint = 'http://localhost:4318/v1/traces'  # OTLP HTTP endpoint
+  ExportBatchSize = 32
+  ExportTimeoutMs = 5000
     
-    # Resource attributes
-    ResourceAttributes = @{
-        'service.name' = 'PoshGuard'
-        'service.version' = '4.2.0'
-        'deployment.environment' = 'production'
-        'host.name' = $env:COMPUTERNAME
-    }
+  # Resource attributes
+  ResourceAttributes = @{
+    'service.name' = 'PoshGuard'
+    'service.version' = '4.2.0'
+    'deployment.environment' = 'production'
+    'host.name' = $env:COMPUTERNAME
+  }
 }
 
 $script:TraceContext = @{}
@@ -72,7 +72,7 @@ $script:CompletedSpans = [System.Collections.Generic.List[hashtable]]::new()
 #region Trace ID Generation
 
 function New-TraceId {
-    <#
+  <#
     .SYNOPSIS
         Generate W3C compliant 128-bit trace ID
     
@@ -88,17 +88,17 @@ function New-TraceId {
     .OUTPUTS
         System.String - 32-character hex trace ID
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
+  [CmdletBinding()]
+  [OutputType([string])]
+  param()
     
-    $bytes = New-Object byte[] 16
-    [System.Security.Cryptography.RNGCryptoServiceProvider]::new().GetBytes($bytes)
-    return [System.BitConverter]::ToString($bytes).Replace('-', '').ToLower()
+  $bytes = New-Object byte[] 16
+  [System.Security.Cryptography.RNGCryptoServiceProvider]::new().GetBytes($bytes)
+  return [System.BitConverter]::ToString($bytes).Replace('-', '').ToLower()
 }
 
 function New-SpanId {
-    <#
+  <#
     .SYNOPSIS
         Generate W3C compliant 64-bit span ID
     
@@ -112,13 +112,13 @@ function New-SpanId {
     .OUTPUTS
         System.String - 16-character hex span ID
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
+  [CmdletBinding()]
+  [OutputType([string])]
+  param()
     
-    $bytes = New-Object byte[] 8
-    [System.Security.Cryptography.RNGCryptoServiceProvider]::new().GetBytes($bytes)
-    return [System.BitConverter]::ToString($bytes).Replace('-', '').ToLower()
+  $bytes = New-Object byte[] 8
+  [System.Security.Cryptography.RNGCryptoServiceProvider]::new().GetBytes($bytes)
+  return [System.BitConverter]::ToString($bytes).Replace('-', '').ToLower()
 }
 
 #endregion
@@ -126,7 +126,7 @@ function New-SpanId {
 #region Trace Context
 
 function Initialize-TraceContext {
-    <#
+  <#
     .SYNOPSIS
         Initialize tracing context for operation
     
@@ -144,42 +144,42 @@ function Initialize-TraceContext {
     .OUTPUTS
         System.Collections.Hashtable - Trace context
     #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param(
-        [Parameter()]
-        [hashtable]$ParentContext = $null
-    )
+  [CmdletBinding()]
+  [OutputType([hashtable])]
+  param(
+    [Parameter()]
+    [hashtable]$ParentContext = $null
+  )
     
-    if ($ParentContext) {
-        # Inherit trace ID from parent, create new span ID
-        $context = @{
-            TraceId = $ParentContext.TraceId
-            SpanId = New-SpanId
-            ParentSpanId = $ParentContext.SpanId
-            TraceFlags = $ParentContext.TraceFlags
-            TraceState = $ParentContext.TraceState
-            Sampled = $ParentContext.Sampled
-        }
+  if ($ParentContext) {
+    # Inherit trace ID from parent, create new span ID
+    $context = @{
+      TraceId = $ParentContext.TraceId
+      SpanId = New-SpanId
+      ParentSpanId = $ParentContext.SpanId
+      TraceFlags = $ParentContext.TraceFlags
+      TraceState = $ParentContext.TraceState
+      Sampled = $ParentContext.Sampled
     }
-    else {
-        # Create new root context
-        $context = @{
-            TraceId = New-TraceId
-            SpanId = New-SpanId
-            ParentSpanId = $null
-            TraceFlags = '01'  # Sampled
-            TraceState = ''
-            Sampled = $true
-        }
+  }
+  else {
+    # Create new root context
+    $context = @{
+      TraceId = New-TraceId
+      SpanId = New-SpanId
+      ParentSpanId = $null
+      TraceFlags = '01'  # Sampled
+      TraceState = ''
+      Sampled = $true
     }
+  }
     
-    $script:TraceContext = $context
-    return $context
+  $script:TraceContext = $context
+  return $context
 }
 
 function Get-W3CTraceParent {
-    <#
+  <#
     .SYNOPSIS
         Get W3C traceparent header value
     
@@ -199,14 +199,14 @@ function Get-W3CTraceParent {
     .OUTPUTS
         System.String - W3C traceparent header
     #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter()]
-        [hashtable]$Context = $script:TraceContext
-    )
+  [CmdletBinding()]
+  [OutputType([string])]
+  param(
+    [Parameter()]
+    [hashtable]$Context = $script:TraceContext
+  )
     
-    return "00-$($Context.TraceId)-$($Context.SpanId)-$($Context.TraceFlags)"
+  return "00-$($Context.TraceId)-$($Context.SpanId)-$($Context.TraceFlags)"
 }
 
 #endregion
@@ -214,7 +214,7 @@ function Get-W3CTraceParent {
 #region Span Management
 
 function Start-Span {
-    <#
+  <#
     .SYNOPSIS
         Start a new span for tracing
     
@@ -240,75 +240,75 @@ function Start-Span {
     .OUTPUTS
         System.Collections.Hashtable - Span object
     #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Name,
+  [CmdletBinding()]
+  [OutputType([hashtable])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Name,
         
-        [Parameter()]
-        [ValidateSet('Internal', 'Server', 'Client', 'Producer', 'Consumer')]
-        [string]$Kind = 'Internal',
+    [Parameter()]
+    [ValidateSet('Internal', 'Server', 'Client', 'Producer', 'Consumer')]
+    [string]$Kind = 'Internal',
         
-        [Parameter()]
-        [hashtable]$Attributes = @{}
-    )
+    [Parameter()]
+    [hashtable]$Attributes = @{}
+  )
     
-    if (-not $script:OTelConfig.Enabled) {
-        return @{ Enabled = $false }
+  if (-not $script:OTelConfig.Enabled) {
+    return @{ Enabled = $false }
+  }
+    
+  # Create span context
+  $parentSpan = if ($script:ActiveSpans.Count -gt 0) {
+    $script:ActiveSpans.Peek()
+  } else {
+    $null
+  }
+    
+  $spanContext = if ($parentSpan) {
+    @{
+      TraceId = $script:TraceContext.TraceId
+      SpanId = New-SpanId
+      ParentSpanId = $parentSpan.SpanId
     }
-    
-    # Create span context
-    $parentSpan = if ($script:ActiveSpans.Count -gt 0) {
-        $script:ActiveSpans.Peek()
-    } else {
-        $null
+  }
+  else {
+    @{
+      TraceId = $script:TraceContext.TraceId
+      SpanId = $script:TraceContext.SpanId
+      ParentSpanId = $script:TraceContext.ParentSpanId
     }
+  }
     
-    $spanContext = if ($parentSpan) {
-        @{
-            TraceId = $script:TraceContext.TraceId
-            SpanId = New-SpanId
-            ParentSpanId = $parentSpan.SpanId
-        }
+  $span = @{
+    Name = $Name
+    SpanId = $spanContext.SpanId
+    TraceId = $spanContext.TraceId
+    ParentSpanId = $spanContext.ParentSpanId
+    Kind = $Kind
+    StartTime = Get-Date
+    StartTimeUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
+    Attributes = $Attributes + @{
+      'thread.id' = [System.Threading.Thread]::CurrentThread.ManagedThreadId
     }
-    else {
-        @{
-            TraceId = $script:TraceContext.TraceId
-            SpanId = $script:TraceContext.SpanId
-            ParentSpanId = $script:TraceContext.ParentSpanId
-        }
+    Events = @()
+    Status = @{
+      Code = 'Unset'
+      Message = ''
     }
+    Enabled = $true
+  }
     
-    $span = @{
-        Name = $Name
-        SpanId = $spanContext.SpanId
-        TraceId = $spanContext.TraceId
-        ParentSpanId = $spanContext.ParentSpanId
-        Kind = $Kind
-        StartTime = Get-Date
-        StartTimeUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
-        Attributes = $Attributes + @{
-            'thread.id' = [System.Threading.Thread]::CurrentThread.ManagedThreadId
-        }
-        Events = @()
-        Status = @{
-            Code = 'Unset'
-            Message = ''
-        }
-        Enabled = $true
-    }
+  # Push onto active span stack
+  $script:ActiveSpans.Push($span)
     
-    # Push onto active span stack
-    $script:ActiveSpans.Push($span)
+  Write-Verbose "Started span: $Name (trace=$($span.TraceId.Substring(0,8)), span=$($span.SpanId.Substring(0,8)))"
     
-    Write-Verbose "Started span: $Name (trace=$($span.TraceId.Substring(0,8)), span=$($span.SpanId.Substring(0,8)))"
-    
-    return $span
+  return $span
 }
 
 function Stop-Span {
-    <#
+  <#
     .SYNOPSIS
         End a span
     
@@ -330,50 +330,50 @@ function Stop-Span {
     .EXAMPLE
         Stop-Span -Span $span -Status 'Error' -StatusMessage 'File not found'
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [hashtable]$Span,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [hashtable]$Span,
         
-        [Parameter()]
-        [ValidateSet('Ok', 'Error', 'Unset')]
-        [string]$Status = 'Ok',
+    [Parameter()]
+    [ValidateSet('Ok', 'Error', 'Unset')]
+    [string]$Status = 'Ok',
         
-        [Parameter()]
-        [string]$StatusMessage = ''
-    )
+    [Parameter()]
+    [string]$StatusMessage = ''
+  )
     
-    if (-not $Span.Enabled) {
-        return
-    }
+  if (-not $Span.Enabled) {
+    return
+  }
     
-    # Pop from active spans
-    if ($script:ActiveSpans.Count -gt 0 -and $script:ActiveSpans.Peek().SpanId -eq $Span.SpanId) {
-        [void]$script:ActiveSpans.Pop()
-    }
+  # Pop from active spans
+  if ($script:ActiveSpans.Count -gt 0 -and $script:ActiveSpans.Peek().SpanId -eq $Span.SpanId) {
+    [void]$script:ActiveSpans.Pop()
+  }
     
-    # Set end time and status
-    $Span.EndTime = Get-Date
-    $Span.EndTimeUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
-    $Span.DurationMs = ($Span.EndTime - $Span.StartTime).TotalMilliseconds
-    $Span.Status = @{
-        Code = $Status
-        Message = $StatusMessage
-    }
+  # Set end time and status
+  $Span.EndTime = Get-Date
+  $Span.EndTimeUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
+  $Span.DurationMs = ($Span.EndTime - $Span.StartTime).TotalMilliseconds
+  $Span.Status = @{
+    Code = $Status
+    Message = $StatusMessage
+  }
     
-    # Add to completed spans
-    $script:CompletedSpans.Add($Span)
+  # Add to completed spans
+  $script:CompletedSpans.Add($Span)
     
-    Write-Verbose "Ended span: $($Span.Name) ($([Math]::Round($Span.DurationMs, 2))ms, status=$Status)"
+  Write-Verbose "Ended span: $($Span.Name) ($([Math]::Round($Span.DurationMs, 2))ms, status=$Status)"
     
-    # Export if batch size reached
-    if ($script:CompletedSpans.Count -ge $script:OTelConfig.ExportBatchSize) {
-        Export-Spans
-    }
+  # Export if batch size reached
+  if ($script:CompletedSpans.Count -ge $script:OTelConfig.ExportBatchSize) {
+    Export-Spans
+  }
 }
 
 function Add-SpanEvent {
-    <#
+  <#
     .SYNOPSIS
         Add event to active span
     
@@ -394,38 +394,38 @@ function Add-SpanEvent {
             'cache.key' = 'user:123'
         }
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [hashtable]$Span,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [hashtable]$Span,
         
-        [Parameter(Mandatory)]
-        [string]$Name,
+    [Parameter(Mandatory)]
+    [string]$Name,
         
-        [Parameter()]
-        [hashtable]$Attributes = @{}
-    )
+    [Parameter()]
+    [hashtable]$Attributes = @{}
+  )
     
-    if (-not $Span.Enabled) {
-        return
-    }
+  if (-not $Span.Enabled) {
+    return
+  }
     
-    $event = @{
-        Name = $Name
-        Timestamp = Get-Date
-        TimestampUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
-        Attributes = $Attributes
-    }
+  $event = @{
+    Name = $Name
+    Timestamp = Get-Date
+    TimestampUnixNano = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000
+    Attributes = $Attributes
+  }
     
-    $Span.Events += $event
+  $Span.Events += $event
 }
 
 #endregion
 
 #region Export
 
-function Export-Spans {
-    <#
+function Export-Span {
+  <#
     .SYNOPSIS
         Export completed spans to backend
     
@@ -435,156 +435,156 @@ function Export-Spans {
     .EXAMPLE
         Export-Spans
     #>
-    [CmdletBinding()]
-    param()
+  [CmdletBinding()]
+  param()
     
-    if ($script:CompletedSpans.Count -eq 0) {
-        return
-    }
+  if ($script:CompletedSpans.Count -eq 0) {
+    return
+  }
     
-    try {
-        # Convert spans to OTLP format
-        $otlpPayload = ConvertTo-OTLPFormat -Spans $script:CompletedSpans
+  try {
+    # Convert spans to OTLP format
+    $otlpPayload = ConvertTo-OTLPFormat -Spans $script:CompletedSpans
         
-        # Export based on protocol
-        switch ($script:OTelConfig.ExportProtocol) {
-            'OTLP/HTTP' {
-                Export-SpansOTLPHTTP -Payload $otlpPayload
-            }
-            'Jaeger' {
-                Export-SpansJaeger -Spans $script:CompletedSpans
-            }
-            'Zipkin' {
-                Export-SpansZipkin -Spans $script:CompletedSpans
-            }
-        }
-        
-        Write-Verbose "Exported $($script:CompletedSpans.Count) spans to $($script:OTelConfig.ExportProtocol)"
-        
-        # Clear exported spans
-        $script:CompletedSpans.Clear()
+    # Export based on protocol
+    switch ($script:OTelConfig.ExportProtocol) {
+      'OTLP/HTTP' {
+        Export-SpansOTLPHTTP -Payload $otlpPayload
+      }
+      'Jaeger' {
+        Export-SpansJaeger -Spans $script:CompletedSpans
+      }
+      'Zipkin' {
+        Export-SpansZipkin -Spans $script:CompletedSpans
+      }
     }
-    catch {
-        Write-Warning "Failed to export spans: $_"
-    }
+        
+    Write-Verbose "Exported $($script:CompletedSpans.Count) spans to $($script:OTelConfig.ExportProtocol)"
+        
+    # Clear exported spans
+    $script:CompletedSpans.Clear()
+  }
+  catch {
+    Write-Warning "Failed to export spans: $_"
+  }
 }
 
 function ConvertTo-OTLPFormat {
-    param([array]$Spans)
+  param([array]$Spans)
     
-    # OTLP JSON format
-    $resourceSpans = @{
-        resource = @{
-            attributes = $script:OTelConfig.ResourceAttributes.GetEnumerator() | ForEach-Object {
-                @{
-                    key = $_.Key
-                    value = @{ stringValue = $_.Value }
-                }
-            }
+  # OTLP JSON format
+  $resourceSpans = @{
+    resource = @{
+      attributes = $script:OTelConfig.ResourceAttributes.GetEnumerator() | ForEach-Object {
+        @{
+          key = $_.Key
+          value = @{ stringValue = $_.Value }
         }
-        scopeSpans = @(
-            @{
-                scope = @{
-                    name = 'PoshGuard'
-                    version = '4.2.0'
-                }
-                spans = $Spans | ForEach-Object {
-                    @{
-                        traceId = $_.TraceId
-                        spanId = $_.SpanId
-                        parentSpanId = $_.ParentSpanId
-                        name = $_.Name
-                        kind = Get-OTLPSpanKind -Kind $_.Kind
-                        startTimeUnixNano = $_.StartTimeUnixNano.ToString()
-                        endTimeUnixNano = $_.EndTimeUnixNano.ToString()
-                        attributes = $_.Attributes.GetEnumerator() | ForEach-Object {
-                            @{
-                                key = $_.Key
-                                value = @{ stringValue = $_.Value.ToString() }
-                            }
-                        }
-                        events = $_.Events | ForEach-Object {
-                            @{
-                                name = $_.Name
-                                timeUnixNano = $_.TimestampUnixNano.ToString()
-                                attributes = $_.Attributes.GetEnumerator() | ForEach-Object {
-                                    @{
-                                        key = $_.Key
-                                        value = @{ stringValue = $_.Value.ToString() }
-                                    }
-                                }
-                            }
-                        }
-                        status = @{
-                            code = Get-OTLPStatusCode -Status $_.Status.Code
-                            message = $_.Status.Message
-                        }
-                    }
-                }
-            }
-        )
+      }
     }
+    scopeSpans = @(
+      @{
+        scope = @{
+          name = 'PoshGuard'
+          version = '4.2.0'
+        }
+        spans = $Spans | ForEach-Object {
+          @{
+            traceId = $_.TraceId
+            spanId = $_.SpanId
+            parentSpanId = $_.ParentSpanId
+            name = $_.Name
+            kind = Get-OTLPSpanKind -Kind $_.Kind
+            startTimeUnixNano = $_.StartTimeUnixNano.ToString()
+            endTimeUnixNano = $_.EndTimeUnixNano.ToString()
+            attributes = $_.Attributes.GetEnumerator() | ForEach-Object {
+              @{
+                key = $_.Key
+                value = @{ stringValue = $_.Value.ToString() }
+              }
+            }
+            events = $_.Events | ForEach-Object {
+              @{
+                name = $_.Name
+                timeUnixNano = $_.TimestampUnixNano.ToString()
+                attributes = $_.Attributes.GetEnumerator() | ForEach-Object {
+                  @{
+                    key = $_.Key
+                    value = @{ stringValue = $_.Value.ToString() }
+                  }
+                }
+              }
+            }
+            status = @{
+              code = Get-OTLPStatusCode -Status $_.Status.Code
+              message = $_.Status.Message
+            }
+          }
+        }
+      }
+    )
+  }
     
-    return @{ resourceSpans = @($resourceSpans) }
+  return @{ resourceSpans = @($resourceSpans) }
 }
 
 function Get-OTLPSpanKind {
-    param([string]$Kind)
+  param([string]$Kind)
     
-    switch ($Kind) {
-        'Internal' { 1 }
-        'Server' { 2 }
-        'Client' { 3 }
-        'Producer' { 4 }
-        'Consumer' { 5 }
-        default { 0 }
-    }
+  switch ($Kind) {
+    'Internal' { 1 }
+    'Server' { 2 }
+    'Client' { 3 }
+    'Producer' { 4 }
+    'Consumer' { 5 }
+    default { 0 }
+  }
 }
 
 function Get-OTLPStatusCode {
-    param([string]$Status)
+  param([string]$Status)
     
-    switch ($Status) {
-        'Unset' { 0 }
-        'Ok' { 1 }
-        'Error' { 2 }
-        default { 0 }
-    }
+  switch ($Status) {
+    'Unset' { 0 }
+    'Ok' { 1 }
+    'Error' { 2 }
+    default { 0 }
+  }
 }
 
 function Export-SpansOTLPHTTP {
-    param([hashtable]$Payload)
+  param([hashtable]$Payload)
     
-    try {
-        $json = $Payload | ConvertTo-Json -Depth 10 -Compress
-        $headers = @{
-            'Content-Type' = 'application/json'
-        }
+  try {
+    $json = $Payload | ConvertTo-Json -Depth 10 -Compress
+    $headers = @{
+      'Content-Type' = 'application/json'
+    }
         
-        Invoke-RestMethod -Uri $script:OTelConfig.ExportEndpoint `
-                          -Method Post `
-                          -Body $json `
-                          -Headers $headers `
-                          -TimeoutSec ($script:OTelConfig.ExportTimeoutMs / 1000) `
-                          -ErrorAction Stop
-    }
-    catch {
-        Write-Warning "OTLP HTTP export failed: $_"
-    }
+    Invoke-RestMethod -Uri $script:OTelConfig.ExportEndpoint `
+      -Method Post `
+      -Body $json `
+      -Headers $headers `
+      -TimeoutSec ($script:OTelConfig.ExportTimeoutMs / 1000) `
+      -ErrorAction Stop
+  }
+  catch {
+    Write-Warning "OTLP HTTP export failed: $_"
+  }
 }
 
 function Export-SpansJaeger {
-    param([array]$Spans)
+  param([array]$Spans)
     
-    # Placeholder - would implement Jaeger Thrift format
-    Write-Verbose "Jaeger export not implemented - use OTLP/HTTP with Jaeger backend"
+  # Placeholder - would implement Jaeger Thrift format
+  Write-Verbose "Jaeger export not implemented - use OTLP/HTTP with Jaeger backend"
 }
 
 function Export-SpansZipkin {
-    param([array]$Spans)
+  param([array]$Spans)
     
-    # Placeholder - would implement Zipkin JSON format
-    Write-Verbose "Zipkin export not implemented - use OTLP/HTTP with Zipkin backend"
+  # Placeholder - would implement Zipkin JSON format
+  Write-Verbose "Zipkin export not implemented - use OTLP/HTTP with Zipkin backend"
 }
 
 #endregion
@@ -592,7 +592,7 @@ function Export-SpansZipkin {
 #region Helpers
 
 function Invoke-WithTracing {
-    <#
+  <#
     .SYNOPSIS
         Execute script block with automatic tracing
     
@@ -618,34 +618,34 @@ function Invoke-WithTracing {
     .OUTPUTS
         Object - Script block return value
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Name,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)]
+    [string]$Name,
         
-        [Parameter(Mandatory)]
-        [scriptblock]$ScriptBlock,
+    [Parameter(Mandatory)]
+    [scriptblock]$ScriptBlock,
         
-        [Parameter()]
-        [hashtable]$Attributes = @{}
-    )
+    [Parameter()]
+    [hashtable]$Attributes = @{}
+  )
     
-    $span = Start-Span -Name $Name -Attributes $Attributes
+  $span = Start-Span -Name $Name -Attributes $Attributes
     
-    try {
-        $result = & $ScriptBlock
-        Stop-Span -Span $span -Status 'Ok'
-        return $result
+  try {
+    $result = & $ScriptBlock
+    Stop-Span -Span $span -Status 'Ok'
+    return $result
+  }
+  catch {
+    Add-SpanEvent -Span $span -Name 'exception' -Attributes @{
+      'exception.type' = $_.Exception.GetType().Name
+      'exception.message' = $_.Exception.Message
+      'exception.stacktrace' = $_.ScriptStackTrace
     }
-    catch {
-        Add-SpanEvent -Span $span -Name 'exception' -Attributes @{
-            'exception.type' = $_.Exception.GetType().Name
-            'exception.message' = $_.Exception.Message
-            'exception.stacktrace' = $_.ScriptStackTrace
-        }
-        Stop-Span -Span $span -Status 'Error' -StatusMessage $_.Exception.Message
-        throw
-    }
+    Stop-Span -Span $span -Status 'Error' -StatusMessage $_.Exception.Message
+    throw
+  }
 }
 
 #endregion
@@ -653,13 +653,13 @@ function Invoke-WithTracing {
 #region Module Exports
 
 Export-ModuleMember -Function @(
-    'Initialize-TraceContext',
-    'Start-Span',
-    'Stop-Span',
-    'Add-SpanEvent',
-    'Export-Spans',
-    'Invoke-WithTracing',
-    'Get-W3CTraceParent'
+  'Initialize-TraceContext',
+  'Start-Span',
+  'Stop-Span',
+  'Add-SpanEvent',
+  'Export-Spans',
+  'Invoke-WithTracing',
+  'Get-W3CTraceParent'
 )
 
 #endregion

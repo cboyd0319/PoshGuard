@@ -1,4 +1,4 @@
-#Requires -Version 7.0
+﻿#Requires -Version 7.0
 <#
 .SYNOPSIS
     Automated benchmark runner for PoshGuard with before/after metrics.
@@ -31,18 +31,18 @@
 
 [CmdletBinding()]
 param(
-    [Parameter()]
-    [string]$Path = './samples/',
+  [Parameter()]
+  [string]$Path = './samples/',
 
-    [Parameter()]
-    [ValidateSet('csv', 'jsonl', 'both')]
-    [string]$OutputFormat = 'both',
+  [Parameter()]
+  [ValidateSet('csv', 'jsonl', 'both')]
+  [string]$OutputFormat = 'both',
 
-    [Parameter()]
-    [string]$OutputPath = './benchmarks/',
+  [Parameter()]
+  [string]$OutputPath = './benchmarks/',
 
-    [Parameter()]
-    [switch]$GenerateChart
+  [Parameter()]
+  [switch]$GenerateChart
 )
 
 Set-StrictMode -Version Latest
@@ -50,7 +50,7 @@ $ErrorActionPreference = 'Stop'
 
 # Ensure output directory exists
 if (-not (Test-Path $OutputPath)) {
-    New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+  New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
 }
 
 # Timestamp for this run
@@ -60,9 +60,9 @@ $runId = "benchmark_$timestamp"
 # Read version from VERSION.txt
 $versionFile = Join-Path $PSScriptRoot '..' 'PoshGuard' 'VERSION.txt'
 $poshGuardVersion = if (Test-Path $versionFile) {
-    (Get-Content $versionFile -Raw).Trim()
+  (Get-Content $versionFile -Raw).Trim()
 } else {
-    "unknown"
+  "unknown"
 }
 
 # Build dynamic banner with proper padding
@@ -81,13 +81,13 @@ Write-Host ""
 # Check dependencies
 Write-Host "→ Checking dependencies..." -ForegroundColor Yellow
 try {
-    Import-Module PSScriptAnalyzer -ErrorAction Stop
-    $pssaVersion = (Get-Module PSScriptAnalyzer).Version.ToString()
-    Write-Host "  ✓ PSScriptAnalyzer $pssaVersion" -ForegroundColor Green
+  Import-Module PSScriptAnalyzer -ErrorAction Stop
+  $pssaVersion = (Get-Module PSScriptAnalyzer).Version.ToString()
+  Write-Host "  ✓ PSScriptAnalyzer $pssaVersion" -ForegroundColor Green
 }
 catch {
-    Write-Error "PSScriptAnalyzer not found. Install with: Install-Module PSScriptAnalyzer -Force"
-    exit 2
+  Write-Error "PSScriptAnalyzer not found. Install with: Install-Module PSScriptAnalyzer -Force"
+  exit 2
 }
 
 Write-Host "  ✓ PowerShell $($PSVersionTable.PSVersion)" -ForegroundColor Green
@@ -96,11 +96,11 @@ Write-Host ""
 # Get test files
 Write-Host "→ Discovering test files..." -ForegroundColor Yellow
 $testFiles = Get-ChildItem -Path $Path -Filter "*.ps1" -Recurse |
-    Where-Object { $_.Name -notlike "after-*" -and $_.Name -notlike "*-expected.ps1" }
+  Where-Object { $_.Name -notlike "after-*" -and $_.Name -notlike "*-expected.ps1" }
 
 if ($testFiles.Count -eq 0) {
-    Write-Error "No test files found in $Path"
-    exit 2
+  Write-Error "No test files found in $Path"
+  exit 2
 }
 
 Write-Host "  ✓ Found $($testFiles.Count) test files" -ForegroundColor Green
@@ -115,124 +115,124 @@ $totalFailed = 0
 
 # Process each file
 foreach ($file in $testFiles) {
-    Write-Host "→ Processing: $($file.Name)" -ForegroundColor Cyan
+  Write-Host "→ Processing: $($file.Name)" -ForegroundColor Cyan
 
-    # Create secure temporary copy for benchmarking
-    $tempFileObj = New-TemporaryFile
-    $tempFile = "$($tempFileObj.FullName).ps1"
-    Remove-Item $tempFileObj.FullName -Force  # Remove the temp file, keep the unique name
-    Copy-Item $file.FullName -Destination $tempFile -Force
+  # Create secure temporary copy for benchmarking
+  $tempFileObj = New-TemporaryFile
+  $tempFile = "$($tempFileObj.FullName).ps1"
+  Remove-Item $tempFileObj.FullName -Force  # Remove the temp file, keep the unique name
+  Copy-Item $file.FullName -Destination $tempFile -Force
 
-    try {
-        # BEFORE: Run PSScriptAnalyzer
-        Write-Host "  • Running PSScriptAnalyzer (before)..." -ForegroundColor Gray
-        $violationsBefore = Invoke-ScriptAnalyzer -Path $tempFile -ErrorAction SilentlyContinue
-        $countBefore = ($violationsBefore | Measure-Object).Count
-        $totalViolationsBefore += $countBefore
+  try {
+    # BEFORE: Run PSScriptAnalyzer
+    Write-Host "  • Running PSScriptAnalyzer (before)..." -ForegroundColor Gray
+    $violationsBefore = Invoke-ScriptAnalyzer -Path $tempFile -ErrorAction SilentlyContinue
+    $countBefore = ($violationsBefore | Measure-Object).Count
+    $totalViolationsBefore += $countBefore
 
-        Write-Host "    Found: $countBefore violations" -ForegroundColor Gray
+    Write-Host "    Found: $countBefore violations" -ForegroundColor Gray
 
-        # Get detailed rule counts before
-        $ruleCountsBefore = $violationsBefore | Group-Object RuleName |
-            Select-Object @{N='Rule';E={$_.Name}}, Count
+    # Get detailed rule counts before
+    $ruleCountsBefore = $violationsBefore | Group-Object RuleName |
+      Select-Object @{N = 'Rule'; E = { $_.Name } }, Count
 
-        # Record start time
-        $startTime = Get-Date
+    # Record start time
+    $startTime = Get-Date
 
-        # Apply PoshGuard fixes
-        Write-Host "  • Applying PoshGuard fixes..." -ForegroundColor Gray
+    # Apply PoshGuard fixes
+    Write-Host "  • Applying PoshGuard fixes..." -ForegroundColor Gray
 
-        # Import Core module if not already loaded
-        $coreModulePath = Join-Path $PSScriptRoot 'lib' 'Core.psm1'
-        if (-not (Get-Module -Name Core)) {
-            if (Test-Path $coreModulePath) {
-                try {
-                    Import-Module $coreModulePath -ErrorAction Stop
-                }
-                catch {
-                    Write-Error "Failed to import required module 'Core' from $coreModulePath. Error: $($_.Exception.Message)"
-                    exit 1
-                }
-            }
-            else {
-                Write-Error "Core module not found at expected path: $coreModulePath"
-                exit 1
-            }
-        }
-
-        # Run fix script
+    # Import Core module if not already loaded
+    $coreModulePath = Join-Path $PSScriptRoot 'lib' 'Core.psm1'
+    if (-not (Get-Module -Name Core)) {
+      if (Test-Path $coreModulePath) {
         try {
-            & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop | Out-Null
+          Import-Module $coreModulePath -ErrorAction Stop
         }
         catch {
-            Write-Warning "Apply-AutoFix.ps1 failed for $($file.Name): $($_.Exception.Message)"
-            # Continue with benchmark even if fixes fail
+          Write-Error "Failed to import required module 'Core' from $coreModulePath. Error: $($_.Exception.Message)"
+          exit 1
         }
+      }
+      else {
+        Write-Error "Core module not found at expected path: $coreModulePath"
+        exit 1
+      }
+    }
 
-        # Record end time
-        $endTime = Get-Date
-        $duration = ($endTime - $startTime).TotalMilliseconds
-
-        # AFTER: Run PSScriptAnalyzer again
-        Write-Host "  • Running PSScriptAnalyzer (after)..." -ForegroundColor Gray
-        $violationsAfter = Invoke-ScriptAnalyzer -Path $tempFile -ErrorAction SilentlyContinue
-        $countAfter = ($violationsAfter | Measure-Object).Count
-        $totalViolationsAfter += $countAfter
-
-        $fixed = $countBefore - $countAfter
-        $totalFixed += $fixed
-
-        # Get detailed rule counts after
-        $ruleCountsAfter = $violationsAfter | Group-Object RuleName |
-            Select-Object @{N='Rule';E={$_.Name}}, Count
-
-        # Calculate success rate
-        $successRate = if ($countBefore -gt 0) {
-            [math]::Round(($fixed / $countBefore) * 100, 2)
-        } else {
-            100
-        }
-
-        Write-Host "    Fixed: $fixed/$countBefore violations ($successRate%)" -ForegroundColor $(if ($successRate -eq 100) { 'Green' } else { 'Yellow' })
-        Write-Host "    Time: $([math]::Round($duration, 0))ms" -ForegroundColor Gray
-
-        # Store result
-        $result = [PSCustomObject]@{
-            RunId = $runId
-            Timestamp = $timestamp
-            File = $file.Name
-            FilePath = $file.FullName
-            ViolationsBefore = $countBefore
-            ViolationsAfter = $countAfter
-            Fixed = $fixed
-            SuccessRate = $successRate
-            DurationMs = [math]::Round($duration, 2)
-            PSScriptAnalyzerVersion = $pssaVersion
-            PowerShellVersion = $PSVersionTable.PSVersion.ToString()
-            Platform = $PSVersionTable.Platform
-        }
-        $results += $result
-
-        Write-Host ""
-
+    # Run fix script
+    try {
+      & ./tools/Apply-AutoFix.ps1 -Path $tempFile -ErrorAction Stop | Out-Null
     }
     catch {
-        Write-Host "  ✗ Error processing file: $_" -ForegroundColor Red
-        $totalFailed++
+      Write-Warning "Apply-AutoFix.ps1 failed for $($file.Name): $($_.Exception.Message)"
+      # Continue with benchmark even if fixes fail
     }
-    finally {
-        # Clean up temp file
-        if (Test-Path $tempFile) {
-            Remove-Item $tempFile -Force
-        }
+
+    # Record end time
+    $endTime = Get-Date
+    $duration = ($endTime - $startTime).TotalMilliseconds
+
+    # AFTER: Run PSScriptAnalyzer again
+    Write-Host "  • Running PSScriptAnalyzer (after)..." -ForegroundColor Gray
+    $violationsAfter = Invoke-ScriptAnalyzer -Path $tempFile -ErrorAction SilentlyContinue
+    $countAfter = ($violationsAfter | Measure-Object).Count
+    $totalViolationsAfter += $countAfter
+
+    $fixed = $countBefore - $countAfter
+    $totalFixed += $fixed
+
+    # Get detailed rule counts after
+    $ruleCountsAfter = $violationsAfter | Group-Object RuleName |
+      Select-Object @{N = 'Rule'; E = { $_.Name } }, Count
+
+    # Calculate success rate
+    $successRate = if ($countBefore -gt 0) {
+      [math]::Round(($fixed / $countBefore) * 100, 2)
+    } else {
+      100
     }
+
+    Write-Host "    Fixed: $fixed/$countBefore violations ($successRate%)" -ForegroundColor $(if ($successRate -eq 100) { 'Green' } else { 'Yellow' })
+    Write-Host "    Time: $([math]::Round($duration, 0))ms" -ForegroundColor Gray
+
+    # Store result
+    $result = [PSCustomObject]@{
+      RunId = $runId
+      Timestamp = $timestamp
+      File = $file.Name
+      FilePath = $file.FullName
+      ViolationsBefore = $countBefore
+      ViolationsAfter = $countAfter
+      Fixed = $fixed
+      SuccessRate = $successRate
+      DurationMs = [math]::Round($duration, 2)
+      PSScriptAnalyzerVersion = $pssaVersion
+      PowerShellVersion = $PSVersionTable.PSVersion.ToString()
+      Platform = $PSVersionTable.Platform
+    }
+    $results += $result
+
+    Write-Host ""
+
+  }
+  catch {
+    Write-Host "  ✗ Error processing file: $_" -ForegroundColor Red
+    $totalFailed++
+  }
+  finally {
+    # Clean up temp file
+    if (Test-Path $tempFile) {
+      Remove-Item $tempFile -Force
+    }
+  }
 }
 
 # Calculate aggregate statistics
 $overallSuccessRate = if ($totalViolationsBefore -gt 0) {
-    [math]::Round(($totalFixed / $totalViolationsBefore) * 100, 2)
+  [math]::Round(($totalFixed / $totalViolationsBefore) * 100, 2)
 } else {
-    100
+  100
 }
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
@@ -249,34 +249,34 @@ Write-Host ""
 
 # Output to CSV
 if ($OutputFormat -in @('csv', 'both')) {
-    $csvPath = Join-Path $OutputPath "$runId.csv"
-    $results | Export-Csv -Path $csvPath -NoTypeInformation
-    Write-Host "→ CSV report saved: $csvPath" -ForegroundColor Cyan
+  $csvPath = Join-Path $OutputPath "$runId.csv"
+  $results | Export-Csv -Path $csvPath -NoTypeInformation
+  Write-Host "→ CSV report saved: $csvPath" -ForegroundColor Cyan
 }
 
 # Output to JSONL
 if ($OutputFormat -in @('jsonl', 'both')) {
-    $jsonlPath = Join-Path $OutputPath "$runId.jsonl"
-    $results | ForEach-Object {
-        $_ | ConvertTo-Json -Compress
-    } | Set-Content -Path $jsonlPath
-    Write-Host "→ JSONL report saved: $jsonlPath" -ForegroundColor Cyan
+  $jsonlPath = Join-Path $OutputPath "$runId.jsonl"
+  $results | ForEach-Object {
+    $_ | ConvertTo-Json -Compress
+  } | Set-Content -Path $jsonlPath
+  Write-Host "→ JSONL report saved: $jsonlPath" -ForegroundColor Cyan
 }
 
 # Create summary JSON
 $summary = [PSCustomObject]@{
-    RunId = $runId
-    Timestamp = $timestamp
-    FilesProcessed = $testFiles.Count
-    TotalViolationsBefore = $totalViolationsBefore
-    TotalViolationsAfter = $totalViolationsAfter
-    TotalFixed = $totalFixed
-    TotalFailed = $totalFailed
-    SuccessRate = $overallSuccessRate
-    PSScriptAnalyzerVersion = $pssaVersion
-    PowerShellVersion = $PSVersionTable.PSVersion.ToString()
-    Platform = $PSVersionTable.Platform
-    PoshGuardVersion = $poshGuardVersion
+  RunId = $runId
+  Timestamp = $timestamp
+  FilesProcessed = $testFiles.Count
+  TotalViolationsBefore = $totalViolationsBefore
+  TotalViolationsAfter = $totalViolationsAfter
+  TotalFixed = $totalFixed
+  TotalFailed = $totalFailed
+  SuccessRate = $overallSuccessRate
+  PSScriptAnalyzerVersion = $pssaVersion
+  PowerShellVersion = $PSVersionTable.PSVersion.ToString()
+  Platform = $PSVersionTable.Platform
+  PoshGuardVersion = $poshGuardVersion
 }
 
 $summaryPath = Join-Path $OutputPath "$runId.summary.json"
@@ -286,22 +286,22 @@ Write-Host ""
 
 # Generate SVG chart if requested
 if ($GenerateChart) {
-    Write-Host "→ Generating chart..." -ForegroundColor Yellow
+  Write-Host "→ Generating chart..." -ForegroundColor Yellow
 
-    $svgPath = Join-Path $OutputPath "$runId.svg"
+  $svgPath = Join-Path $OutputPath "$runId.svg"
 
-    # Simple SVG bar chart
-    $svgWidth = 600
-    $svgHeight = 200
-    $barHeight = 40
-    $barSpacing = 20
+  # Simple SVG bar chart
+  $svgWidth = 600
+  $svgHeight = 200
+  $barHeight = 40
+  $barSpacing = 20
 
-    # Handle zero violations case
-    $maxViolations = [Math]::Max($totalViolationsBefore, $totalViolationsAfter)
+  # Handle zero violations case
+  $maxViolations = [Math]::Max($totalViolationsBefore, $totalViolationsAfter)
 
-    if ($maxViolations -eq 0) {
-        # Special case: No violations detected
-        $svg = @"
+  if ($maxViolations -eq 0) {
+    # Special case: No violations detected
+    $svg = @"
 <svg width="$svgWidth" height="$svgHeight" xmlns="http://www.w3.org/2000/svg">
   <rect width="$svgWidth" height="$svgHeight" fill="#f8f9fa"/>
 
@@ -324,12 +324,12 @@ if ($GenerateChart) {
   </text>
 </svg>
 "@
-    } else {
-        # Normal case: Calculate bar widths proportionally
-        $beforeBar = ($totalViolationsBefore / $maxViolations) * ($svgWidth - 150)
-        $afterBar = ($totalViolationsAfter / $maxViolations) * ($svgWidth - 150)
+  } else {
+    # Normal case: Calculate bar widths proportionally
+    $beforeBar = ($totalViolationsBefore / $maxViolations) * ($svgWidth - 150)
+    $afterBar = ($totalViolationsAfter / $maxViolations) * ($svgWidth - 150)
 
-        $svg = @"
+    $svg = @"
 <svg width="$svgWidth" height="$svgHeight" xmlns="http://www.w3.org/2000/svg">
   <rect width="$svgWidth" height="$svgHeight" fill="#f8f9fa"/>
 
@@ -358,14 +358,14 @@ if ($GenerateChart) {
   </text>
 </svg>
 "@
-    }
+  }
 
-    $svg | Set-Content -Path $svgPath
-    Write-Host "  ✓ Chart saved: $svgPath" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "Add to README with:" -ForegroundColor Gray
-    Write-Host "  ![Benchmark Results]($svgPath)" -ForegroundColor White
-    Write-Host ""
+  $svg | Set-Content -Path $svgPath
+  Write-Host "  ✓ Chart saved: $svgPath" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "Add to README with:" -ForegroundColor Gray
+  Write-Host "  ![Benchmark Results]($svgPath)" -ForegroundColor White
+  Write-Host ""
 }
 
 # Create latest.json symlink/copy for easy reference
@@ -379,11 +379,11 @@ Write-Host ""
 
 # Exit code based on success rate
 if ($overallSuccessRate -eq 100) {
-    exit 0
+  exit 0
 }
 elseif ($overallSuccessRate -ge 90) {
-    exit 0  # Still acceptable
+  exit 0  # Still acceptable
 }
 else {
-    exit 1  # Below threshold
+  exit 1  # Below threshold
 }

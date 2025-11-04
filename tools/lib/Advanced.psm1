@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Advanced Auto-Fix Module (Facade)
 
@@ -34,102 +34,102 @@ $ModuleRoot = $PSScriptRoot
 
 # Import all Advanced submodules
 $SubModules = @(
-    'ASTTransformations',
-    'ParameterManagement',
-    'CodeAnalysis',
-    'Documentation',
-    'AttributeManagement',
-    'ManifestManagement',
-    'ShouldProcessTransformation',
-    'InvokingEmptyMembers',
-    'OverwritingBuiltInCmdlets',
-    'DefaultValueForMandatoryParameter',
-    'UTF8EncodingForHelpFile',
-    'CmdletBindingFix',
-    'CompatibleCmdletsWarning',
-    'DeprecatedManifestFields'
+  'ASTTransformations',
+  'ParameterManagement',
+  'CodeAnalysis',
+  'Documentation',
+  'AttributeManagement',
+  'ManifestManagement',
+  'ShouldProcessTransformation',
+  'InvokingEmptyMembers',
+  'OverwritingBuiltInCmdlets',
+  'DefaultValueForMandatoryParameter',
+  'UTF8EncodingForHelpFile',
+  'CmdletBindingFix',
+  'CompatibleCmdletsWarning',
+  'DeprecatedManifestFields'
 )
 
 foreach ($SubModule in $SubModules) {
-    $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "Advanced\$SubModule.psm1"
+  $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "Advanced\$SubModule.psm1"
 
-    if (Test-Path -Path $SubModulePath) {
-        try {
-            # Only reload if module is not already loaded or if -Force was used on this module
-            $loadedModule = Get-Module -Name $SubModule -ErrorAction SilentlyContinue
-            if (-not $loadedModule) {
-                Import-Module -Name $SubModulePath -ErrorAction Stop
-                Write-Verbose "Imported Advanced submodule: $SubModule"
-            }
-            else {
-                Write-Verbose "Advanced submodule already loaded: $SubModule"
-            }
-        }
-        catch {
-            Write-Warning "Failed to import Advanced submodule $SubModule : $_"
-        }
+  if (Test-Path -Path $SubModulePath) {
+    try {
+      # Only reload if module is not already loaded or if -Force was used on this module
+      $loadedModule = Get-Module -Name $SubModule -ErrorAction SilentlyContinue
+      if (-not $loadedModule) {
+        Import-Module -Name $SubModulePath -ErrorAction Stop
+        Write-Verbose "Imported Advanced submodule: $SubModule"
+      }
+      else {
+        Write-Verbose "Advanced submodule already loaded: $SubModule"
+      }
     }
-    else {
-        Write-Warning "Advanced submodule not found: $SubModulePath"
+    catch {
+      Write-Warning "Failed to import Advanced submodule $SubModule : $_"
     }
+  }
+  else {
+    Write-Warning "Advanced submodule not found: $SubModulePath"
+  }
 }
 
 # Re-export all functions from submodules for backward compatibility
 $FunctionsToExport = @(
-    # ASTTransformations.psm1
-    'Invoke-WmiToCimFix',
-    'Invoke-BrokenHashAlgorithmFix',
-    'Invoke-LongLinesFix',
+  # ASTTransformations.psm1
+  'Invoke-WmiToCimFix',
+  'Invoke-BrokenHashAlgorithmFix',
+  'Invoke-LongLinesFix',
 
-    # ParameterManagement.psm1
-    'Invoke-ReservedParamsFix',
-    'Invoke-SwitchParameterDefaultFix',
-    'Invoke-UnusedParameterFix',
-    'Invoke-NullHelpMessageFix',
+  # ParameterManagement.psm1
+  'Invoke-ReservedParamsFix',
+  'Invoke-SwitchParameterDefaultFix',
+  'Invoke-UnusedParameterFix',
+  'Invoke-NullHelpMessageFix',
 
-    # CodeAnalysis.psm1
-    'Invoke-SafetyFix',
-    'Invoke-DuplicateLineFix',
-    'Invoke-CmdletParameterFix',
+  # CodeAnalysis.psm1
+  'Invoke-SafetyFix',
+  'Invoke-DuplicateLineFix',
+  'Invoke-CmdletParameterFix',
 
-    # Documentation.psm1
-    'Invoke-CommentHelpFix',
-    'Invoke-OutputTypeCorrectlyFix',
+  # Documentation.psm1
+  'Invoke-CommentHelpFix',
+  'Invoke-OutputTypeCorrectlyFix',
 
-    # AttributeManagement.psm1
-    'Invoke-SupportsShouldProcessFix',
-    'Invoke-ShouldProcessForStateChangingFix',
-    'Invoke-CmdletCorrectlyFix',
-    'Invoke-ProcessBlockForPipelineFix',
+  # AttributeManagement.psm1
+  'Invoke-SupportsShouldProcessFix',
+  'Invoke-ShouldProcessForStateChangingFix',
+  'Invoke-CmdletCorrectlyFix',
+  'Invoke-ProcessBlockForPipelineFix',
 
-    # ManifestManagement.psm1
-    'Invoke-MissingModuleManifestFieldFix',
-    'Invoke-UseToExportFieldsInManifestFix',
-    'Invoke-AvoidGlobalAliasesFix',
+  # ManifestManagement.psm1
+  'Invoke-MissingModuleManifestFieldFix',
+  'Invoke-UseToExportFieldsInManifestFix',
+  'Invoke-AvoidGlobalAliasesFix',
 
-    # ShouldProcessTransformation.psm1
-    'Invoke-PSShouldProcessFix',
+  # ShouldProcessTransformation.psm1
+  'Invoke-PSShouldProcessFix',
 
-    # InvokingEmptyMembers.psm1
-    'Invoke-InvokingEmptyMembersFix',
+  # InvokingEmptyMembers.psm1
+  'Invoke-InvokingEmptyMembersFix',
 
-    # OverwritingBuiltInCmdlets.psm1
-    'Invoke-OverwritingBuiltInCmdletsFix',
+  # OverwritingBuiltInCmdlets.psm1
+  'Invoke-OverwritingBuiltInCmdletsFix',
     
-    # DefaultValueForMandatoryParameter.psm1
-    'Invoke-DefaultValueForMandatoryParameterFix',
+  # DefaultValueForMandatoryParameter.psm1
+  'Invoke-DefaultValueForMandatoryParameterFix',
     
-    # UTF8EncodingForHelpFile.psm1
-    'Invoke-UTF8EncodingForHelpFileFix',
+  # UTF8EncodingForHelpFile.psm1
+  'Invoke-UTF8EncodingForHelpFileFix',
     
-    # CmdletBindingFix.psm1
-    'Invoke-CmdletBindingFix',
+  # CmdletBindingFix.psm1
+  'Invoke-CmdletBindingFix',
     
-    # CompatibleCmdletsWarning.psm1
-    'Invoke-CompatibleCmdletsWarningFix',
+  # CompatibleCmdletsWarning.psm1
+  'Invoke-CompatibleCmdletsWarningFix',
     
-    # DeprecatedManifestFields.psm1
-    'Invoke-DeprecatedManifestFieldsFix'
+  # DeprecatedManifestFields.psm1
+  'Invoke-DeprecatedManifestFieldsFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PoshGuard Formatting Auto-Fix Module
 
@@ -32,50 +32,50 @@ $ModuleRoot = $PSScriptRoot
 
 # Import all Formatting submodules
 $SubModules = @(
-    'Whitespace',
-    'Aliases',
-    'Casing',
-    'Output',
-    'Alignment',
-    'Runspaces',
-    'WriteHostEnhanced'
+  'Whitespace',
+  'Aliases',
+  'Casing',
+  'Output',
+  'Alignment',
+  'Runspaces',
+  'WriteHostEnhanced'
 )
 
 foreach ($SubModule in $SubModules) {
-    $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "Formatting\$SubModule.psm1"
-    if (Test-Path -Path $SubModulePath) {
-        Import-Module -Name $SubModulePath -Force -ErrorAction Stop
-    }
-    else {
-        Write-Warning "Submodule not found: $SubModulePath"
-    }
+  $SubModulePath = Join-Path -Path $ModuleRoot -ChildPath "Formatting\$SubModule.psm1"
+  if (Test-Path -Path $SubModulePath) {
+    Import-Module -Name $SubModulePath -Force -ErrorAction Stop
+  }
+  else {
+    Write-Warning "Submodule not found: $SubModulePath"
+  }
 }
 
 # Export all functions from all Formatting submodules
 $FunctionsToExport = @(
-    # Whitespace
-    'Invoke-FormatterFix',
-    'Invoke-WhitespaceFix',
-    'Invoke-MisleadingBacktickFix',
+  # Whitespace
+  'Invoke-FormatterFix',
+  'Invoke-WhitespaceFix',
+  'Invoke-MisleadingBacktickFix',
 
-    # Aliases
-    'Invoke-AliasFix',
-    'Invoke-AliasFixAst',
+  # Aliases
+  'Invoke-AliasFix',
+  'Invoke-AliasFixAst',
 
-    # Casing
-    'Invoke-CasingFix',
+  # Casing
+  'Invoke-CasingFix',
 
-    # Output
-    'Invoke-WriteHostFix',
-    'Invoke-WriteHostEnhancedFix',
-    'Invoke-RedirectionOperatorFix',
+  # Output
+  'Invoke-WriteHostFix',
+  'Invoke-WriteHostEnhancedFix',
+  'Invoke-RedirectionOperatorFix',
 
-    # Alignment
-    'Invoke-AlignAssignmentFix',
+  # Alignment
+  'Invoke-AlignAssignmentFix',
 
-    # Runspaces
-    'Invoke-UsingScopeModifierFix',
-    'Invoke-ShouldContinueWithoutForceFix'
+  # Runspaces
+  'Invoke-UsingScopeModifierFix',
+  'Invoke-ShouldContinueWithoutForceFix'
 )
 
 Export-ModuleMember -Function $FunctionsToExport
