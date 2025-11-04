@@ -658,6 +658,7 @@ function Test-AIFeature {
     #>
   [CmdletBinding()]
   [OutputType([PSCustomObject])]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for test progress output with colors')]
   param()
     
   Write-Host "🧪 Testing AI Features" -ForegroundColor Cyan

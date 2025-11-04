@@ -40,6 +40,7 @@ function Clear-Backups {
 function Write-Log {
   [CmdletBinding()]
   [OutputType([void])]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for colored CLI output')]
   param(
     [Parameter(Mandatory)]
     [ValidateSet('Info', 'Warn', 'Error', 'Success', 'Critical', 'Debug')]
@@ -77,6 +78,7 @@ function Write-Log {
 function Get-PowerShellFile {
   [CmdletBinding()]
   [OutputType([System.IO.FileInfo[]])]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for FastScan progress output')]
   param(
     [Parameter(Mandatory)]
     [string]$Path,

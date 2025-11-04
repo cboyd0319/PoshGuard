@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -475,6 +475,7 @@ function Test-ModuleSecurityConfig {
 function Invoke-OrgWideScan {
   [CmdletBinding()]
   [OutputType([PSCustomObject])]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for org-wide scan progress output')]
   param(
     [Parameter(Mandatory)]
     [string]$OrgPath,

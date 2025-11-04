@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     PoshGuard Observability Module - Metrics, Traces, and Structured Logging
 

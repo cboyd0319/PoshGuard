@@ -11,7 +11,7 @@
     Functions Tested:
     - Clear-Backups: Backup cleanup with date filtering
     - Write-Log: Logging with levels, formatting, and optional parameters
-    - Get-PowerShellFiles: File discovery with recursion and filtering
+    - Get-PowerShellFile: File discovery with recursion and filtering
     - New-FileBackup: File backup with timestamps
     - New-UnifiedDiff: Unified diff generation
     
@@ -162,6 +162,11 @@ Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
       Validates parameter validation and error conditions
   #>
   
+  BeforeAll {
+    # Remove Write-Host mock for Write-Log tests since we need to capture output
+    # Write-Host is intentionally used in Write-Log for colored CLI output
+  }
+  
   Context 'When logging at different severity levels' {
     It 'Formats message at <Level> level with correct pattern and color' -TestCases @(
       @{ Level = 'Info'; ExpectedPattern = '\[INFO\]'; ExpectedColor = 'Cyan' }
@@ -293,13 +298,13 @@ Describe 'Write-Log' -Tag 'Unit', 'Core', 'Logging' {
   }
 }
 
-Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
+Describe 'Get-PowerShellFile' -Tag 'Unit', 'Core' {
   
   Context 'When path is a single file' {
     It 'Should return the single file' {
       $testFile = New-TestFile -FileName 'test.ps1' -Content 'Write-Output "Test"'
       
-      $result = Get-PowerShellFiles -Path $testFile
+      $result = Get-PowerShellFile -Path $testFile
       
       $result.Count | Should -Be 1
       $result[0].Name | Should -Be 'test.ps1'
@@ -308,7 +313,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     It 'Should return file with .psm1 extension' {
       $testFile = New-TestFile -FileName 'module.psm1' -Content 'function Test {}'
       
-      $result = Get-PowerShellFiles -Path $testFile
+      $result = Get-PowerShellFile -Path $testFile
       
       $result.Count | Should -Be 1
       $result[0].Extension | Should -Be '.psm1'
@@ -317,7 +322,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     It 'Should return file with .psd1 extension' {
       $testFile = New-TestFile -FileName 'manifest.psd1' -Content '@{ ModuleVersion = "1.0" }'
       
-      $result = Get-PowerShellFiles -Path $testFile
+      $result = Get-PowerShellFile -Path $testFile
       
       $result.Count | Should -Be 1
       $result[0].Extension | Should -Be '.psd1'
@@ -338,7 +343,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     }
 
     It 'Should return all PowerShell files recursively' {
-      $result = Get-PowerShellFiles -Path $TestDrive
+      $result = Get-PowerShellFile -Path $TestDrive
       
       $result.Count | Should -Be 3
       $result.Name | Should -Contain 'script1.ps1'
@@ -347,7 +352,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     }
 
     It 'Should filter by supported extensions' {
-      $result = Get-PowerShellFiles -Path $TestDrive
+      $result = Get-PowerShellFile -Path $TestDrive
       
       $result.Extension | Should -Not -Contain '.txt'
       $result.Extension | Should -Not -Contain '.json'
@@ -356,7 +361,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     It 'Should support custom extensions' {
       New-TestFile -FileName 'test.ps1xml' -Content '<xml/>'
       
-      $result = Get-PowerShellFiles -Path $TestDrive -SupportedExtensions @('.ps1xml')
+      $result = Get-PowerShellFile -Path $TestDrive -SupportedExtensions @('.ps1xml')
       
       $result | Where-Object { $_.Extension -eq '.ps1xml' } | Should -HaveCount 1
     }
@@ -368,7 +373,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
       
       # Function might return empty or throw - let's just verify it handles it
       try {
-        $result = Get-PowerShellFiles -Path $nonExistentPath -ErrorAction Stop
+        $result = Get-PowerShellFile -Path $nonExistentPath -ErrorAction Stop
         $result | Should -BeNullOrEmpty
       } catch {
         # It's OK if it throws an error
@@ -383,7 +388,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
       New-Item -ItemType Directory -Path $emptyDir -Force | Out-Null
       New-Item -ItemType File -Path (Join-Path $emptyDir 'test.txt') -Force | Out-Null
       
-      $result = Get-PowerShellFiles -Path $emptyDir
+      $result = Get-PowerShellFile -Path $emptyDir
       
       $result | Should -BeNullOrEmpty
     }
@@ -391,7 +396,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
     It 'Should handle files with multiple dots in name' {
       $testFile = New-TestFile -FileName 'test.backup.ps1' -Content 'Write-Output "Test"'
       
-      $result = Get-PowerShellFiles -Path $testFile
+      $result = Get-PowerShellFile -Path $testFile
       
       $result.Count | Should -Be 1
     }
@@ -402,7 +407,7 @@ Describe 'Get-PowerShellFiles' -Tag 'Unit', 'Core' {
       $testFile = New-Item -ItemType File -Path (Join-Path $dirWithSpaces 'test script.ps1') -Force
       Set-Content -Path $testFile.FullName -Value 'Write-Output "Test"'
       
-      $result = Get-PowerShellFiles -Path $dirWithSpaces
+      $result = Get-PowerShellFile -Path $dirWithSpaces
       
       $result.Count | Should -Be 1
       $result[0].Name | Should -Be 'test script.ps1'
