@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -19,6 +19,7 @@
     Prerequisites: NONE
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', `n  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding()]
 param()
 

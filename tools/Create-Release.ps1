@@ -42,6 +42,8 @@
     this script to create the properly structured module package.
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding(SupportsShouldProcess)]
 param(
   [Parameter(Mandatory = $true)]

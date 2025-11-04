@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     OpenTelemetry Distributed Tracing - Enterprise Observability
 
@@ -88,6 +88,8 @@ function New-TraceId {
     .OUTPUTS
         System.String - 32-character hex trace ID
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', 
+    Justification = 'This function creates data structures in memory and does not modify system state')]
   [CmdletBinding()]
   [OutputType([string])]
   param()
@@ -112,6 +114,8 @@ function New-SpanId {
     .OUTPUTS
         System.String - 16-character hex span ID
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', 
+    Justification = 'This function creates data structures in memory and does not modify system state')]
   [CmdletBinding()]
   [OutputType([string])]
   param()
@@ -240,7 +244,7 @@ function Start-Span {
     .OUTPUTS
         System.Collections.Hashtable - Span object
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([hashtable])]
   param(
     [Parameter(Mandatory)]
@@ -330,7 +334,7 @@ function Stop-Span {
     .EXAMPLE
         Stop-Span -Span $span -Status 'Error' -StatusMessage 'File not found'
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]
     [hashtable]$Span,

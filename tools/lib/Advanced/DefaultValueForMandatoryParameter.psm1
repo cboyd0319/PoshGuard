@@ -88,8 +88,6 @@ function Invoke-DefaultValueForMandatoryParameterFix {
                     
           # Get the extent of the default value assignment (including the = sign)
           $paramNameEnd = $paramAst.Name.Extent.EndOffset
-          $defaultValueStart = $paramAst.DefaultValue.Extent.StartOffset
-                    
           # Find the = sign (it's between the param name and default value)
                                         
           # The range to remove is from the end of param name to end of default value

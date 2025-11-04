@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 
 <#
 .SYNOPSIS
@@ -137,7 +137,8 @@ function Write-ColorOutput {
     Provides additional information about the function.
 #>
 function Get-BackupFile {
-  [CmdletBinding()]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', `n  Justification = 'Write-Host is used intentionally for colored CLI output')]
+[CmdletBinding()]
   [OutputType([PSCustomObject[]])]
   param(
     [Parameter(Mandatory)]
@@ -195,7 +196,8 @@ function Get-BackupFile {
     Provides additional information about the function.
 #>
 function Show-BackupList {
-  [CmdletBinding()]
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', `n  Justification = 'Write-Host is used intentionally for colored CLI output')]
+[CmdletBinding()]
   param(
     [Parameter(Mandatory)]
     [PSCustomObject[]]$Backups

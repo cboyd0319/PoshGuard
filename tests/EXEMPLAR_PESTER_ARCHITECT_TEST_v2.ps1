@@ -339,7 +339,7 @@ Describe 'Core Module - Get-PowerShellFiles Function' -Tag 'Unit', 'Core', 'Exem
   }
 }
 
-Describe 'Core Module - Clear-Backups Function' -Tag 'Unit', 'Core', 'Exemplar' {
+Describe 'Core Module - Clear-Backup Function' -Tag 'Unit', 'Core', 'Exemplar' {
   
   Context 'ShouldProcess Support - WhatIf and Confirm' {
     
@@ -360,7 +360,7 @@ Describe 'Core Module - Clear-Backups Function' -Tag 'Unit', 'Core', 'Exemplar' 
         Mock Remove-Item -Verifiable
         
         # ACT
-        Clear-Backups -WhatIf
+        Clear-Backup -WhatIf
         
         # ASSERT - Verify Remove-Item was NOT called
         Assert-MockCalled Remove-Item -Times 0 -Scope It
@@ -381,7 +381,7 @@ Describe 'Core Module - Clear-Backups Function' -Tag 'Unit', 'Core', 'Exemplar' 
         Mock Write-Verbose { }  # Suppress verbose output
         
         # ACT - Use -Confirm:$false to bypass confirmation
-        Clear-Backups -Confirm:$false
+        Clear-Backup -Confirm:$false
         
         # ASSERT
         Assert-MockCalled Remove-Item -Exactly -Times 1 -Scope It
@@ -417,7 +417,7 @@ Describe 'Core Module - Clear-Backups Function' -Tag 'Unit', 'Core', 'Exemplar' 
         Mock Write-Verbose { }
         
         # ACT
-        Clear-Backups -Confirm:$false
+        Clear-Backup -Confirm:$false
         
         # ASSERT - Only old file should be deleted
         Assert-MockCalled Remove-Item -ParameterFilter { 
@@ -433,7 +433,7 @@ Describe 'Core Module - Module Structure and Exports' -Tag 'Unit', 'Core', 'Exem
   Context 'Module manifest and exports' {
     
     It 'exports expected functions' -TestCases @(
-      @{ FunctionName = 'Clear-Backups' }
+      @{ FunctionName = 'Clear-Backup' }
       @{ FunctionName = 'Write-Log' }
       @{ FunctionName = 'Get-PowerShellFiles' }
       @{ FunctionName = 'New-FileBackup' }
@@ -450,7 +450,7 @@ Describe 'Core Module - Module Structure and Exports' -Tag 'Unit', 'Core', 'Exem
     }
     
     It 'exported functions have CmdletBinding' -TestCases @(
-      @{ FunctionName = 'Clear-Backups' }
+      @{ FunctionName = 'Clear-Backup' }
       @{ FunctionName = 'Write-Log' }
       @{ FunctionName = 'Get-PowerShellFiles' }
       @{ FunctionName = 'New-FileBackup' }

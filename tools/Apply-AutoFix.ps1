@@ -71,6 +71,8 @@
     Features: Self-improving fixes, Shannon entropy analysis, OpenTelemetry tracing, SBOM generation, NIST SP 800-53 compliance
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+  Justification = 'Write-Host is used intentionally for colored CLI output')]
 [CmdletBinding(SupportsShouldProcess)]
 param(
   [Parameter(Mandatory, Position = 0)]
@@ -791,7 +793,7 @@ try {
   }
 
   if ($CleanBackups) {
-    Clear-Backups
+    Clear-Backup
   }
 
   exit 0

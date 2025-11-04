@@ -126,6 +126,8 @@ function Write-StructuredLog {
             success = $true
         }
     #>
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', 
+    Justification = 'Write-Host is used as fallback when file logging fails')]
   [CmdletBinding()]
   [OutputType([void])]
   param(
@@ -336,7 +338,7 @@ function Update-OperationMetric {
     .EXAMPLE
         Update-OperationMetrics -FilesProcessed 1 -FilesSucceeded 1 -ViolationsFixed 5
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param(
     [Parameter()]

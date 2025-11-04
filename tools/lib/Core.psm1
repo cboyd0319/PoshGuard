@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function Clear-Backups {
+function Clear-Backup {
   [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param()
@@ -152,6 +152,8 @@ function New-FileBackup {
 }
 
 function New-UnifiedDiff {
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', 
+    Justification = 'This function creates data structures in memory and does not modify system state')]
   [CmdletBinding()]
   [OutputType([string])]
   param(
@@ -188,7 +190,7 @@ function New-UnifiedDiff {
 }
 
 Export-ModuleMember -Function @(
-  'Clear-Backups',
+  'Clear-Backup',
   'Write-Log',
   'Get-PowerShellFiles',
   'New-FileBackup',

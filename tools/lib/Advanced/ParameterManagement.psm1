@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     PoshGuard Parameter Management Module
 
@@ -413,8 +413,6 @@ function Invoke-NullHelpMessageFix {
         param($node)
         $node -is [System.Management.Automation.Language.ParameterAst]
       }, $true)
-
-    $replacements = @()
 
     foreach ($param in $params) {
       $paramName = $param.Name.VariablePath.UserPath
