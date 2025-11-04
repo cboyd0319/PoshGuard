@@ -1,0 +1,228 @@
+# Copilot pre-install steps for ephemeral dev environment
+# This file helps GitHub Copilot Agents install project dependencies
+# before attempting builds/tests/lints, improving PR quality and speed.
+
+steps:
+  - name: Windows — Install PowerShell 7+
+    if: runner.os == 'Windows'
+    run: |
+      if (!(Get-Command pwsh -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing PowerShell 7..."
+        winget install --id Microsoft.PowerShell --source winget
+      }
+      pwsh --version
+
+  - name: Windows — Install required PowerShell modules
+    if: runner.os == 'Windows'
+    shell: pwsh
+    run: |
+      Write-Host "Installing PSScriptAnalyzer..."
+      Install-Module PSScriptAnalyzer -MinimumVersion 1.24.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Installing Pester..."
+      Install-Module Pester -MinimumVersion 5.5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Verifying installations..."
+      Get-Module PSScriptAnalyzer, Pester -ListAvailable | Format-Table Name, Version
+
+  - name: Windows — Install RipGrep (optional)
+    if: runner.os == 'Windows'
+    run: |
+      if (!(Get-Command rg -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing RipGrep via winget..."
+        winget install BurntSushi.ripgrep.MSVC
+      }
+      rg --version
+
+  - name: Windows — Install Node.js and markdownlint
+    if: runner.os == 'Windows'
+    run: |
+      if (!(Get-Command node -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing Node.js..."
+        winget install OpenJS.NodeJS.LTS
+        refreshenv
+      }
+      npm install -g markdownlint-cli
+      markdownlint --version
+
+  - name: macOS — Install PowerShell 7+
+    if: runner.os == 'macOS'
+    run: |
+      if ! command -v pwsh &> /dev/null; then
+        echo "Installing PowerShell 7..."
+        brew install --cask powershell
+      fi
+      pwsh --version
+
+  - name: macOS — Install required PowerShell modules
+    if: runner.os == 'macOS'
+    shell: pwsh
+    run: |
+      Write-Host "Installing PSScriptAnalyzer..."
+      Install-Module PSScriptAnalyzer -MinimumVersion 1.24.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Installing Pester..."
+      Install-Module Pester -MinimumVersion 5.5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Verifying installations..."
+      Get-Module PSScriptAnalyzer, Pester -ListAvailable | Format-Table Name, Version
+
+  - name: macOS — Install RipGrep (optional)
+    if: runner.os == 'macOS'
+    run: |
+      if ! command -v rg &> /dev/null; then
+        echo "Installing RipGrep..."
+        brew install ripgrep
+      fi
+      rg --version
+
+  - name: macOS — Install Node.js and markdownlint
+    if: runner.os == 'macOS'
+    run: |
+      brew update
+      brew install node
+      npm install -g markdownlint-cli
+      markdownlint --version
+
+  - name: Linux — Install PowerShell 7+
+    if: runner.os == 'Linux'
+    run: |
+      if ! command -v pwsh &> /dev/null; then
+        echo "Installing PowerShell 7..."
+        # For Ubuntu/Debian
+        wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+        sudo apt-get update
+        sudo apt-get install -y powershell
+      fi
+      pwsh --version
+
+  - name: Linux — Install required PowerShell modules
+    if: runner.os == 'Linux'
+    shell: pwsh
+    run: |
+      Write-Host "Installing PSScriptAnalyzer..."
+      Install-Module PSScriptAnalyzer -MinimumVersion 1.24.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Installing Pester..."
+      Install-Module Pester -MinimumVersion 5.5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+      
+      Write-Host "Verifying installations..."
+      Get-Module PSScriptAnalyzer, Pester -ListAvailable | Format-Table Name, Version
+
+  - name: Linux — Install RipGrep (optional)
+    if: runner.os == 'Linux'
+    run: |
+      if ! command -v rg &> /dev/null; then
+        echo "Installing RipGrep..."
+        sudo apt-get update
+        sudo apt-get install -y ripgrep
+      fi
+      rg --version
+
+  - name: Linux — Install Node.js and markdownlint
+    if: runner.os == 'Linux'
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y nodejs npm
+      npm install -g markdownlint-cli
+      markdownlint --version
+
+  - name: Install Git (if missing)
+    run: |
+      if command -v git &> /dev/null; then
+        git --version
+      elif [ "$RUNNER_OS" == "macOS" ]; then
+        brew install git
+      elif [ "$RUNNER_OS" == "Linux" ]; then
+        sudo apt-get install -y git
+      elif [ "$RUNNER_OS" == "Windows" ]; then
+        winget install --id Git.Git -e --source winget
+      fi
+
+  - name: Confirm repo tools
+    shell: pwsh
+    run: |
+      Write-Host "=== Core PowerShell Environment ==="
+      Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+      Write-Host "PSEdition: $($PSVersionTable.PSEdition)"
+      Write-Host ""
+      
+      Write-Host "=== Required Modules ==="
+      $psaModule = Get-Module PSScriptAnalyzer -ListAvailable | Select-Object -First 1
+      if ($psaModule) {
+        Write-Host "PSScriptAnalyzer: $($psaModule.Version)"
+      } else {
+        Write-Host "PSScriptAnalyzer: MISSING"
+      }
+      
+      $pesterModule = Get-Module Pester -ListAvailable | Where-Object { $_.Version -ge '5.5.0' } | Select-Object -First 1
+      if ($pesterModule) {
+        Write-Host "Pester: $($pesterModule.Version)"
+      } else {
+        Write-Host "Pester: MISSING or < 5.5.0"
+      }
+      Write-Host ""
+      
+      Write-Host "=== Optional Tools ==="
+      if (Get-Command rg -ErrorAction SilentlyContinue) {
+        Write-Host "RipGrep: $(rg --version | Select-Object -First 1)"
+      } else {
+        Write-Host "RipGrep: NOT INSTALLED (optional, provides 5-10x speedup)"
+      }
+      Write-Host ""
+      
+      Write-Host "=== Documentation Tools ==="
+      if (Get-Command markdownlint -ErrorAction SilentlyContinue) {
+        Write-Host "markdownlint: $(markdownlint --version 2>&1 | Select-Object -First 1)"
+      } else {
+        Write-Host "markdownlint: MISSING"
+      }
+      
+      if (Get-Command node -ErrorAction SilentlyContinue) {
+        Write-Host "Node.js: $(node --version)"
+      } else {
+        Write-Host "Node.js: MISSING"
+      }
+      
+      if (Get-Command npm -ErrorAction SilentlyContinue) {
+        Write-Host "npm: $(npm --version)"
+      } else {
+        Write-Host "npm: MISSING"
+      }
+      Write-Host ""
+      
+      Write-Host "=== Git ==="
+      if (Get-Command git -ErrorAction SilentlyContinue) {
+        Write-Host "Git: $(git --version)"
+      } else {
+        Write-Host "Git: MISSING"
+      }
+
+  - name: Verify repository structure
+    shell: pwsh
+    run: |
+      Write-Host "=== PoshGuard Repository Structure ==="
+      
+      $paths = @(
+        "PoshGuard/PoshGuard.psd1",
+        "PoshGuard/PoshGuard.psm1",
+        "tools/lib/Core.psm1",
+        "tools/lib/Security.psm1",
+        "tools/lib/BestPractices.psm1",
+        "tools/Apply-AutoFix.ps1",
+        "tests/run-local-tests.ps1",
+        ".psscriptanalyzer.psd1",
+        ".markdownlint.json",
+        "docs/DOCUMENTATION_INDEX.md"
+      )
+      
+      foreach ($path in $paths) {
+        if (Test-Path $path) {
+          Write-Host "✓ $path"
+        } else {
+          Write-Host "✗ $path (MISSING)"
+        }
+      }
+      Write-Host ""
+      Write-Host "Setup complete! Ready for development and testing."
