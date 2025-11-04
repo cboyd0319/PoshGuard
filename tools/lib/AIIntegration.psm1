@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     AI/ML Integration Module for PoshGuard
 

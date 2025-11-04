@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Enhanced Security Detection with CWE and MITRE ATT&CK Mappings
 

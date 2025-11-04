@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Core helper functions for PowerShell QA Engine
 

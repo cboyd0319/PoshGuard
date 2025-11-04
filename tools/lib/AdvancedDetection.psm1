@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Advanced Code Quality Detection Module
 

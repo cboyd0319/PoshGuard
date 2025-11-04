@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Performance Optimization Module for PoshGuard
 
