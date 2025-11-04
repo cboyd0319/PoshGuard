@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Advanced Code Analysis Module for PoshGuard
 
@@ -227,8 +227,7 @@ function Find-UnusedVariable {
       $node -is [System.Management.Automation.Language.VariableExpressionAst]
     }, $true)
     
-  $readVariables = $reads | ForEach-Object { $_.VariablePath.UserPath }
-    
+      
   foreach ($assignment in $assignments) {
     if ($assignment.Left -is [System.Management.Automation.Language.VariableExpressionAst]) {
       $varName = $assignment.Left.VariablePath.UserPath

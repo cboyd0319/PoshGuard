@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -791,7 +791,7 @@ try {
   }
 
   if ($CleanBackups) {
-    Clean-Backups
+    Clear-Backups
   }
 
   exit 0

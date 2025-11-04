@@ -125,8 +125,7 @@ function Invoke-ParallelAnalysis {
           $elapsed = (Get-Date) - $startTime
           $rate = $completed / $elapsed.TotalSeconds
           $remaining = ($total - $completed) / $rate
-          $eta = [TimeSpan]::FromSeconds($remaining)
-                    
+                              
           Write-Progress `
             -Activity "Parallel Analysis" `
             -Status "Processed $completed of $total files" `

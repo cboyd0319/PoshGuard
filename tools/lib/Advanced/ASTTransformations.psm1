@@ -324,7 +324,7 @@ function Invoke-LongLinesFix {
     $result = [System.Collections.ArrayList]::new()
     $tokens = $null
     $errors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
     if ($errors.Count -gt 0) {
       Write-Verbose "Skipping long lines fix due to parse errors"

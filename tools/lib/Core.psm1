@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Core helper functions for PowerShell QA Engine
 
@@ -18,7 +18,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function Clean-Backup {
+function Clear-Backups {
   [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param()
@@ -186,7 +186,7 @@ function New-UnifiedDiff {
 }
 
 Export-ModuleMember -Function @(
-  'Clean-Backups',
+  'Clear-Backups',
   'Write-Log',
   'Get-PowerShellFiles',
   'New-FileBackup',

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 
 <#
@@ -9,7 +9,7 @@
     Unit tests for Core.psm1 following Pester Architect principles:
     
     Functions Tested:
-    - Clean-Backups: Backup cleanup with date filtering
+    - Clear-Backups: Backup cleanup with date filtering
     - Write-Log: Logging with levels, formatting, and optional parameters
     - Get-PowerShellFiles: File discovery with recursion and filtering
     - New-FileBackup: File backup with timestamps
@@ -56,7 +56,7 @@ BeforeAll {
   Initialize-PerformanceMocks -ModuleName 'Core'
 }
 
-Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
+Describe 'Clear-Backups' -Tag 'Unit', 'Core', 'Backup' {
   <#
   .SYNOPSIS
       Tests for backup cleanup with time-based filtering
@@ -75,7 +75,7 @@ Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
         Mock Get-ChildItem { throw "Should not be called" }
         
         # Act & Assert
-        { Clean-Backups -Confirm:$false } | Should -Not -Throw
+        { Clear-Backups -Confirm:$false } | Should -Not -Throw
         Assert-MockCalled Test-Path -Exactly -Times 1 -Scope It
         Assert-MockCalled Get-ChildItem -Exactly -Times 0 -Scope It
       }
@@ -104,7 +104,7 @@ Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
         Mock Remove-Item { } -Verifiable
         
         # Act
-        Clean-Backups -Confirm:$false
+        Clear-Backups -Confirm:$false
         
         # Assert - only old file should be deleted
         Assert-MockCalled Remove-Item -ParameterFilter { 
@@ -129,7 +129,7 @@ Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
         Mock Remove-Item { throw "Should not delete in WhatIf mode" }
         
         # Act
-        Clean-Backups -WhatIf
+        Clear-Backups -WhatIf
         
         # Assert - Remove-Item should not be called
         Assert-MockCalled Remove-Item -Exactly -Times 0 -Scope It
@@ -145,7 +145,7 @@ Describe 'Clean-Backups' -Tag 'Unit', 'Core', 'Backup' {
         Mock Get-ChildItem { throw "Access denied" }
         
         # Act & Assert - should throw when ErrorAction is not suppressed
-        { Clean-Backups -Confirm:$false -ErrorAction Stop } | Should -Throw -ExpectedMessage '*Access denied*'
+        { Clear-Backups -Confirm:$false -ErrorAction Stop } | Should -Throw -ExpectedMessage '*Access denied*'
       }
     }
   }

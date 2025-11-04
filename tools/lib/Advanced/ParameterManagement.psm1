@@ -108,7 +108,6 @@ function Invoke-ReservedParamsFix {
             # Add replacements for all references (sorted by position descending)
             foreach ($varRef in $varRefs) {
               $extent = $varRef.Extent
-              $oldText = $extent.Text
               $newText = "`$$newParamName"
 
               $replacements.Add([PSCustomObject]@{
@@ -203,7 +202,6 @@ function Invoke-SwitchParameterDefaultFix {
           $paramName = $paramAst.Name.VariablePath.UserPath
 
           # Get the text from parameter start to default value end
-          $paramStartOffset = $paramAst.Extent.StartOffset
           $defaultValueEndOffset = $paramAst.DefaultValue.Extent.EndOffset
 
           # Find the = sign before the default value
@@ -212,42 +210,41 @@ function Invoke-SwitchParameterDefaultFix {
 
           if ($textBetween -match '\s*=\s*') {
             # Remove everything from the end of variable name to end of default value
-            $oldText = $Content.Substring($paramAst.Name.Extent.EndOffset,
-              $defaultValueEndOffset - $paramAst.Name.Extent.EndOffset)
+            $defaultValueEndOffset - $paramAst.Name.Extent.EndOffset)
 
-            $replacements.Add([PSCustomObject]@{
-                StartOffset = $paramAst.Name.Extent.EndOffset
-                EndOffset = $defaultValueEndOffset
-                OldText = $oldText
-                NewText = ''
-              }) | Out-Null
+          $replacements.Add([PSCustomObject]@{
+              StartOffset = $paramAst.Name.Extent.EndOffset
+              EndOffset = $defaultValueEndOffset
+              OldText = $oldText
+              NewText = ''
+            }) | Out-Null
 
-            Write-Verbose "Removing default value from switch parameter: $paramName"
-          }
+          Write-Verbose "Removing default value from switch parameter: $paramName"
         }
-      }
-
-      # Apply replacements in reverse order (end to start)
-      if ($replacements.Count -gt 0) {
-        $replacements = $replacements | Sort-Object -Property StartOffset -Descending
-        $fixed = $Content
-
-        foreach ($replacement in $replacements) {
-          $before = $fixed.Substring(0, $replacement.StartOffset)
-          $after = $fixed.Substring($replacement.EndOffset)
-          $fixed = $before + $replacement.NewText + $after
-        }
-
-        Write-Verbose "Removed default values from $($replacements.Count) switch parameter(s)"
-        return $fixed
       }
     }
-  }
-  catch {
-    Write-Verbose "Switch parameter default fix failed: $_"
-  }
 
-  return $Content
+    # Apply replacements in reverse order (end to start)
+    if ($replacements.Count -gt 0) {
+      $replacements = $replacements | Sort-Object -Property StartOffset -Descending
+      $fixed = $Content
+
+      foreach ($replacement in $replacements) {
+        $before = $fixed.Substring(0, $replacement.StartOffset)
+        $after = $fixed.Substring($replacement.EndOffset)
+        $fixed = $before + $replacement.NewText + $after
+      }
+
+      Write-Verbose "Removed default values from $($replacements.Count) switch parameter(s)"
+      return $fixed
+    }
+  }
+}
+catch {
+  Write-Verbose "Switch parameter default fix failed: $_"
+}
+
+return $Content
 }
 
 function Invoke-UnusedParameterFix {
@@ -338,9 +335,7 @@ function Invoke-UnusedParameterFix {
             $lineText = $lines[$startLine]
 
             # Preserve indentation
-            $indent = ''
             if ($lineText -match '^(\s+)') {
-              $indent = $Matches[1]
             }
 
             # Create commented version with note
@@ -436,7 +431,6 @@ function Invoke-NullHelpMessageFix {
                 # Check if HelpMessage is empty or null
                 if ($argValue -match '^["'']?\s*["'']?$' -or $argValue -eq '$null') {
                   $newMessage = "Please provide a value for $paramName"
-                  $oldText = $namedArg.Extent.Text
                   $newText = "HelpMessage=`"$newMessage`""
 
                   $replacements += [PSCustomObject]@{

@@ -233,8 +233,6 @@ function Invoke-UsernamePasswordParamsFix {
 
       $hasUsername = $false
       $hasPassword = $false
-      $paramBlockStart = $null
-      $paramBlockEnd = $null
 
       foreach ($param in $params) {
         $paramName = $param.Name.VariablePath.UserPath
@@ -250,7 +248,6 @@ function Invoke-UsernamePasswordParamsFix {
         # Found a function with both Username and Password params
         if ($function.Body.ParamBlock) {
           $paramBlockStart = $function.Body.ParamBlock.Extent.StartOffset
-          $paramBlockEnd = $function.Body.ParamBlock.Extent.StartOffset
 
           $replacements += @{
             FunctionName = $function.Name
@@ -487,7 +484,6 @@ function Invoke-EmptyCatchBlockFix {
     foreach ($tryAst in $tryCatchAsts) {
       foreach ($catch in $tryAst.CatchClauses) {
         # Check if the catch block body is empty or only whitespace
-        $catchBody = $catch.Body.Extent.Text
         $catchBodyContent = $catch.Body.Statements
                 
         if ($null -eq $catchBodyContent -or $catchBodyContent.Count -eq 0) {

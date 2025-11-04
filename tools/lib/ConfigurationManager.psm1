@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Unified Configuration Management for PoshGuard
 
@@ -94,7 +94,7 @@ function Initialize-PoshGuardConfiguration {
   }
     
   # Apply environment variable overrides
-  Apply-EnvironmentOverrides -Config $script:Config
+  Set-EnvironmentOverrides -Config $script:Config
     
   # Validate configuration
   if (-not (Test-ConfigurationValid -Config $script:Config)) {
@@ -246,7 +246,7 @@ function Set-PoshGuardConfigurationValue {
     .EXAMPLE
         Set-PoshGuardConfigurationValue -Path "MCP.Enabled" -Value $true
     #>
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]
     [string]$Path,
@@ -259,18 +259,20 @@ function Set-PoshGuardConfigurationValue {
     Initialize-PoshGuardConfiguration
   }
     
-  $parts = $Path -split '\.'
-  $current = $script:Config
+  if ($PSCmdlet.ShouldProcess("Configuration: $Path", "Set value to $Value")) {
+    $parts = $Path -split '\.'
+    $current = $script:Config
     
-  for ($i = 0; $i -lt $parts.Count - 1; $i++) {
-    if (-not $current.ContainsKey($parts[$i])) {
-      $current[$parts[$i]] = @{}
+    for ($i = 0; $i -lt $parts.Count - 1; $i++) {
+      if (-not $current.ContainsKey($parts[$i])) {
+        $current[$parts[$i]] = @{}
+      }
+      $current = $current[$parts[$i]]
     }
-    $current = $current[$parts[$i]]
-  }
     
-  $current[$parts[-1]] = $Value
-  Write-Verbose "Configuration updated: $Path = $Value"
+    $current[$parts[-1]] = $Value
+    Write-Verbose "Configuration updated: $Path = $Value"
+  }
 }
 
 #endregion
@@ -347,7 +349,7 @@ function Merge-Configuration {
   return $result
 }
 
-function Apply-EnvironmentOverride {
+function Set-EnvironmentOverride {
   <#
     .SYNOPSIS
         Apply environment variable overrides to configuration

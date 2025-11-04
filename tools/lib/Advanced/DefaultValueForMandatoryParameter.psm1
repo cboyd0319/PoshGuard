@@ -1,4 +1,4 @@
-﻿# DefaultValueForMandatoryParameter.psm1
+# DefaultValueForMandatoryParameter.psm1
 # Implements PSAvoidDefaultValueForMandatoryParameter auto-fix
 # Removes default values from mandatory parameters
 
@@ -91,9 +91,7 @@ function Invoke-DefaultValueForMandatoryParameterFix {
           $defaultValueStart = $paramAst.DefaultValue.Extent.StartOffset
                     
           # Find the = sign (it's between the param name and default value)
-          $equalsStart = $paramNameEnd
-          $equalsEnd = $defaultValueStart
-                    
+                                        
           # The range to remove is from the end of param name to end of default value
           # But we need to be careful with whitespace
           $removeStart = $paramNameEnd

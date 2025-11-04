@@ -55,7 +55,7 @@ function Invoke-SemicolonFix {
   try {
     $tokens = $null
     $errors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
     if ($errors.Count -eq 0) {
       $replacements = @()
@@ -130,7 +130,7 @@ function Invoke-NullComparisonFix {
   try {
     $tokens = $null
     $errors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
 
     if ($errors.Count -eq 0) {
       $replacements = @()
@@ -247,7 +247,7 @@ function Invoke-ExclaimOperatorFix {
   )
 
   try {
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$tokens, [ref]$errors)
     $replacements = @()
 
     # Find all unary expression AST nodes with ! operator
