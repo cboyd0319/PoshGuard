@@ -172,14 +172,14 @@ jobs:
           Write-Host "`n✅ All tests passed!" -ForegroundColor Green
       
       - name: Upload test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always()
         with:
           name: test-results-${{ matrix.os }}
           path: test-results.xml
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: matrix.os == 'ubuntu-latest'
         with:
           name: coverage-report
