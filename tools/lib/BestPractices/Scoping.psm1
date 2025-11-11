@@ -35,6 +35,7 @@ function Invoke-GlobalVarFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -119,6 +120,7 @@ function Invoke-GlobalFunctionsFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

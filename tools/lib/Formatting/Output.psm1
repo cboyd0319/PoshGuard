@@ -48,6 +48,7 @@ function Invoke-WriteHostFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -137,6 +138,7 @@ function Invoke-RedirectionOperatorFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

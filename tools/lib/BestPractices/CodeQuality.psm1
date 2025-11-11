@@ -62,6 +62,7 @@ function Invoke-TodoCommentDetectionFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -153,6 +154,7 @@ function Invoke-UnusedNamespaceDetectionFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -271,6 +273,7 @@ function Invoke-AsciiCharacterWarningFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -354,6 +357,7 @@ function Invoke-ConvertFromJsonOptimizationFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -427,6 +431,7 @@ function Invoke-SecureStringDisclosureFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     

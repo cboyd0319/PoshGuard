@@ -48,6 +48,7 @@ function Invoke-SemicolonFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -123,6 +124,7 @@ function Invoke-NullComparisonFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -243,6 +245,7 @@ function Invoke-ExclaimOperatorFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

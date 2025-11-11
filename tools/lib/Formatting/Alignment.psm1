@@ -41,6 +41,7 @@ function Invoke-AlignAssignmentFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

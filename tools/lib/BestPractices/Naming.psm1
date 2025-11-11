@@ -44,6 +44,7 @@ function Invoke-SingularNounFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -161,6 +162,7 @@ function Invoke-ApprovedVerbFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -334,6 +336,7 @@ function Invoke-ReservedCmdletCharFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

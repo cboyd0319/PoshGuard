@@ -39,6 +39,7 @@ function Invoke-FormatterFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content,
     [Parameter()]
     [string]$FilePath = ''
@@ -80,6 +81,7 @@ function Invoke-WhitespaceFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -120,6 +122,7 @@ function Invoke-MisleadingBacktickFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

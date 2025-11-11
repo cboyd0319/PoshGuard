@@ -37,6 +37,7 @@ function Invoke-PositionalParametersFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -98,6 +99,7 @@ function Invoke-DeclaredVarsMoreThanAssignmentsFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -203,6 +205,7 @@ function Invoke-IncorrectAssignmentOperatorFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

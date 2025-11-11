@@ -39,6 +39,7 @@ function Invoke-AliasFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content,
     [Parameter()]
     [string]$FilePath = ''
@@ -68,6 +69,7 @@ function Invoke-AliasFixAst {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

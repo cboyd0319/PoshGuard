@@ -39,6 +39,7 @@ function Invoke-UsingScopeModifierFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -131,6 +132,7 @@ function Invoke-ShouldContinueWithoutForceFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
