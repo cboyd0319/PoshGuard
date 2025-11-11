@@ -17,9 +17,16 @@
 .NOTES
     Part of PoshGuard v4.3.0
     Security Phase Complete: October 10, 2025
+    Dependencies: ASTHelper.psm1 (for AST operations)
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot 'ASTHelper.psm1'
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 
 function Invoke-PlainTextPasswordFix {
   <#
