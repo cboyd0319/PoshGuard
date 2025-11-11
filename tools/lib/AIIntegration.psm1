@@ -12,7 +12,7 @@
     - Predictive issue detection
 
 .NOTES
-    Version: 4.0.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework Enhancement
     Reference: docs/reference/AI-ML-INTEGRATION.md
     
@@ -21,6 +21,12 @@
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 $ErrorActionPreference = 'Stop'
 
 #region Module Variables

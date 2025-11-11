@@ -16,7 +16,7 @@
     - CodeQuality: Beyond-PSSA enhancements (TODO tracking, namespace optimization, etc.)
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     This facade module maintains backward compatibility while organizing
     functions into logical submodules for better maintainability.
 

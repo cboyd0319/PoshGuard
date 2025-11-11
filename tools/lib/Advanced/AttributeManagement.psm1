@@ -12,11 +12,17 @@
     Ensures functions follow PowerShell attribute best practices.
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher for AST functionality
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "../ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 
 function Invoke-SupportsShouldProcessFix {
   <#

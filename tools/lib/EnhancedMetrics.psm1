@@ -12,11 +12,17 @@
 
 .NOTES
     Module: EnhancedMetrics
-    Version: 3.3.0
+    Version: 4.3.0
     SRE Principles: Golden Signals (latency, errors, saturation)
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 $ErrorActionPreference = 'Stop'
 
 # Global metrics store

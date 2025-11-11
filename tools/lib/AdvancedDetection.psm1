@@ -14,12 +14,18 @@
 
 .NOTES
     Module: AdvancedDetection
-    Version: 3.3.0
+    Version: 4.3.0
     OWASP ASVS: V5.1.1 (Input Validation), V8.3.4 (Sensitive Data)
     SWEBOK: Software Quality (KA 10)
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 $ErrorActionPreference = 'Stop'
 
 function Test-CodeComplexity {

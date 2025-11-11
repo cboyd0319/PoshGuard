@@ -30,7 +30,7 @@
     - Custom high-entropy strings
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     OWASP ASVS: V6.2.1 - Secret Management
     CWE-798: Hard-coded Credentials
@@ -40,18 +40,41 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Import Constants module for centralized configuration
+$ConstantsPath = Join-Path $PSScriptRoot 'Constants.psm1'
+if (Test-Path $ConstantsPath) {
+  Import-Module $ConstantsPath -Force -ErrorAction SilentlyContinue
+}
+
 #region Configuration
 
+# Get entropy thresholds from Constants module (with fallbacks)
+$HighEntropy = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'HighEntropyThreshold'
+} else { 4.5 }
+
+$MediumEntropy = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'MediumEntropyThreshold'
+} else { 3.5 }
+
+$LowEntropy = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'LowEntropyThreshold'
+} else { 3.0 }
+
+$MinSecretLen = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'MinSecretLength'
+} else { 16 }
+
 $script:EntropyConfig = @{
-  # Entropy thresholds (bits per character)
-  Base64Threshold = 4.5   # Typical: 4.5-5.0 for Base64 secrets
-  HexThreshold = 3.0      # Typical: 3.0-3.5 for Hex secrets
-  AsciiThreshold = 3.5    # Typical: 3.5-4.0 for ASCII secrets
-    
-  # Minimum string lengths to analyze
+  # Entropy thresholds (bits per character) - from Constants.psm1
+  Base64Threshold = $HighEntropy   # Typical: 4.5-5.0 for Base64 secrets
+  HexThreshold = $LowEntropy       # Typical: 3.0-3.5 for Hex secrets
+  AsciiThreshold = $MediumEntropy  # Typical: 3.5-4.0 for ASCII secrets
+
+  # Minimum string lengths to analyze - from Constants.psm1
   MinBase64Length = 20    # Shorter strings have unreliable entropy
   MinHexLength = 20
-  MinAsciiLength = 16
+  MinAsciiLength = $MinSecretLen
     
   # Secret patterns (regex)
   Patterns = @{

@@ -20,7 +20,7 @@
 
 .NOTES
     Author: PoshGuard Contributors
-    Version: 1.0.0
+    Version: 4.3.0
     Requires: RipGrep 14.0+ (optional - falls back to slower scanning if not installed)
     Part of PoshGuard v4.3.0+
 #>

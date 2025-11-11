@@ -11,7 +11,7 @@
     Improves code readability through consistent alignment.
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher
 #>
 
@@ -41,6 +41,7 @@ function Invoke-AlignAssignmentFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

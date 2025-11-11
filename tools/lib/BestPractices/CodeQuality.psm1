@@ -10,10 +10,10 @@
     - Get-Content | ConvertFrom-Json optimization (add `-Raw`)
     - SecureString disclosure detection
 
-    Part of PoshGuard v3.2.0 roadmap - Innovation leadership in PowerShell tooling.
+    Part of PoshGuard v4.3.0 roadmap - Innovation leadership in PowerShell tooling.
 
 .NOTES
-    Part of PoshGuard v3.2.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher
     
     References:
@@ -22,6 +22,12 @@
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "../ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 
 function Invoke-TodoCommentDetectionFix {
   <#
@@ -62,6 +68,7 @@ function Invoke-TodoCommentDetectionFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -153,6 +160,7 @@ function Invoke-UnusedNamespaceDetectionFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -271,6 +279,7 @@ function Invoke-AsciiCharacterWarningFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -354,6 +363,7 @@ function Invoke-ConvertFromJsonOptimizationFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     
@@ -427,6 +437,7 @@ function Invoke-SecureStringDisclosureFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
     

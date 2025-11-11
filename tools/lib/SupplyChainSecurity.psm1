@@ -28,7 +28,7 @@
     - SPDX 2.3
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     OWASP ASVS: V14.2 - Dependency Management
     CWE-1104: Use of Unmaintained Third Party Components

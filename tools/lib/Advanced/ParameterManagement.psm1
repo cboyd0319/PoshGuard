@@ -11,11 +11,17 @@
     - HelpMessage validation
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Split from Advanced.psm1 for better maintainability
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot '../ASTHelper.psm1'
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 
 function Invoke-ReservedParamsFix {
   <#

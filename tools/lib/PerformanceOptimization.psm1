@@ -12,7 +12,7 @@
     - Resource throttling
     
 .NOTES
-    Version: 4.1.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework
     References:
     - PowerShell Runspaces Best Practices
@@ -25,6 +25,12 @@
 #>
 
 Set-StrictMode -Version Latest
+
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
 $ErrorActionPreference = 'Stop'
 
 #region Configuration

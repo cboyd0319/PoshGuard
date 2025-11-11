@@ -28,7 +28,7 @@
     - OTLP (gRPC and HTTP/JSON)
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     Compatible with: Jaeger, Zipkin, Grafana Tempo, DataDog, Honeycomb, New Relic
 #>

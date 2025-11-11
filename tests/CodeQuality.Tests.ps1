@@ -14,7 +14,7 @@
     - SecureString disclosure detection
 
 .NOTES
-    Part of PoshGuard v3.2.0 - Innovation leadership in PowerShell tooling
+    Part of PoshGuard v4.3.0 - Innovation leadership in PowerShell tooling
 #>
 
 BeforeAll {

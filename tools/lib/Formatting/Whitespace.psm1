@@ -11,7 +11,7 @@
     Ensures consistent whitespace formatting across codebases.
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher
 #>
 
@@ -39,6 +39,7 @@ function Invoke-FormatterFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content,
     [Parameter()]
     [string]$FilePath = ''
@@ -80,6 +81,7 @@ function Invoke-WhitespaceFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 
@@ -120,6 +122,7 @@ function Invoke-MisleadingBacktickFix {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Content
   )
 

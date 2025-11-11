@@ -13,7 +13,7 @@
     Aligned with Google SRE principles and OpenTelemetry standards.
 
 .NOTES
-    Version: 3.1.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework Enhancement
     Reference: docs/development/SRE-PRINCIPLES.md
 #>

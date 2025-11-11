@@ -11,28 +11,46 @@
 
 .NOTES
     Module: Core
-    Version: 2.3.0
+    Version: 4.3.0
     Author: https://github.com/cboyd0319
+    Dependencies: Constants.psm1 (for configuration values)
 #>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Import Constants module for centralized configuration
+$ConstantsPath = Join-Path $PSScriptRoot 'Constants.psm1'
+if (Test-Path $ConstantsPath) {
+  Import-Module $ConstantsPath -Force -ErrorAction SilentlyContinue
+}
 
 function Clear-Backup {
   [CmdletBinding(SupportsShouldProcess)]
   [OutputType([void])]
   param()
 
-  if ($pscmdlet.ShouldProcess("Target", "Operation")) {
-    $backupDir = Join-Path -Path $PSScriptRoot -ChildPath '../.psqa-backup'
-    if (-not (Test-Path -Path $backupDir -ErrorAction SilentlyContinue)) {
-      return
-    }
+  $backupDir = Join-Path -Path $PSScriptRoot -ChildPath '../.psqa-backup'
+  if (-not (Test-Path -Path $backupDir -ErrorAction SilentlyContinue)) {
+    return
+  }
 
-    $cutoffDate = (Get-Date).AddDays(-1)
-    Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate } | ForEach-Object {
-      Write-Verbose "Deleting old backup: $($_.FullName)"
-      Remove-Item -Path $_.FullName -Force -ErrorAction Stop
+  # Use constant for backup retention if available
+  $retentionDays = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+    Get-PoshGuardConstant -Name 'BackupRetentionDays'
+  }
+  else {
+    1  # Default fallback
+  }
+  $cutoffDate = (Get-Date).AddDays(-$retentionDays)
+  $filesToDelete = Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate }
+
+  if ($filesToDelete) {
+    if ($pscmdlet.ShouldProcess($backupDir, "Delete $($filesToDelete.Count) backup file(s) older than $cutoffDate")) {
+      $filesToDelete | ForEach-Object {
+        Write-Verbose "Deleting old backup: $($_.FullName)"
+        Remove-Item -Path $_.FullName -Force -ErrorAction Stop
+      }
     }
   }
 }
@@ -81,9 +99,17 @@ function Get-PowerShellFiles {
   [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for FastScan progress output')]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({
+      if (-not (Test-Path -Path $_)) {
+        throw "Path not found: $_"
+      }
+      $true
+    })]
     [string]$Path,
 
     [Parameter()]
+    [ValidateNotNullOrEmpty()]
     [string[]]$SupportedExtensions = @('.ps1', '.psm1', '.psd1'),
 
     [Parameter()]
@@ -93,8 +119,17 @@ function Get-PowerShellFiles {
     [switch]$Recurse,
 
     [Parameter()]
-    [int64]$MaxFileSizeBytes = 10485760  # 10MB default
+    [ValidateRange(1, 104857600)]  # 1 byte to 100MB (uses Constants: MinFileSizeBytes, AbsoluteMaxFileSizeBytes)
+    [int64]$MaxFileSizeBytes = 10485760  # 10MB default (uses Constant: MaxFileSizeBytes)
   )
+
+  # Use constants if available, otherwise fall back to defaults
+  if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+    $defaultMaxSize = Get-PoshGuardConstant -Name 'MaxFileSizeBytes'
+    if ($defaultMaxSize -and $MaxFileSizeBytes -eq 10485760) {
+      $MaxFileSizeBytes = $defaultMaxSize
+    }
+  }
 
   if (Test-Path -Path $Path -PathType Leaf -ErrorAction Stop) {
     return @(Get-Item -Path $Path -ErrorAction Stop)
@@ -160,6 +195,13 @@ function New-FileBackup {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({
+      if (-not (Test-Path -Path $_ -PathType Leaf)) {
+        throw "File not found: $_"
+      }
+      $true
+    })]
     [string]$FilePath
   )
 

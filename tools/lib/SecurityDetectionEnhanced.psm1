@@ -12,7 +12,7 @@
     - CVE correlation capabilities
 
 .NOTES
-    Version: 4.0.0
+    Version: 4.3.0
     Part of PoshGuard Security Enhancement
     References:
     - OWASP Top 10 2023 | https://owasp.org/Top10/ | High | Most critical web app security risks
