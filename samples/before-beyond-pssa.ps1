@@ -13,7 +13,7 @@
     - Potential SecureString disclosure
 
 .NOTES
-    Part of PoshGuard v3.2.0 demonstration
+    Part of PoshGuard v4.3.0 demonstration
     Run: ./tools/Apply-AutoFix.ps1 -Path ./samples/before-beyond-pssa.ps1 -DryRun
 #>
 

@@ -52,7 +52,7 @@ Pre-commit:
 CI/CD:
 
 ```powershell
-./tools/Apply-AutoFix.ps1 -Path . -NonInteractive -OutputFormat jsonl
+./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse
 ```
 
 Skip rules:
@@ -118,4 +118,4 @@ Get-Help ./tools/Apply-AutoFix.ps1 -Full
 - Backups in `.backup/` folder
 - Use `-Verbose` for debugging
 - Check `samples/` for examples
-- Use `-NonInteractive` for CI/CD
+- Use `-DryRun` for CI/CD pipelines

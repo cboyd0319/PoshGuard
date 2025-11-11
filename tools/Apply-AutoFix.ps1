@@ -45,6 +45,16 @@
 .PARAMETER SarifOutputPath
     Path where SARIF file should be saved (default: ./poshguard-results.sarif)
 
+.PARAMETER Recurse
+    Recursively scan all subdirectories for PowerShell files.
+    If not specified, only scans files in the target directory without descending into subdirectories.
+
+.PARAMETER Skip
+    Array of PSScriptAnalyzer rule names to skip during analysis and fixes.
+    Useful when certain rules conflict with your coding standards.
+    Example: -Skip @('PSAvoidUsingWriteHost', 'PSAvoidGlobalVars')
+    To see available rule names, run: Get-ScriptAnalyzerRule | Select-Object RuleName
+
 .EXAMPLE
     .\Apply-AutoFix.ps1 -Path ./src -DryRun
     Preview fixes without applying
@@ -61,6 +71,18 @@
     .\Apply-AutoFix.ps1 -Path ./src -DryRun -ExportSarif -SarifOutputPath ./results.sarif
     Analyze code and export results in SARIF format for GitHub Security tab
 
+.EXAMPLE
+    .\Apply-AutoFix.ps1 -Path ./scripts -Recurse -ShowDiff
+    Recursively scan all subdirectories and show diffs for all changes
+
+.EXAMPLE
+    .\Apply-AutoFix.ps1 -Path ./src -Skip @('PSAvoidUsingWriteHost') -Recurse
+    Apply fixes but skip Write-Host transformations (useful for CLI tools)
+
+.EXAMPLE
+    .\Apply-AutoFix.ps1 -Path ./module.psm1
+    Scan single file without recursion (default behavior when targeting a file)
+
 .NOTES
     Author: https://github.com/cboyd0319
     Version: 4.3.0
@@ -76,7 +98,12 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
   [Parameter(Mandatory, Position = 0)]
-  [ValidateScript({ Test-Path -Path $_ -ErrorAction Stop })]
+  [ValidateScript({
+    if (-not (Test-Path -Path $_ -ErrorAction SilentlyContinue)) {
+      throw "Path not found: $_`n`nTips:`n  • Check that the path exists`n  • Use absolute paths or relative paths from current directory`n  • Current directory: $PWD"
+    }
+    $true
+  })]
   [string]$Path,
 
   [Parameter()]
@@ -102,7 +129,13 @@ param(
   [string]$SarifOutputPath = './poshguard-results.sarif',
 
   [Parameter()]
-  [switch]$FastScan
+  [switch]$FastScan,
+
+  [Parameter()]
+  [switch]$Recurse,
+
+  [Parameter()]
+  [string[]]$Skip
 )
 
 Set-StrictMode -Version Latest
@@ -188,7 +221,10 @@ function Invoke-FileFix {
   [OutputType([void])]
   param(
     [Parameter(Mandatory)]
-    [System.IO.FileInfo]$File
+    [System.IO.FileInfo]$File,
+
+    [Parameter()]
+    [string[]]$SkipRules = @()
   )
 
   if ($pscmdlet.ShouldProcess($File.FullName, 'Analyzing file')) {
@@ -277,11 +313,30 @@ function Invoke-FileFix {
         }
       }
 
+      # Create helper function to check if rule should be skipped
+      $shouldSkip = {
+        param($ruleName)
+        return $SkipRules -contains $ruleName
+      }
+
+      # Log skipped rules if any
+      if ($SkipRules.Count -gt 0) {
+        Write-Verbose "Skipping rules for $($File.Name): $($SkipRules -join ', ')"
+      }
+
       # Phase 2: Advanced fixes (parameters, complex AST)
-      $fixedContent = Invoke-ReservedParamsFix -Content $fixedContent
-      $fixedContent = Invoke-SwitchParameterDefaultFix -Content $fixedContent
-      $fixedContent = Invoke-PSCredentialTypeFix -Content $fixedContent
-      $fixedContent = Invoke-OutputTypeCorrectlyFix -Content $fixedContent
+      if (-not (& $shouldSkip 'PSReservedParams')) {
+        $fixedContent = Invoke-ReservedParamsFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSShouldProcess')) {
+        $fixedContent = Invoke-SwitchParameterDefaultFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidUsingPlainTextForPassword')) {
+        $fixedContent = Invoke-PSCredentialTypeFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSUseOutputTypeCorrectly')) {
+        $fixedContent = Invoke-OutputTypeCorrectlyFix -Content $fixedContent
+      }
 
       # Phase 3: Manifest fixes (only for .psd1 files)
       $fixedContent = Invoke-MissingModuleManifestFieldFix -Content $fixedContent -FilePath $File.FullName
@@ -289,13 +344,27 @@ function Invoke-FileFix {
       $fixedContent = Invoke-DeprecatedManifestFieldsFix -Content $fixedContent -FilePath $File.FullName
 
       # Phase 4: Security fixes (HIGH priority) - 100% PSSA security coverage
-      $fixedContent = Invoke-PlainTextPasswordFix -Content $fixedContent
-      $fixedContent = Invoke-ConvertToSecureStringFix -Content $fixedContent
-      $fixedContent = Invoke-UsernamePasswordParamsFix -Content $fixedContent
-      $fixedContent = Invoke-AllowUnencryptedAuthFix -Content $fixedContent
-      $fixedContent = Invoke-HardcodedComputerNameFix -Content $fixedContent
-      $fixedContent = Invoke-InvokeExpressionFix -Content $fixedContent
-      $fixedContent = Invoke-EmptyCatchBlockFix -Content $fixedContent
+      if (-not (& $shouldSkip 'PSAvoidUsingPlainTextForPassword')) {
+        $fixedContent = Invoke-PlainTextPasswordFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidUsingConvertToSecureStringWithPlainText')) {
+        $fixedContent = Invoke-ConvertToSecureStringFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidUsingUsernameAndPasswordParams')) {
+        $fixedContent = Invoke-UsernamePasswordParamsFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSUsePSCredentialType')) {
+        $fixedContent = Invoke-AllowUnencryptedAuthFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidUsingComputerNameHardcoded')) {
+        $fixedContent = Invoke-HardcodedComputerNameFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidUsingInvokeExpression')) {
+        $fixedContent = Invoke-InvokeExpressionFix -Content $fixedContent
+      }
+      if (-not (& $shouldSkip 'PSAvoidEmptyCatchBlock')) {
+        $fixedContent = Invoke-EmptyCatchBlockFix -Content $fixedContent
+      }
       $fixedContent = Invoke-BrokenHashAlgorithmFix -Content $fixedContent
 
       # Phase 5: Complex analysis fixes (AST-heavy)
@@ -542,7 +611,28 @@ try {
   Write-Host "  └──────────────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
   Write-Host ""
 
-  $files = @(Get-PowerShellFiles -Path $Path -FastScan:$FastScan)
+  # Validate and log -Skip parameter if provided
+  if ($Skip -and $Skip.Count -gt 0) {
+    Write-Host "  ⚠️  Skipping " -ForegroundColor Yellow -NoNewline
+    Write-Host $Skip.Count -ForegroundColor White -NoNewline
+    Write-Host " rule(s): " -ForegroundColor Yellow -NoNewline
+    Write-Host ($Skip -join ', ') -ForegroundColor Cyan
+    Write-Host ""
+
+    # Optionally validate rule names if PSScriptAnalyzer is available
+    if (Get-Command Get-ScriptAnalyzerRule -ErrorAction SilentlyContinue) {
+      $validRules = @(Get-ScriptAnalyzerRule | Select-Object -ExpandProperty RuleName)
+      $invalidRules = $Skip | Where-Object { $_ -notin $validRules }
+      if ($invalidRules) {
+        Write-Host "  ⚠️  Warning: Unknown rule names (will be ignored): " -ForegroundColor Yellow -NoNewline
+        Write-Host ($invalidRules -join ', ') -ForegroundColor Red
+        Write-Host "  💡 Tip: Run 'Get-ScriptAnalyzerRule | Select-Object RuleName' to see valid rules" -ForegroundColor Cyan
+        Write-Host ""
+      }
+    }
+  }
+
+  $files = @(Get-PowerShellFiles -Path $Path -FastScan:$FastScan -Recurse:$Recurse -MaxFileSizeBytes $script:Config.MaxFileSizeBytes)
     
   # Enhanced file discovery message
   if (-not $FastScan) {
@@ -597,15 +687,34 @@ try {
 
   $results = @()
   $fixedCount = 0
+  $totalFiles = $files.Count
+  $currentFile = 0
 
   foreach ($file in $files) {
-    $result = Invoke-FileFix -File $file
+    $currentFile++
+
+    # Show progress for operations with multiple files
+    if ($totalFiles -gt 1) {
+      $progressParams = @{
+        Activity = "Processing PowerShell files"
+        Status = "File $currentFile of $totalFiles: $($file.Name)"
+        PercentComplete = ($currentFile / $totalFiles) * 100
+      }
+      Write-Progress @progressParams
+    }
+
+    $result = Invoke-FileFix -File $file -SkipRules $Skip
     if ($result) {
       $results += $result
       if ($result.Changed) {
         $fixedCount++
       }
     }
+  }
+
+  # Clear progress bar when done
+  if ($totalFiles -gt 1) {
+    Write-Progress -Activity "Processing PowerShell files" -Completed
   }
 
   # Export SARIF if requested

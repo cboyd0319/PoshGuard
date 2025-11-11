@@ -86,7 +86,7 @@ jobs:
       
       - name: Apply fixes
         run: |
-          Invoke-PoshGuard -Path . -Recurse -NonInteractive
+          Invoke-PoshGuard -Path . -Recurse
         shell: pwsh
       
       - name: Commit changes
@@ -121,7 +121,7 @@ jobs:
       - name: Run analysis
         id: analysis
         run: |
-          $output = Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive -OutputFormat json
+          $output = Invoke-PoshGuard -Path . -Recurse -DryRun
           echo "RESULTS<<EOF" >> $env:GITHUB_OUTPUT
           echo $output >> $env:GITHUB_OUTPUT
           echo "EOF" >> $env:GITHUB_OUTPUT
@@ -164,7 +164,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      $result = Invoke-PoshGuard -Path $(Build.SourcesDirectory) -Recurse -DryRun -NonInteractive -OutputFormat jsonl -OutFile $(Build.ArtifactStagingDirectory)/poshguard-report.jsonl
+      $result = Invoke-PoshGuard -Path $(Build.SourcesDirectory) -Recurse -DryRun
       if ($LASTEXITCODE -eq 1) {
         Write-Host "##vso[task.complete result=SucceededWithIssues;]Code quality issues detected"
       } elseif ($LASTEXITCODE -ne 0) {
@@ -193,7 +193,7 @@ poshguard:
   script:
     - pwsh -Command "Install-Module PoshGuard -Scope CurrentUser -Force"
     - pwsh -Command "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force"
-    - pwsh -Command "Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive -OutputFormat jsonl -OutFile poshguard-report.jsonl"
+    - pwsh -Command "Invoke-PoshGuard -Path . -Recurse -DryRun"
   artifacts:
     paths:
       - poshguard-report.jsonl
@@ -223,7 +223,7 @@ pipeline {
         stage('Lint') {
             steps {
                 powershell '''
-                    $result = Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive -OutputFormat jsonl -OutFile poshguard-report.jsonl
+                    $result = Invoke-PoshGuard -Path . -Recurse -DryRun
                     if ($LASTEXITCODE -eq 1) {
                         currentBuild.result = 'UNSTABLE'
                         echo "Code quality issues detected"
@@ -265,7 +265,7 @@ fi
 
 # Run PoshGuard on changed files
 for file in $PS_FILES; do
-    pwsh -Command "Invoke-PoshGuard -Path '$file' -DryRun -NonInteractive"
+    pwsh -Command "Invoke-PoshGuard -Path '$file' -DryRun"
     
     if [ $? -eq 1 ]; then
         echo "⚠️  Code quality issues in $file"
@@ -301,7 +301,7 @@ RUN pwsh -Command "Install-Module PoshGuard -Scope CurrentUser -Force" && \
 WORKDIR /workspace
 
 ENTRYPOINT ["pwsh", "-Command", "Invoke-PoshGuard"]
-CMD ["-Path", ".", "-Recurse", "-DryRun", "-NonInteractive"]
+CMD ["-Path", ".", "-Recurse", "-DryRun"]
 ```
 
 Build and run:
@@ -319,7 +319,7 @@ docker run -v $(pwd):/workspace poshguard:latest
 # GitHub Actions - enforce quality
 - name: Enforce code quality
   run: |
-    Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive
+    Invoke-PoshGuard -Path . -Recurse -DryRun
     if ($LASTEXITCODE -ne 0) {
       Write-Error "Code quality check failed - merge blocked"
       exit 1
@@ -332,7 +332,7 @@ docker run -v $(pwd):/workspace poshguard:latest
 ```yaml
 - name: Code quality warning
   run: |
-    Invoke-PoshGuard -Path . -Recurse -DryRun -NonInteractive
+    Invoke-PoshGuard -Path . -Recurse -DryRun
     if ($LASTEXITCODE -eq 1) {
       Write-Warning "Code quality issues detected but not blocking"
     }
@@ -451,7 +451,7 @@ See [GitHub SARIF Integration Guide](../reference/GITHUB-SARIF-INTEGRATION.md) f
 
 **Issue**: Different results locally vs CI
 
-- **Solution**: Use `-NonInteractive` flag and ensure same PSScriptAnalyzer version
+- **Solution**: Use `-DryRun` flag and ensure same PSScriptAnalyzer version
 
 **Issue**: Slow CI builds
 

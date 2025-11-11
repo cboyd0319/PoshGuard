@@ -33,14 +33,14 @@ function script:Get-Configuration {
 
 <#
 .SYNOPSIS
-    Brief description of Test-Credentials
+    Brief description of Test-Credential
 
 .DESCRIPTION
-    Detailed description of Test-Credentials
+    Detailed description of Test-Credential
 
 .EXAMPLE
-    PS C:\> Test-Credentials
-    Example usage of Test-Credentials
+    PS C:\> Test-Credential
+    Example usage of Test-Credential
 #>
 function script:Test-Credential {
     [CmdletBinding()]

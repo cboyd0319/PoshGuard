@@ -96,7 +96,7 @@ function Test-RipGrepAvailable {
     Find-SuspiciousScripts -Path ./src -Patterns @('Invoke-Expression', 'DownloadString')
     Find scripts with specific patterns
 #>
-function Find-SuspiciousScript {
+function Find-SuspiciousScripts {
   [CmdletBinding()]
   [OutputType([string[]])]
   param(
@@ -199,7 +199,7 @@ function Find-SuspiciousScript {
     if ($secrets.Count -gt 0) { exit 1 }
     Scan and fail if secrets found
 #>
-function Find-HardcodedSecret {
+function Find-HardcodedSecrets {
   [CmdletBinding()]
   [OutputType([PSCustomObject[]])]
   param(
@@ -561,7 +561,7 @@ function Invoke-OrgWideScan {
     Get-CriticalFindings -SarifPath ./results.sarif -CWEFilter @('CWE-798')
     Extract CWE-798 findings from SARIF
 #>
-function Get-CriticalFinding {
+function Get-CriticalFindings {
   [CmdletBinding()]
   [OutputType([PSCustomObject[]])]
   param(

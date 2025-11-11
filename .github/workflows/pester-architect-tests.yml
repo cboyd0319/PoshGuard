@@ -6,6 +6,13 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test on ${{ matrix.os }} - PowerShell ${{ matrix.pwsh }}
@@ -18,13 +25,8 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup PowerShell
-        uses: PowerShell/PowerShell-For-GitHub-Actions@v1
-        with:
-          version: ${{ matrix.pwsh }}
-      
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
       - name: Install dependencies
         shell: pwsh
         run: |
@@ -51,7 +53,7 @@ jobs:
           
           $results = Invoke-ScriptAnalyzer `
             -Path ./tools/lib `
-            -Settings ./.psscriptanalyzer.psd1 `
+            -Settings ./config/PSScriptAnalyzerSettings.psd1 `
             -Recurse `
             -ErrorAction Continue
           
@@ -80,7 +82,7 @@ jobs:
           
           $results = Invoke-ScriptAnalyzer `
             -Path ./tests `
-            -Settings ./tests/.psscriptanalyzer.tests.psd1 `
+            -Settings ./config/PSScriptAnalyzerSettings.tests.psd1 `
             -Recurse `
             -ErrorAction Continue
           
@@ -170,14 +172,14 @@ jobs:
           Write-Host "`n✅ All tests passed!" -ForegroundColor Green
       
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         if: always()
         with:
           name: test-results-${{ matrix.os }}
           path: test-results.xml
-      
+
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         if: matrix.os == 'ubuntu-latest'
         with:
           name: coverage-report
