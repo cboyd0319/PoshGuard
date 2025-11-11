@@ -26,6 +26,12 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Import Constants module for centralized configuration
+$ConstantsPath = Join-Path $PSScriptRoot 'Constants.psm1'
+if (Test-Path $ConstantsPath) {
+  Import-Module $ConstantsPath -Force -ErrorAction SilentlyContinue
+}
+
 #region Dead Code Detection
 
 function Find-DeadCode {
@@ -385,9 +391,12 @@ function Find-LongMethod {
     #>
   [CmdletBinding()]
   param($AST, [string]$FilePath)
-    
+
   $issues = @()
-  $maxLines = 50
+  # Use MaxFunctionLength constant (from Constants.psm1)
+  $maxLines = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+    Get-PoshGuardConstant -Name 'MaxFunctionLength'
+  } else { 50 }
     
   $functions = $AST.FindAll({ param($node)
       $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
@@ -457,9 +466,12 @@ function Find-DeepNesting {
     #>
   [CmdletBinding()]
   param($AST, [string]$FilePath)
-    
+
   $issues = @()
-  $maxDepth = 4
+  # Use MaxNestingDepth constant (from Constants.psm1)
+  $maxDepth = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+    Get-PoshGuardConstant -Name 'MaxNestingDepth'
+  } else { 4 }
     
   $functions = $AST.FindAll({ param($node)
       $node -is [System.Management.Automation.Language.FunctionDefinitionAst]

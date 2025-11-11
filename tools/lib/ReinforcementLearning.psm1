@@ -29,17 +29,44 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Import Constants module for centralized configuration
+$ConstantsPath = Join-Path $PSScriptRoot 'Constants.psm1'
+if (Test-Path $ConstantsPath) {
+  Import-Module $ConstantsPath -Force -ErrorAction SilentlyContinue
+}
+
 #region Module Configuration
+
+# Get RL parameters from Constants module (with fallbacks)
+$RLLearningRate = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'RLLearningRate'
+} else { 0.1 }
+
+$RLDiscountFactor = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'RLDiscountFactor'
+} else { 0.9 }
+
+$RLExplorationRate = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'RLExplorationRate'
+} else { 0.1 }
+
+$RLBatchSize = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'RLBatchSize'
+} else { 32 }
+
+$RLMaxExperience = if (Get-Command Get-PoshGuardConstant -ErrorAction SilentlyContinue) {
+  Get-PoshGuardConstant -Name 'RLMaxExperienceSize'
+} else { 10000 }
 
 $script:RLConfig = @{
   Enabled = $true
-  LearningRate = 0.1
-  DiscountFactor = 0.95
-  ExplorationRate = 0.2
-  MinExplorationRate = 0.01
-  ExplorationDecay = 0.995
-  ExperienceReplaySize = 1000
-  BatchSize = 32
+  LearningRate = $RLLearningRate          # From Constants.psm1
+  DiscountFactor = $RLDiscountFactor      # From Constants.psm1
+  ExplorationRate = $RLExplorationRate    # From Constants.psm1 (initial value)
+  MinExplorationRate = 0.01               # Minimum exploration to maintain
+  ExplorationDecay = 0.995                # Decay rate per episode
+  ExperienceReplaySize = $RLMaxExperience # From Constants.psm1
+  BatchSize = $RLBatchSize                # From Constants.psm1
   ModelPath = "./ml/rl-model.jsonl"
   MetricsPath = "./ml/rl-metrics.jsonl"
 }
