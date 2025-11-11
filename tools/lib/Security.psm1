@@ -119,7 +119,26 @@ function Invoke-PlainTextPasswordFix {
     return $result
   }
   catch {
-    Write-Verbose "Plain-text password fix failed: $_"
+    Write-Warning "Plain-text password fix failed at line $($_.InvocationInfo.ScriptLineNumber): $($_.Exception.Message)"
+    Write-Verbose "Error details: $($_.Exception.GetType().FullName)"
+    Write-Verbose "Stack trace: $($_.ScriptStackTrace)"
+
+    # Log to observability if available (future integration)
+    if ($script:GlobalConfig -and $script:GlobalConfig.Observability -and $script:GlobalConfig.Observability.Enabled) {
+      try {
+        Write-StructuredLog -Level ERROR -Message "Security fix failed" -Properties @{
+          fix = 'PlainTextPassword'
+          error = $_.Exception.Message
+          errorType = $_.Exception.GetType().FullName
+          line = $_.InvocationInfo.ScriptLineNumber
+          stack = $_.ScriptStackTrace
+        }
+      }
+      catch {
+        # Silently ignore observability errors
+      }
+    }
+
     return $Content
   }
 }
