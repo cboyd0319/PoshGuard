@@ -44,109 +44,70 @@ function Invoke-PlainTextPasswordFix {
         - [string]$Pass → [SecureString]$Pass
         - Adds security comment explaining the change
 
+    .PARAMETER Content
+        The PowerShell script content to fix
+
+    .PARAMETER FilePath
+        Optional file path for better error messages
+
     .EXAMPLE
         PS C:\> Invoke-PlainTextPasswordFix -Content $scriptContent
 
         Converts password parameters to SecureString
+
+    .NOTES
+        Uses ASTHelper.psm1 for consistent AST operations and error handling
     #>
   [CmdletBinding()]
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$Content
+    [string]$Content,
+
+    [Parameter()]
+    [string]$FilePath = ''
   )
 
-  try {
-    # Parse from string content
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput(
-      $Content,
-      [ref]$null,
-      [ref]$null
-    )
+  # Use ASTHelper for consistent, maintainable fix implementation
+  Invoke-ASTBasedFix `
+    -Content $Content `
+    -FixName 'PlainTextPassword' `
+    -FilePath $FilePath `
+    -ASTNodeFinder {
+    param($ast)
 
-    $parameterAsts = $ast.FindAll({
+    # Find all parameter nodes
+    $ast.FindAll({
         param($node)
         $node -is [System.Management.Automation.Language.ParameterAst]
       }, $true)
+  } `
+    -NodeTransformer {
+    param($node, $content)
 
-    if ($parameterAsts.Count -eq 0) {
-      return $Content
+    # Check if parameter name contains password-related keywords
+    $paramName = $node.Name.VariablePath.UserPath
+    if ($paramName -notmatch '(Password|Pass|Pwd|Secret|Token)') {
+      return $null  # Skip this node
     }
 
-    $replacements = @()
+    # Check if it's typed as [string]
+    $typeConstraint = $node.Attributes | Where-Object {
+      $_ -is [System.Management.Automation.Language.TypeConstraintAst]
+    } | Select-Object -First 1
 
-    foreach ($param in $parameterAsts) {
-      # Check if parameter name contains "Password" or "Pass"
-      $paramName = $param.Name.VariablePath.UserPath
-      if ($paramName -notmatch '(Password|Pass|Pwd|Secret|Token)') {
-        continue
-      }
-
-      # Check if it's typed as [string]
-      $typeConstraint = $param.Attributes | Where-Object {
-        $_ -is [System.Management.Automation.Language.TypeConstraintAst]
-      } | Select-Object -First 1
-
-      if ($typeConstraint -and $typeConstraint.TypeName.Name -eq 'string') {
-        # Found a plain-text password parameter
-        $startOffset = $typeConstraint.Extent.StartOffset
-        $endOffset = $typeConstraint.Extent.EndOffset
-
-        $replacements += @{
-          Start = $startOffset
-          End = $endOffset
-          OldText = '[string]'
-          NewText = '[SecureString]'
-          ParamName = $paramName
-        }
+    if ($typeConstraint -and $typeConstraint.TypeName.Name -eq 'string') {
+      # Return replacement info - ASTHelper handles the actual replacement
+      Write-Verbose "Converting parameter `$$paramName from [string] to [SecureString]"
+      return @{
+        Start = $typeConstraint.Extent.StartOffset
+        End = $typeConstraint.Extent.EndOffset
+        NewText = '[SecureString]'
       }
     }
 
-    if ($replacements.Count -eq 0) {
-      return $Content
-    }
-
-    # Apply replacements in reverse order to maintain offsets
-    $replacements = $replacements | Sort-Object -Property Start -Descending
-    $result = $Content
-
-    foreach ($replacement in $replacements) {
-      $before = $result.Substring(0, $replacement.Start)
-      $after = $result.Substring($replacement.End)
-      $result = $before + $replacement.NewText + $after
-
-      Write-Verbose "Converted parameter `$$($replacement.ParamName) from [string] to [SecureString]"
-    }
-
-    if ($replacements.Count -gt 0) {
-      Write-Verbose "Converted $($replacements.Count) plain-text password parameter(s) to SecureString"
-    }
-
-    return $result
-  }
-  catch {
-    Write-Warning "Plain-text password fix failed at line $($_.InvocationInfo.ScriptLineNumber): $($_.Exception.Message)"
-    Write-Verbose "Error details: $($_.Exception.GetType().FullName)"
-    Write-Verbose "Stack trace: $($_.ScriptStackTrace)"
-
-    # Log to observability if available (future integration)
-    if ($script:GlobalConfig -and $script:GlobalConfig.Observability -and $script:GlobalConfig.Observability.Enabled) {
-      try {
-        Write-StructuredLog -Level ERROR -Message "Security fix failed" -Properties @{
-          fix = 'PlainTextPassword'
-          error = $_.Exception.Message
-          errorType = $_.Exception.GetType().FullName
-          line = $_.InvocationInfo.ScriptLineNumber
-          stack = $_.ScriptStackTrace
-        }
-      }
-      catch {
-        # Silently ignore observability errors
-      }
-    }
-
-    return $Content
+    return $null  # No replacement needed
   }
 }
 
@@ -482,85 +443,80 @@ function Invoke-EmptyCatchBlockFix {
 
         Fixes PSAvoidUsingEmptyCatchBlock violations.
 
+    .PARAMETER Content
+        The PowerShell script content to fix
+
+    .PARAMETER FilePath
+        Optional file path for better error messages
+
     .EXAMPLE
         PS C:\> Invoke-EmptyCatchBlockFix -Content $scriptContent
 
         Adds error logging to empty catch blocks
+
+    .NOTES
+        Uses ASTHelper.psm1 for consistent AST operations and error handling
     #>
   [CmdletBinding()]
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$Content
+    [string]$Content,
+
+    [Parameter()]
+    [string]$FilePath = ''
   )
 
-  try {
-    # Use AST-based approach for precise catch block detection
-    $ast = [System.Management.Automation.Language.Parser]::ParseInput(
-      $Content,
-      [ref]$null,
-      [ref]$null
-    )
+  # Use ASTHelper for consistent, maintainable fix implementation
+  Invoke-ASTBasedFix `
+    -Content $Content `
+    -FixName 'EmptyCatchBlock' `
+    -FilePath $FilePath `
+    -ASTNodeFinder {
+    param($ast)
 
-    # Find all try-catch statements
+    # Find all try-catch statements and collect their empty catch clauses
     $tryCatchAsts = $ast.FindAll({
         param($node)
         $node -is [System.Management.Automation.Language.TryStatementAst]
       }, $true)
 
-    if ($tryCatchAsts.Count -eq 0) {
-      return $Content
-    }
-
-    $replacements = @()
+    $emptyCatchClauses = @()
     foreach ($tryAst in $tryCatchAsts) {
       foreach ($catch in $tryAst.CatchClauses) {
         # Check if the catch block body is empty or only whitespace
         $catchBodyContent = $catch.Body.Statements
-                
         if ($null -eq $catchBodyContent -or $catchBodyContent.Count -eq 0) {
-          # Empty catch block found
-          $catchExtent = $catch.Extent
-          $startOffset = $catch.Body.Extent.StartOffset + 1  # After opening brace
-          $endOffset = $catch.Body.Extent.EndOffset - 1      # Before closing brace
-                    
-          # Determine indentation from the catch line
-          $lines = $Content.Substring(0, $catchExtent.StartOffset) -split "`r?`n"
-          $lastLine = $lines[-1]
-          $indent = if ($lastLine -match '^(\s*)') { $Matches[1] } else { '' }
-                    
-          $errorHandling = "`n${indent}    # TODO: Handle error appropriately (was empty catch block)`n${indent}    Write-Verbose `"Suppressed error: `$_`"`n${indent}"
-                    
-          $replacements += @{
-            Start = $startOffset
-            End = $endOffset
-            Replacement = $errorHandling
-          }
+          $emptyCatchClauses += $catch
         }
       }
     }
 
-    if ($replacements.Count -eq 0) {
-      return $Content
+    return $emptyCatchClauses
+  } `
+    -NodeTransformer {
+    param($catchNode, $content)
+
+    # Get the catch body extent (inside the braces)
+    $startOffset = $catchNode.Body.Extent.StartOffset + 1  # After opening brace
+    $endOffset = $catchNode.Body.Extent.EndOffset - 1      # Before closing brace
+
+    # Determine indentation from the catch line
+    $lines = $content.Substring(0, $catchNode.Extent.StartOffset) -split "`r?`n"
+    $lastLine = $lines[-1]
+    $indent = if ($lastLine -match '^(\s*)') { $Matches[1] } else { '' }
+
+    # Generate error handling code with proper indentation
+    $errorHandling = "`n${indent}    # TODO: Handle error appropriately (was empty catch block)`n${indent}    Write-Verbose `"Suppressed error: `$_`"`n${indent}"
+
+    Write-Verbose "Adding error handling to empty catch block at line $($catchNode.Extent.StartLineNumber)"
+    return @{
+      Start = $startOffset
+      End = $endOffset
+      NewText = $errorHandling
     }
-
-    # Apply replacements in reverse order to maintain offsets
-    $fixed = $Content
-    foreach ($replacement in ($replacements | Sort-Object -Property Start -Descending)) {
-      $before = $fixed.Substring(0, $replacement.Start)
-      $after = $fixed.Substring($replacement.End)
-      $fixed = $before + $replacement.Replacement + $after
-    }
-
-    Write-Verbose "Added error handling to $($replacements.Count) empty catch block(s)"
-    return $fixed
   }
-  catch {
-    Write-Verbose "Empty catch block fix failed: $_"
-  }
-
-  return $Content
 }
 
 # Export all security fix functions
