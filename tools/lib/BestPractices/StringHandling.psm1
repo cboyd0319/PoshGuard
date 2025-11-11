@@ -10,7 +10,7 @@
     Ensures code uses idiomatic PowerShell string and collection patterns.
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher for AST functionality
 #>
 

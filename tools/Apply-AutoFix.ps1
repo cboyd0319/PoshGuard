@@ -16,7 +16,7 @@
     - Generates unified diffs
     - Safe to run multiple times (idempotent)
 
-    MODULAR ARCHITECTURE (v2.16.0):
+    MODULAR ARCHITECTURE (v4.3.0):
     All fix functions have been extracted to 5 specialized modules in ./lib/:
     - Core.psm1: Helper functions (backups, logging, file ops)
     - Formatting.psm1: Code formatting and style

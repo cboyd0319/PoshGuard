@@ -11,7 +11,7 @@
     - HelpMessage validation
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Split from Advanced.psm1 for better maintainability
 #>
 

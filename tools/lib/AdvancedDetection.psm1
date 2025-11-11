@@ -14,7 +14,7 @@
 
 .NOTES
     Module: AdvancedDetection
-    Version: 3.3.0
+    Version: 4.3.0
     OWASP ASVS: V5.1.1 (Input Validation), V8.3.4 (Sensitive Data)
     SWEBOK: Software Quality (KA 10)
 #>

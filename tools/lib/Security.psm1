@@ -15,7 +15,7 @@
     - PSAvoidUsingBrokenHashAlgorithms
 
 .NOTES
-    Part of PoshGuard v2.4.0
+    Part of PoshGuard v4.3.0
     Security Phase Complete: October 10, 2025
 #>
 

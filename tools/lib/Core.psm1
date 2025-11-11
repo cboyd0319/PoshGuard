@@ -11,7 +11,7 @@
 
 .NOTES
     Module: Core
-    Version: 2.3.0
+    Version: 4.3.0
     Author: https://github.com/cboyd0319
 #>
 
@@ -23,16 +23,20 @@ function Clear-Backup {
   [OutputType([void])]
   param()
 
-  if ($pscmdlet.ShouldProcess("Target", "Operation")) {
-    $backupDir = Join-Path -Path $PSScriptRoot -ChildPath '../.psqa-backup'
-    if (-not (Test-Path -Path $backupDir -ErrorAction SilentlyContinue)) {
-      return
-    }
+  $backupDir = Join-Path -Path $PSScriptRoot -ChildPath '../.psqa-backup'
+  if (-not (Test-Path -Path $backupDir -ErrorAction SilentlyContinue)) {
+    return
+  }
 
-    $cutoffDate = (Get-Date).AddDays(-1)
-    Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate } | ForEach-Object {
-      Write-Verbose "Deleting old backup: $($_.FullName)"
-      Remove-Item -Path $_.FullName -Force -ErrorAction Stop
+  $cutoffDate = (Get-Date).AddDays(-1)
+  $filesToDelete = Get-ChildItem -Path $backupDir -Recurse -File | Where-Object { $_.LastWriteTime -lt $cutoffDate }
+
+  if ($filesToDelete) {
+    if ($pscmdlet.ShouldProcess($backupDir, "Delete $($filesToDelete.Count) backup file(s) older than $cutoffDate")) {
+      $filesToDelete | ForEach-Object {
+        Write-Verbose "Deleting old backup: $($_.FullName)"
+        Remove-Item -Path $_.FullName -Force -ErrorAction Stop
+      }
     }
   }
 }
@@ -81,9 +85,17 @@ function Get-PowerShellFiles {
   [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for FastScan progress output')]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({
+      if (-not (Test-Path -Path $_)) {
+        throw "Path not found: $_"
+      }
+      $true
+    })]
     [string]$Path,
 
     [Parameter()]
+    [ValidateNotNullOrEmpty()]
     [string[]]$SupportedExtensions = @('.ps1', '.psm1', '.psd1'),
 
     [Parameter()]
@@ -93,6 +105,7 @@ function Get-PowerShellFiles {
     [switch]$Recurse,
 
     [Parameter()]
+    [ValidateRange(1, 104857600)]  # 1 byte to 100MB
     [int64]$MaxFileSizeBytes = 10485760  # 10MB default
   )
 
@@ -160,6 +173,13 @@ function New-FileBackup {
   [OutputType([string])]
   param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({
+      if (-not (Test-Path -Path $_ -PathType Leaf)) {
+        throw "File not found: $_"
+      }
+      $true
+    })]
     [string]$FilePath
   )
 

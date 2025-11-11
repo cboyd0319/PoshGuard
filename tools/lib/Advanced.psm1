@@ -23,7 +23,7 @@
     - DeprecatedManifestFields: Detect deprecated module manifest fields
 
 .NOTES
-    Part of PoshGuard v2.16.0
+    Part of PoshGuard v4.3.0
     This module automatically imports all Advanced submodules for convenience.
 #>
 

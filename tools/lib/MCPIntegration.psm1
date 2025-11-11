@@ -12,7 +12,7 @@
     All MCP integration is OPTIONAL and privacy-first. No data transmitted without consent.
 
 .NOTES
-    Version: 4.1.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework
     Reference: https://modelcontextprotocol.io/
     

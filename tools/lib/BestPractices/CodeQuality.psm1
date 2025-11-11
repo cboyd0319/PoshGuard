@@ -10,10 +10,10 @@
     - Get-Content | ConvertFrom-Json optimization (add `-Raw`)
     - SecureString disclosure detection
 
-    Part of PoshGuard v3.2.0 roadmap - Innovation leadership in PowerShell tooling.
+    Part of PoshGuard v4.3.0 roadmap - Innovation leadership in PowerShell tooling.
 
 .NOTES
-    Part of PoshGuard v3.2.0
+    Part of PoshGuard v4.3.0
     Requires PowerShell 5.1 or higher
     
     References:

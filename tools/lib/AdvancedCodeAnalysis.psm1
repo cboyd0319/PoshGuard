@@ -13,7 +13,7 @@
     - Code duplication detection
     
 .NOTES
-    Version: 4.1.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework
     References:
     - Martin Fowler's Refactoring catalog

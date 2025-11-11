@@ -20,7 +20,7 @@
                    AST-based transformations using graph neural networks
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     Privacy: All learning is LOCAL ONLY - no data transmitted
     Cost: FREE

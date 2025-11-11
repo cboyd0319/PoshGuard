@@ -26,7 +26,7 @@
     - CISA Cybersecurity Performance Goals
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     Authority: NIST SP 800-53 Rev 5 (Sept 2020, updated Dec 2020)
 #>

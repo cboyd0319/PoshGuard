@@ -12,7 +12,7 @@
 
 .NOTES
     Module: EnhancedMetrics
-    Version: 3.3.0
+    Version: 4.3.0
     SRE Principles: Golden Signals (latency, errors, saturation)
 #>
 

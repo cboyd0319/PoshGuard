@@ -12,7 +12,7 @@
     - Predictive issue detection
 
 .NOTES
-    Version: 4.0.0
+    Version: 4.3.0
     Part of PoshGuard UGE Framework Enhancement
     Reference: docs/reference/AI-ML-INTEGRATION.md
     

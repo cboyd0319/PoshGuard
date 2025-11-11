@@ -30,7 +30,7 @@
     - Custom high-entropy strings
 
 .NOTES
-    Version: 4.2.0
+    Version: 4.3.0
     Part of PoshGuard Ultimate Genius Engineer (UGE) Framework
     OWASP ASVS: V6.2.1 - Secret Management
     CWE-798: Hard-coded Credentials

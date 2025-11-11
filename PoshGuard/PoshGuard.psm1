@@ -7,7 +7,7 @@
     the main entry point functions for PowerShell Gallery installation.
 
 .NOTES
-    Part of PoshGuard v3.0.0
+    Part of PoshGuard v4.3.0
     For direct repo usage, use ./tools/Apply-AutoFix.ps1
     For module usage, use the exported functions below.
 #>
@@ -21,15 +21,37 @@ $ModuleRoot = $PSScriptRoot
 .SYNOPSIS
     Helper function to resolve paths based on installation location
 
+.DESCRIPTION
+    Resolves file paths for both PowerShell Gallery installations and development/repository installations.
+    Checks Gallery path first, then Dev path, returning the first valid path found.
+
 .PARAMETER GalleryRelativePath
-    Relative path for PowerShell Gallery installation
+    Relative path for PowerShell Gallery installation structure (relative to module root)
 
 .PARAMETER DevRelativePath
-    Relative path for development/repository installation
+    Relative path for development/repository installation structure (relative to parent of module root)
+
+.OUTPUTS
+    System.String
+    Returns the resolved absolute path, or $null if neither path exists
+
+.EXAMPLE
+    $libPath = Resolve-PoshGuardPath -GalleryRelativePath 'lib' -DevRelativePath 'tools/lib'
+    Resolves the library path for the current installation type
+
+.NOTES
+    This function enables PoshGuard to work in both installed and development environments
 #>
 function Resolve-PoshGuardPath {
+  [CmdletBinding()]
+  [OutputType([string])]
   param(
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$GalleryRelativePath,
+
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$DevRelativePath
   )
 
@@ -38,9 +60,11 @@ function Resolve-PoshGuardPath {
 
   if (Test-Path $GalleryPath) {
     return $GalleryPath
-  } elseif (Test-Path $DevPath) {
+  }
+  elseif (Test-Path $DevPath) {
     return $DevPath
-  } else {
+  }
+  else {
     return $null
   }
 }
