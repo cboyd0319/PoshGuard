@@ -102,7 +102,13 @@ param(
   [string]$SarifOutputPath = './poshguard-results.sarif',
 
   [Parameter()]
-  [switch]$FastScan
+  [switch]$FastScan,
+
+  [Parameter()]
+  [switch]$Recurse,
+
+  [Parameter()]
+  [string[]]$Skip
 )
 
 Set-StrictMode -Version Latest

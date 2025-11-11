@@ -40,7 +40,7 @@ Common scenarios
 ----------------
 
 - Pre-commit: `./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse`
-- CI/CD: `./tools/Apply-AutoFix.ps1 -Path . -NonInteractive -OutputFormat jsonl`
+- CI/CD: `./tools/Apply-AutoFix.ps1 -Path . -DryRun -Recurse`
 - Sample run: `cd samples; ../tools/Apply-AutoFix.ps1 -Path ./before-security-issues.ps1 -ShowDiff`
 
 Exit codes

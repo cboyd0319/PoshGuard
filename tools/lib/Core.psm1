@@ -75,7 +75,7 @@ function Write-Log {
   Write-Host "${timestampStr}${icon}${prefix} ${Message}" -ForegroundColor $iconAndColor.Color
 }
 
-function Get-PowerShellFile {
+function Get-PowerShellFiles {
   [CmdletBinding()]
   [OutputType([System.IO.FileInfo[]])]
   [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Write-Host is used intentionally for FastScan progress output')]
