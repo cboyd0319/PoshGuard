@@ -23,6 +23,12 @@
 
 Set-StrictMode -Version Latest
 
+# Import ASTHelper module for reusable AST operations
+$ASTHelperPath = Join-Path $PSScriptRoot "../ASTHelper.psm1"
+if (Test-Path $ASTHelperPath) {
+  Import-Module $ASTHelperPath -Force -ErrorAction SilentlyContinue
+}
+
 function Invoke-TodoCommentDetectionFix {
   <#
     .SYNOPSIS
