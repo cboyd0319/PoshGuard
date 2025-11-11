@@ -87,7 +87,13 @@ function Get-PowerShellFiles {
     [string[]]$SupportedExtensions = @('.ps1', '.psm1', '.psd1'),
 
     [Parameter()]
-    [switch]$FastScan
+    [switch]$FastScan,
+
+    [Parameter()]
+    [switch]$Recurse,
+
+    [Parameter()]
+    [int64]$MaxFileSizeBytes = 10485760  # 10MB default
   )
 
   if (Test-Path -Path $Path -PathType Leaf -ErrorAction Stop) {
@@ -101,14 +107,28 @@ function Get-PowerShellFiles {
       if (Get-Command Find-SuspiciousScripts -ErrorAction SilentlyContinue) {
         $candidateFiles = Find-SuspiciousScripts -Path $Path
         if ($candidateFiles) {
-          $totalFiles = (Get-ChildItem -Path $Path -Recurse -File | Where-Object { $SupportedExtensions -contains $_.Extension }).Count
+          $getChildItemParams = @{
+            Path = $Path
+            File = $true
+          }
+          if ($Recurse) {
+            $getChildItemParams['Recurse'] = $true
+          }
+
+          $totalFiles = (Get-ChildItem @getChildItemParams | Where-Object {
+            ($SupportedExtensions -contains $_.Extension) -and ($_.Length -le $MaxFileSizeBytes)
+          }).Count
           $candidateCount = ($candidateFiles | Measure-Object).Count
           $skippedCount = $totalFiles - $candidateCount
-                    
+
           Write-Host "  🚀 RipGrep FastScan: Found $candidateCount candidate files (skipping $skippedCount safe files)" -ForegroundColor Cyan
-                    
-          # Convert paths to FileInfo objects
-          $files = $candidateFiles | ForEach-Object { Get-Item -Path $_ -ErrorAction SilentlyContinue } | Where-Object { $_ }
+
+          # Convert paths to FileInfo objects and filter by size
+          $files = $candidateFiles | ForEach-Object {
+            Get-Item -Path $_ -ErrorAction SilentlyContinue
+          } | Where-Object {
+            $_ -and ($_.Length -le $MaxFileSizeBytes)
+          }
           return $files
         }
       }
@@ -118,8 +138,18 @@ function Get-PowerShellFiles {
     }
   }
 
-  $files = Get-ChildItem -Path $Path -Recurse -File | Where-Object {
-    $SupportedExtensions -contains $_.Extension
+  # Build parameters for Get-ChildItem
+  $getChildItemParams = @{
+    Path = $Path
+    File = $true
+  }
+  if ($Recurse) {
+    $getChildItemParams['Recurse'] = $true
+  }
+
+  $files = Get-ChildItem @getChildItemParams | Where-Object {
+    ($SupportedExtensions -contains $_.Extension) -and
+    ($_.Length -le $MaxFileSizeBytes)
   }
 
   return $files
